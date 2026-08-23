@@ -1,33 +1,65 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react'
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { InteractiveMallMap, SignagePin } from '../../src/components/InteractiveMallMap';
+
+// Pins migrados do banco de dados legado da planilha
+const initialPins: SignagePin[] = [
+  { id: '1', assetCode: 'SIG-20260814-0001', category: 'Placa informativa', sector: 'SETOR_AZUL', conservationStatus: 'GOOD', normalizedX: 0.35, normalizedY: 0.25, notes: 'Rua General Bezerril' },
+  { id: '2', assetCode: 'SIG-20260814-0002', category: 'Placa informativa', sector: 'SETOR_AZUL', conservationStatus: 'GOOD', normalizedX: 0.65, normalizedY: 0.30, notes: 'Rua São José' },
+  { id: '3', assetCode: 'SIG-20260814-0003', category: 'Adesivo de piso', sector: 'SETOR_VERDE', conservationStatus: 'REGULAR', normalizedX: 0.20, normalizedY: 0.70, notes: 'Adesivo de piso de sinalização' },
+  { id: '4', assetCode: 'SIG-20260814-0004', category: 'Placa de emergência', sector: 'SETOR_VERMELHO', conservationStatus: 'BAD', normalizedX: 0.75, normalizedY: 0.75, notes: 'Ambulatório -> Necessita manutenção' },
+  { id: '5', assetCode: 'SIG-20260814-0005', category: 'Totem Interativo', sector: 'SETOR_AMARELO', conservationStatus: 'GOOD', normalizedX: 0.50, normalizedY: 0.50, notes: 'Totem de Entrada Principal' },
+];
 
 export default function MallMapScreen() {
   const [isOnline, setIsOnline] = useState<boolean>(true);
-  const [pendingSyncCount, setPendingSyncCount] = useState<number>(3);
-  const [selectedSector, setSelectedSector] = useState<string>('SETOR_AMARELO');
+  const [selectedSector, setSelectedSector] = useState<string>('TODOS');
+  const [pinsList, setPinsList] = useState<SignagePin[]>(initialPins);
+
+  const handleAddPinAtLocation = (normX: number, normY: number) => {
+    const newCode = `SIG-${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, '0')}${String(new Date().getDate()).padStart(2, '0')}-${String(pinsList.length + 1).padStart(4, '0')}`;
+    
+    const newPin: SignagePin = {
+      id: String(Date.now()),
+      assetCode: newCode,
+      category: 'Placa Nova',
+      sector: selectedSector === 'TODOS' ? 'SETOR_AZUL' : selectedSector,
+      conservationStatus: 'GOOD',
+      normalizedX: normX,
+      normalizedY: normY,
+      notes: 'Placa adicionada via mapa interativo em campo (Outbox Offline)',
+    };
+
+    setPinsList((prev) => [...prev, newPin]);
+    Alert.alert(
+      'Placa Adicionada!',
+      `A placa ${newCode} foi posicionada em X: ${(normX * 100).toFixed(0)}%, Y: ${(normY * 100).toFixed(0)}% e salva no banco local.`,
+      [{ text: 'OK' }]
+    );
+  };
 
   return (
     <View style={styles.container}>
       {/* Offline Status Banner */}
       <View style={[styles.networkBanner, { backgroundColor: isOnline ? '#059669' : '#DC2626' }]}>
-        <Ionicons name={isOnline ? 'wifi' : 'wifi-outline'} size={18} color="#FFFFFF" />
+        <Ionicons name={isOnline ? 'wifi' : 'wifi-outline'} size={16} color="#FFFFFF" />
         <Text style={styles.bannerText}>
           {isOnline
-            ? 'Conectado à VPS Centro Fashion'
-            : 'Modo Offline - Dados sendo salvos localmente no dispositivo'}
+            ? 'Conectado à VPS Centro Fashion (Sincronizado)'
+            : 'Modo Offline - Coordenadas salvas no banco local'}
         </Text>
       </View>
 
       {/* Header Info */}
       <View style={styles.header}>
-        <Text style={styles.title}>Mapa de Sinalização do Mall</Text>
-        <Text style={styles.subtitle}>Centro Fashion Fortaleza - Piso 1</Text>
+        <Text style={styles.title}>Planta Cartográfica do Mall</Text>
+        <Text style={styles.subtitle}>Centro Fashion Fortaleza - Piso 1 (Nível 1)</Text>
       </View>
 
-      {/* Sector Selector Filter */}
+      {/* Sector Filter Bar */}
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.sectorBar}>
-        {['SETOR_AMARELO', 'SETOR_AZUL', 'SETOR_VERMELHO', 'SETOR_VERDE'].map((sec) => (
+        {['TODOS', 'SETOR_AZUL', 'SETOR_VERDE', 'SETOR_AMARELO', 'SETOR_VERMELHO'].map((sec) => (
           <TouchableOpacity
             key={sec}
             style={[styles.sectorChip, selectedSector === sec && styles.sectorChipActive]}
@@ -40,34 +72,29 @@ export default function MallMapScreen() {
         ))}
       </ScrollView>
 
-      {/* Map Interactive View Sandbox */}
-      <View style={styles.mapCanvas}>
-        <Ionicons name="map" size={64} color="#475569" />
-        <Text style={styles.mapLabel}>Visualização de Planta Cartográfica ({selectedSector})</Text>
-        <Text style={styles.mapSublabel}>PostGIS Coordinates (Point) & Outbox Offline Engine</Text>
+      {/* Interactive Cartographic Map Component */}
+      <InteractiveMallMap
+        selectedSector={selectedSector}
+        pins={pinsList}
+        onAddPinAtLocation={handleAddPinAtLocation}
+      />
 
-        {/* Demo Pins on Floor Plan */}
-        <View style={[styles.pin, { top: '30%', left: '45%', backgroundColor: '#F59E0B' }]}>
-          <Ionicons name="pricetag" size={14} color="#FFF" />
+      {/* Map Legend Footer */}
+      <View style={styles.legendFooter}>
+        <View style={styles.legendItem}>
+          <View style={[styles.dot, { backgroundColor: '#10B981' }]} />
+          <Text style={styles.legendText}>Bom ({pinsList.filter(p => p.conservationStatus === 'GOOD').length})</Text>
         </View>
-        <View style={[styles.pin, { top: '60%', left: '70%', backgroundColor: '#10B981' }]}>
-          <Ionicons name="pricetag" size={14} color="#FFF" />
+        <View style={styles.legendItem}>
+          <View style={[styles.dot, { backgroundColor: '#F59E0B' }]} />
+          <Text style={styles.legendText}>Regular ({pinsList.filter(p => p.conservationStatus === 'REGULAR').length})</Text>
         </View>
-        <View style={[styles.pin, { top: '45%', left: '25%', backgroundColor: '#EF4444' }]}>
-          <Ionicons name="alert-circle" size={14} color="#FFF" />
+        <View style={styles.legendItem}>
+          <View style={[styles.dot, { backgroundColor: '#EF4444' }]} />
+          <Text style={styles.legendText}>Danificado ({pinsList.filter(p => p.conservationStatus === 'BAD' || p.conservationStatus === 'CRITICAL').length})</Text>
         </View>
-      </View>
-
-      {/* Sync Status Badge Bar */}
-      <View style={styles.syncFooter}>
-        <View style={styles.syncInfo}>
-          <Ionicons name="cloud-offline-outline" size={20} color="#F59E0B" />
-          <Text style={styles.syncText}>
-            {pendingSyncCount} mutações pendentes na fila Outbox
-          </Text>
-        </View>
-        <TouchableOpacity style={styles.toggleNetBtn} onPress={() => setIsOnline(!isOnline)}>
-          <Text style={styles.toggleNetText}>Simular {isOnline ? 'Offline' : 'Online'}</Text>
+        <TouchableOpacity style={styles.netToggle} onPress={() => setIsOnline(!isOnline)}>
+          <Text style={styles.netToggleText}>{isOnline ? 'Simular Offline' : 'Simular Online'}</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -82,7 +109,7 @@ const styles = StyleSheet.create({
   networkBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    justify: 'center',
+    justifyContent: 'center',
     paddingVertical: 6,
     paddingHorizontal: 12,
     gap: 8,
@@ -93,7 +120,9 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   header: {
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 4,
   },
   title: {
     color: '#FFFFFF',
@@ -102,13 +131,13 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     color: '#94A3B8',
-    fontSize: 14,
+    fontSize: 13,
     marginTop: 2,
   },
   sectorBar: {
     paddingHorizontal: 16,
     maxHeight: 40,
-    marginBottom: 12,
+    marginVertical: 8,
   },
   sectorChip: {
     backgroundColor: '#1E293B',
@@ -132,69 +161,38 @@ const styles = StyleSheet.create({
     color: '#0F172A',
     fontWeight: 'bold',
   },
-  mapCanvas: {
-    flex: 1,
-    margin: 16,
+  legendFooter: {
     backgroundColor: '#1E293B',
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: '#334155',
-    alignItems: 'center',
-    justifyContent: 'center',
-    position: 'relative',
-    overflow: 'hidden',
-  },
-  mapLabel: {
-    color: '#E2E8F0',
-    fontSize: 16,
-    fontWeight: '600',
-    marginTop: 12,
-  },
-  mapSublabel: {
-    color: '#64748B',
-    fontSize: 12,
-    marginTop: 4,
-  },
-  pin: {
-    position: 'absolute',
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  syncFooter: {
-    backgroundColor: '#1E293B',
-    padding: 16,
+    padding: 12,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justify: 'space-between',
     borderTopWidth: 1,
     borderTopColor: '#334155',
   },
-  syncInfo: {
+  legendItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 6,
   },
-  syncText: {
+  dot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+  },
+  legendText: {
     color: '#CBD5E1',
-    fontSize: 12,
+    fontSize: 11,
   },
-  toggleNetBtn: {
+  netToggle: {
     backgroundColor: '#334155',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 6,
   },
-  toggleNetText: {
+  netToggleText: {
     color: '#38BDF8',
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '600',
   },
 });
