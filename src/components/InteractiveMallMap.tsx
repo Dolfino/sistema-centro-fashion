@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, ImageSourcePropType, useWindowDimensions } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, ImageSourcePropType, useWindowDimensions, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 const MAP_IMAGES: Record<string, ImageSourcePropType> = {
@@ -45,7 +45,7 @@ export const InteractiveMallMap: React.FC<InteractiveMallMapProps> = ({
   const handleStageClick = (event: any) => {
     if (!isAddingMode || !onAddPinAtLocation) return;
     const { locationX, locationY } = event.nativeEvent;
-    const stageWidth = isMobile ? windowWidth - 32 : 650;
+    const stageWidth = isMobile ? windowWidth - 24 : 650;
     const normX = Math.max(0.05, Math.min(0.95, locationX / stageWidth));
     const normY = Math.max(0.05, Math.min(0.95, locationY / (stageWidth * 1.15)));
     onAddPinAtLocation(normX, normY);
@@ -223,11 +223,7 @@ const styles = StyleSheet.create({
     borderColor: '#DFE2EA',
     position: 'relative',
     overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 10,
-    elevation: 3,
+
   },
   stageContainerMobile: {
     width: '100%',
@@ -251,11 +247,6 @@ const styles = StyleSheet.create({
     borderColor: '#FFFFFF',
     alignItems: 'center',
     justify: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.35,
-    shadowRadius: 4,
-    elevation: 6,
     zIndex: 50,
   },
   markerTeardropMobile: {
@@ -292,7 +283,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#DFE2EA',
     paddingHorizontal: 4,
-    elevation: 3,
   },
   zoomBtn: {
     paddingHorizontal: 8,
@@ -316,7 +306,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 10,
-    elevation: 3,
   },
   addPinBtnActive: {
     backgroundColor: '#F50087',
@@ -339,11 +328,6 @@ const styles = StyleSheet.create({
     padding: 16,
     borderWidth: 1,
     borderColor: '#DFE2EA',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.18,
-    shadowRadius: 24,
-    elevation: 10,
     zIndex: 100,
   },
   floatingCardMobile: {
