@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, Platform, useWindowDimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { InteractiveMallMap, SignagePin } from '../../src/components/InteractiveMallMap';
 
@@ -15,6 +15,9 @@ const initialPins: SignagePin[] = [
 export default function MallMapScreen() {
   const [selectedMapKey, setSelectedMapKey] = useState<string>('SETOR_AZUL');
   const [pinsList, setPinsList] = useState<SignagePin[]>(initialPins);
+  const { width: windowWidth } = useWindowDimensions();
+
+  const isMobile = windowWidth < 700;
 
   const mapsList = [
     { key: 'SETOR_AZUL', label: 'Setor Azul • Piso 1' },
@@ -50,27 +53,31 @@ export default function MallMapScreen() {
   return (
     <View style={styles.container}>
       {/* Authentic Navy Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, isMobile && styles.headerMobile]}>
         <View style={styles.headerLeft}>
           <Text style={styles.headerTitle}>Sinalização do Mall</Text>
           <Text style={styles.headerSub}>MVP-3.28.1-SINALIZACAO-S26.6.1</Text>
         </View>
 
-        <View style={styles.headerCenter}>
-          <View style={styles.connPill}>
-            <Text style={styles.connText}>Conectado (VPS K3s) • 200 ms</Text>
+        {!isMobile && (
+          <View style={styles.headerCenter}>
+            <View style={styles.connPill}>
+              <Text style={styles.connText}>Conectado (VPS K3s) • 200 ms</Text>
+            </View>
           </View>
-        </View>
+        )}
 
         <View style={styles.userPill}>
-          <Text style={styles.userText}>davidsilva.centrofashion • ADMIN</Text>
+          <Text style={styles.userText}>
+            {isMobile ? 'davidsilva • ADMIN' : 'davidsilva.centrofashion • ADMIN'}
+          </Text>
         </View>
       </View>
 
       {/* Main Content Area */}
-      <View style={styles.mainContent}>
+      <View style={[styles.mainContent, isMobile && styles.mainContentMobile]}>
         {/* Authentic Toolbar Card */}
-        <View style={styles.toolbarCard}>
+        <View style={[styles.toolbarCard, isMobile && styles.toolbarCardMobile]}>
           <View style={styles.selectGroup}>
             <Text style={styles.selectLabel}>Mapa / Visualização</Text>
             
@@ -80,12 +87,13 @@ export default function MallMapScreen() {
                 value={selectedMapKey}
                 onChange={(e) => setSelectedMapKey(e.target.value)}
                 style={{
-                  minWidth: '280px',
-                  padding: '10px 14px',
+                  width: '100%',
+                  minWidth: isMobile ? '100%' : '260px',
+                  padding: '9px 12px',
                   border: '1px solid #DFE2EA',
                   borderRadius: '10px',
                   backgroundColor: '#FFFFFF',
-                  fontSize: '14px',
+                  fontSize: '13px',
                   fontWeight: '600',
                   color: '#101228',
                   outline: 'none',
@@ -125,7 +133,7 @@ export default function MallMapScreen() {
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.btnMenu}>
-              <Ionicons name="menu-outline" size={18} color="#101228" />
+              <Ionicons name="menu-outline" size={16} color="#101228" />
               <Text style={styles.btnMenuText}>Menu</Text>
               <View style={styles.menuBadge}>
                 <Text style={styles.menuBadgeText}>2</Text>
@@ -153,24 +161,28 @@ const styles = StyleSheet.create({
     backgroundColor: '#F4F5F8',
   },
   header: {
-    height: 64,
+    height: 60,
     backgroundColor: '#171B68',
-    paddingHorizontal: 22,
+    paddingHorizontal: 16,
     flexDirection: 'row',
     alignItems: 'center',
     justify: 'space-between',
+  },
+  headerMobile: {
+    paddingHorizontal: 12,
+    height: 56,
   },
   headerLeft: {
     justify: 'center',
   },
   headerTitle: {
     color: '#FFFFFF',
-    fontSize: 19,
+    fontSize: 18,
     fontWeight: 'bold',
   },
   headerSub: {
     color: 'rgba(255,255,255,0.7)',
-    fontSize: 11,
+    fontSize: 10,
     marginTop: 1,
   },
   headerCenter: {
@@ -178,45 +190,52 @@ const styles = StyleSheet.create({
   },
   connPill: {
     backgroundColor: 'rgba(255,255,255,0.18)',
-    paddingHorizontal: 14,
-    paddingVertical: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
     borderRadius: 20,
   },
   connText: {
     color: '#FFFFFF',
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '600',
   },
   userPill: {
     backgroundColor: 'rgba(255,255,255,0.22)',
-    paddingHorizontal: 14,
-    paddingVertical: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
     borderRadius: 20,
   },
   userText: {
     color: '#FFFFFF',
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: 'bold',
   },
   mainContent: {
     flex: 1,
-    padding: 16,
+    padding: 12,
     maxWidth: 1500,
     alignSelf: 'center',
     width: '100%',
+  },
+  mainContentMobile: {
+    padding: 8,
   },
   toolbarCard: {
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: '#DFE2EA',
     borderRadius: 16,
-    padding: 12,
-    marginBottom: 12,
+    padding: 10,
+    marginBottom: 10,
     flexDirection: 'row',
     justify: 'space-between',
     alignItems: 'center',
     flexWrap: 'wrap',
-    gap: 12,
+    gap: 8,
+  },
+  toolbarCardMobile: {
+    borderRadius: 12,
+    padding: 8,
   },
   selectGroup: {
     flex: 1,
@@ -255,14 +274,14 @@ const styles = StyleSheet.create({
   actionGroup: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 6,
   },
   btnIconPlus: {
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: '#DFE2EA',
-    width: 38,
-    height: 38,
+    width: 36,
+    height: 36,
     borderRadius: 10,
     alignItems: 'center',
     justify: 'center',
@@ -270,14 +289,14 @@ const styles = StyleSheet.create({
   btnIconPlusText: {
     color: '#171B68',
     fontWeight: 'bold',
-    fontSize: 20,
+    fontSize: 18,
   },
   btnMenu: {
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: '#DFE2EA',
-    paddingHorizontal: 14,
-    height: 38,
+    paddingHorizontal: 12,
+    height: 36,
     borderRadius: 10,
     flexDirection: 'row',
     alignItems: 'center',
@@ -287,7 +306,7 @@ const styles = StyleSheet.create({
   btnMenuText: {
     color: '#101228',
     fontWeight: '700',
-    fontSize: 13,
+    fontSize: 12,
   },
   menuBadge: {
     backgroundColor: '#F50087',
@@ -299,7 +318,7 @@ const styles = StyleSheet.create({
   },
   menuBadgeText: {
     color: '#FFFFFF',
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: 'bold',
   },
   stageFrame: {
@@ -307,7 +326,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: '#DFE2EA',
-    borderRadius: 16,
+    borderRadius: 14,
     overflow: 'hidden',
   },
 });

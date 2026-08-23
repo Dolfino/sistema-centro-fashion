@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, ImageSourcePropType } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, ImageSourcePropType, useWindowDimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 const MAP_IMAGES: Record<string, ImageSourcePropType> = {
@@ -37,14 +37,17 @@ export const InteractiveMallMap: React.FC<InteractiveMallMapProps> = ({
   const [selectedPin, setSelectedPin] = useState<SignagePin | null>(null);
   const [isAddingMode, setIsAddingMode] = useState<boolean>(false);
   const [zoomLevel, setZoomLevel] = useState<number>(1.0);
+  const { width: windowWidth } = useWindowDimensions();
 
+  const isMobile = windowWidth < 700;
   const mapSource = MAP_IMAGES[selectedMapKey] || MAP_IMAGES.SETOR_AZUL;
 
   const handleStageClick = (event: any) => {
     if (!isAddingMode || !onAddPinAtLocation) return;
     const { locationX, locationY } = event.nativeEvent;
-    const normX = Math.max(0.05, Math.min(0.95, locationX / 650));
-    const normY = Math.max(0.05, Math.min(0.95, locationY / 750));
+    const stageWidth = isMobile ? windowWidth - 32 : 650;
+    const normX = Math.max(0.05, Math.min(0.95, locationX / stageWidth));
+    const normY = Math.max(0.05, Math.min(0.95, locationY / (stageWidth * 1.15)));
     onAddPinAtLocation(normX, normY);
     setIsAddingMode(false);
   };
@@ -68,7 +71,7 @@ export const InteractiveMallMap: React.FC<InteractiveMallMapProps> = ({
     <View style={styles.container}>
       {/* Map Stage Viewport */}
       <ScrollView
-        horizontal
+        horizontal={!isMobile}
         style={styles.viewportScroll}
         contentContainerStyle={styles.viewportContent}
       >
@@ -79,7 +82,11 @@ export const InteractiveMallMap: React.FC<InteractiveMallMapProps> = ({
           <TouchableOpacity
             activeOpacity={1}
             onPress={handleStageClick}
-            style={[styles.stageContainer, { transform: [{ scale: zoomLevel }] }]}
+            style={[
+              styles.stageContainer,
+              isMobile && styles.stageContainerMobile,
+              { transform: [{ scale: zoomLevel }] },
+            ]}
           >
             {/* Authentic Floor Plan Map Image */}
             <Image
@@ -91,14 +98,15 @@ export const InteractiveMallMap: React.FC<InteractiveMallMapProps> = ({
             {/* Authentic Teardrop Pins Layer */}
             {pins.map((pin) => {
               const color = getPinColor(pin.status);
-              const topPercent = `${pin.normalizedY * 88}%`;
-              const leftPercent = `${pin.normalizedX * 88}%`;
+              const topPercent = `${pin.normalizedY * 86}%`;
+              const leftPercent = `${pin.normalizedX * 86}%`;
 
               return (
                 <TouchableOpacity
                   key={pin.id}
                   style={[
                     styles.markerTeardrop,
+                    isMobile && styles.markerTeardropMobile,
                     {
                       top: topPercent as any,
                       left: leftPercent as any,
@@ -115,8 +123,8 @@ export const InteractiveMallMap: React.FC<InteractiveMallMapProps> = ({
         </ScrollView>
       </ScrollView>
 
-      {/* Floating Toolbar Bar at Bottom Right */}
-      <View style={styles.bottomToolbar}>
+      {/* Floating Toolbar Bar at Top Right */}
+      <View style={[styles.bottomToolbar, isMobile && styles.bottomToolbarMobile]}>
         <View style={styles.zoomControl}>
           <TouchableOpacity style={styles.zoomBtn} onPress={() => setZoomLevel((z) => Math.min(z + 0.2, 2.2))}>
             <Text style={styles.zoomBtnText}>+</Text>
@@ -132,14 +140,14 @@ export const InteractiveMallMap: React.FC<InteractiveMallMapProps> = ({
           onPress={() => setIsAddingMode(!isAddingMode)}
         >
           <Text style={[styles.addPinBtnText, isAddingMode && styles.addPinBtnTextActive]}>
-            {isAddingMode ? '📍 Clique na planta...' : '+ Posicionar Placa'}
+            {isAddingMode ? '📍 Clique...' : '+ Posicionar'}
           </Text>
         </TouchableOpacity>
       </View>
 
       {/* Floating Legacy Map Card Modal */}
       {selectedPin && (
-        <View style={styles.floatingCard}>
+        <View style={[styles.floatingCard, isMobile && styles.floatingCardMobile]}>
           <View style={styles.cardHeader}>
             <View style={styles.cardTitleGroup}>
               <Text style={styles.cardSubtitle}>SINALIZAÇÃO DO MALL</Text>
@@ -174,7 +182,7 @@ export const InteractiveMallMap: React.FC<InteractiveMallMapProps> = ({
               <Text style={styles.btnSecondaryText}>Fechar</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.btnPrimary} onPress={() => setSelectedPin(null)}>
-              <Text style={styles.btnPrimaryText}>Fazer Inspeção</Text>
+              <Text style={styles.btnPrimaryText}>Inspeção</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -186,7 +194,7 @@ export const InteractiveMallMap: React.FC<InteractiveMallMapProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#E9EBF0', // Exact legacy background from styles.html
+    backgroundColor: '#E9EBF0',
     position: 'relative',
   },
   viewportScroll: {
@@ -203,7 +211,7 @@ const styles = StyleSheet.create({
   viewportContentY: {
     alignItems: 'center',
     justify: 'center',
-    padding: 16,
+    padding: 8,
     flexGrow: 1,
   },
   stageContainer: {
@@ -220,6 +228,11 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.08,
     shadowRadius: 10,
     elevation: 3,
+  },
+  stageContainerMobile: {
+    width: '100%',
+    maxWidth: 650,
+    height: 600,
   },
   floorPlanImage: {
     width: '100%',
@@ -245,6 +258,13 @@ const styles = StyleSheet.create({
     elevation: 6,
     zIndex: 50,
   },
+  markerTeardropMobile: {
+    width: 26,
+    height: 26,
+    borderTopLeftRadius: 13,
+    borderTopRightRadius: 13,
+    borderBottomLeftRadius: 13,
+  },
   markerInnerDot: {
     width: 8,
     height: 8,
@@ -253,12 +273,16 @@ const styles = StyleSheet.create({
   },
   bottomToolbar: {
     position: 'absolute',
-    right: 16,
-    top: 16,
+    right: 12,
+    top: 12,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 8,
     zIndex: 90,
+  },
+  bottomToolbarMobile: {
+    right: 8,
+    top: 8,
   },
   zoomControl: {
     flexDirection: 'row',
@@ -271,16 +295,16 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   zoomBtn: {
-    paddingHorizontal: 10,
-    paddingVertical: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 5,
   },
   zoomBtnText: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: 'bold',
     color: '#171B68',
   },
   zoomLabel: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '700',
     color: '#101228',
     paddingHorizontal: 4,
@@ -289,8 +313,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: '#F50087',
-    paddingHorizontal: 14,
-    paddingVertical: 7,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
     borderRadius: 10,
     elevation: 3,
   },
@@ -300,7 +324,7 @@ const styles = StyleSheet.create({
   addPinBtnText: {
     color: '#F50087',
     fontWeight: '700',
-    fontSize: 12,
+    fontSize: 11,
   },
   addPinBtnTextActive: {
     color: '#FFFFFF',
@@ -321,6 +345,13 @@ const styles = StyleSheet.create({
     shadowRadius: 24,
     elevation: 10,
     zIndex: 100,
+  },
+  floatingCardMobile: {
+    left: 12,
+    right: 12,
+    bottom: 12,
+    width: 'auto',
+    padding: 14,
   },
   cardHeader: {
     flexDirection: 'row',
