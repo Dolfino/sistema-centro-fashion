@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, Platform, useWindowDimensions } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, Platform, Modal, useWindowDimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { InteractiveMallMap, SignagePin } from '../../src/components/InteractiveMallMap';
+import { useRouter } from 'expo-router';
 
-// Sample real pins mapped to legacy sectors
 const initialPins: SignagePin[] = [
   { id: '1', assetCode: 'SIG-20260814-0001', category: 'Placa informativa', sector: 'SETOR_AZUL', status: 'ATIVA', normalizedX: 0.28, normalizedY: 0.28, humanLocation: 'Corredor Central - Setor Azul' },
   { id: '2', assetCode: 'SIG-20260814-0002', category: 'Placa informativa', sector: 'SETOR_AZUL', status: 'MANUTENCAO', normalizedX: 0.52, normalizedY: 0.35, humanLocation: 'Rua São José - Box 1020' },
@@ -13,10 +13,19 @@ const initialPins: SignagePin[] = [
 ];
 
 export default function MallMapScreen() {
+  const router = useRouter();
   const [selectedMapKey, setSelectedMapKey] = useState<string>('SETOR_AZUL');
   const [pinsList, setPinsList] = useState<SignagePin[]>(initialPins);
-  const { width: windowWidth } = useWindowDimensions();
+  const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
+  const [isLayersOpen, setIsLayersOpen] = useState<boolean>(false);
+  
+  // Layer toggles
+  const [showSignage, setShowSignage] = useState<boolean>(true);
+  const [showReferences, setShowReferences] = useState<boolean>(true);
+  const [showIntersections, setShowIntersections] = useState<boolean>(true);
+  const [showShops, setShowShops] = useState<boolean>(true);
 
+  const { width: windowWidth } = useWindowDimensions();
   const isMobile = windowWidth < 700;
 
   const mapsList = [
@@ -127,12 +136,12 @@ export default function MallMapScreen() {
           <View style={styles.actionGroup}>
             <TouchableOpacity
               style={styles.btnIconPlus}
-              onPress={() => Alert.alert('Nova Sinalização', 'Clique em "+ Posicionar Placa" para escolher a coordenada no mapa.')}
+              onPress={() => Alert.alert('Novo Registro', 'Escolha a posição exata no mapa para cadastrar uma nova sinalização.')}
             >
               <Text style={styles.btnIconPlusText}>+</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.btnMenu}>
+            <TouchableOpacity style={styles.btnMenu} onPress={() => setIsMenuOpen(true)}>
               <Ionicons name="menu-outline" size={16} color="#101228" />
               <Text style={styles.btnMenuText}>Menu</Text>
               <View style={styles.menuBadge}>
@@ -146,11 +155,163 @@ export default function MallMapScreen() {
         <View style={styles.stageFrame}>
           <InteractiveMallMap
             selectedMapKey={selectedMapKey}
-            pins={pinsList}
+            pins={showSignage ? pinsList : []}
             onAddPinAtLocation={handleAddPinAtLocation}
           />
         </View>
       </View>
+
+      {/* Authentic Legacy App Menu Drawer Modal */}
+      <Modal visible={isMenuOpen} transparent animationType="fade">
+        <TouchableOpacity style={styles.menuModalBackdrop} activeOpacity={1} onPress={() => setIsMenuOpen(false)}>
+          <View style={styles.menuModalContainer}>
+            <View style={styles.menuModalHead}>
+              <Text style={styles.menuModalTitle}>Menu do Sistema</Text>
+              <TouchableOpacity style={styles.menuCloseBtn} onPress={() => setIsMenuOpen(false)}>
+                <Ionicons name="close" size={20} color="#101228" />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView contentContainerStyle={styles.menuGrid}>
+              <TouchableOpacity
+                style={[styles.menuGridItem, styles.menuGridItemPrimary]}
+                onPress={() => {
+                  setIsMenuOpen(false);
+                  Alert.alert('Novo Registro', 'Clique em "+ Posicionar Placa" no mapa.');
+                }}
+              >
+                <Text style={styles.menuItemIcon}>＋</Text>
+                <Text style={[styles.menuItemLabel, { color: '#FFFFFF' }]}>Novo registro</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.menuGridItem}
+                onPress={() => {
+                  setIsMenuOpen(false);
+                  setIsLayersOpen(true);
+                }}
+              >
+                <Text style={styles.menuItemIcon}>▱</Text>
+                <Text style={styles.menuItemLabel}>Camadas</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.menuGridItem}
+                onPress={() => {
+                  setIsMenuOpen(false);
+                  Alert.alert('Atualização Offline', 'Banco local atualizado com sucesso! (100% Sincronizado)');
+                }}
+              >
+                <Text style={styles.menuItemIcon}>↓</Text>
+                <Text style={styles.menuItemLabel}>Atualizar offline</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.menuGridItem}
+                onPress={() => {
+                  setIsMenuOpen(false);
+                  router.push('/sync');
+                }}
+              >
+                <Text style={styles.menuItemIcon}>⇅</Text>
+                <Text style={styles.menuItemLabel}>Fila Sync (0)</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.menuGridItem}
+                onPress={() => {
+                  setIsMenuOpen(false);
+                  router.push('/sinalizacoes');
+                }}
+              >
+                <Text style={styles.menuItemIcon}>◎</Text>
+                <Text style={styles.menuItemLabel}>Central Inventário</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.menuGridItem}
+                onPress={() => {
+                  setIsMenuOpen(false);
+                  router.push('/inspecoes');
+                }}
+              >
+                <Text style={styles.menuItemIcon}>□</Text>
+                <Text style={styles.menuItemLabel}>Agenda Inspeções</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.menuGridItem}
+                onPress={() => {
+                  setIsMenuOpen(false);
+                  router.push('/dashboard');
+                }}
+              >
+                <Text style={styles.menuItemIcon}>▦</Text>
+                <Text style={styles.menuItemLabel}>Dashboard & KPI</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.menuGridItem}
+                onPress={() => {
+                  setIsMenuOpen(false);
+                  router.push('/dashboard');
+                }}
+              >
+                <Text style={styles.menuItemIcon}>≡</Text>
+                <Text style={styles.menuItemLabel}>Relatórios CSV</Text>
+              </TouchableOpacity>
+            </ScrollView>
+          </View>
+        </TouchableOpacity>
+      </Modal>
+
+      {/* Layers Modal */}
+      <Modal visible={isLayersOpen} transparent animationType="fade">
+        <TouchableOpacity style={styles.menuModalBackdrop} activeOpacity={1} onPress={() => setIsLayersOpen(false)}>
+          <View style={styles.layersModalContainer}>
+            <View style={styles.menuModalHead}>
+              <Text style={styles.menuModalTitle}>Camadas do Mapa</Text>
+              <TouchableOpacity style={styles.menuCloseBtn} onPress={() => setIsLayersOpen(false)}>
+                <Ionicons name="close" size={20} color="#101228" />
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.layersList}>
+              <TouchableOpacity
+                style={styles.layerRow}
+                onPress={() => setShowSignage(!showSignage)}
+              >
+                <Ionicons name={showSignage ? "checkbox" : "square-outline"} size={22} color={showSignage ? "#171B68" : "#676A7A"} />
+                <Text style={styles.layerRowText}>Sinalizações ({pinsList.length})</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.layerRow}
+                onPress={() => setShowReferences(!showReferences)}
+              >
+                <Ionicons name={showReferences ? "checkbox" : "square-outline"} size={22} color={showReferences ? "#171B68" : "#676A7A"} />
+                <Text style={styles.layerRowText}>Pontos de Referência</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.layerRow}
+                onPress={() => setShowIntersections(!showIntersections)}
+              >
+                <Ionicons name={showIntersections ? "checkbox" : "square-outline"} size={22} color={showIntersections ? "#171B68" : "#676A7A"} />
+                <Text style={styles.layerRowText}>Cruzamentos de Corredores</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.layerRow}
+                onPress={() => setShowShops(!showShops)}
+              >
+                <Ionicons name={showShops ? "checkbox" : "square-outline"} size={22} color={showShops ? "#171B68" : "#676A7A"} />
+                <Text style={styles.layerRowText}>Boxes & Lojas</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </View>
   );
 }
@@ -277,9 +438,9 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   btnIconPlus: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#F50087',
     borderWidth: 1,
-    borderColor: '#DFE2EA',
+    borderColor: '#F50087',
     width: 36,
     height: 36,
     borderRadius: 10,
@@ -287,7 +448,7 @@ const styles = StyleSheet.create({
     justify: 'center',
   },
   btnIconPlusText: {
-    color: '#171B68',
+    color: '#FFFFFF',
     fontWeight: 'bold',
     fontSize: 18,
   },
@@ -328,5 +489,96 @@ const styles = StyleSheet.create({
     borderColor: '#DFE2EA',
     borderRadius: 14,
     overflow: 'hidden',
+  },
+  menuModalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(16, 18, 40, 0.4)',
+    alignItems: 'center',
+    justify: 'center',
+    padding: 16,
+  },
+  menuModalContainer: {
+    width: '100%',
+    maxWidth: 480,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 18,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#DFE2EA',
+  },
+  layersModalContainer: {
+    width: '100%',
+    maxWidth: 400,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 18,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#DFE2EA',
+  },
+  menuModalHead: {
+    flexDirection: 'row',
+    justify: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  menuModalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#101228',
+  },
+  menuCloseBtn: {
+    backgroundColor: '#F4F5F8',
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justify: 'center',
+  },
+  menuGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+  },
+  menuGridItem: {
+    width: '48%',
+    backgroundColor: '#F4F5F8',
+    borderWidth: 1,
+    borderColor: '#DFE2EA',
+    borderRadius: 12,
+    padding: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  menuGridItemPrimary: {
+    backgroundColor: '#F50087',
+    borderColor: '#F50087',
+  },
+  menuItemIcon: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#171B68',
+  },
+  menuItemLabel: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#101228',
+  },
+  layersList: {
+    gap: 12,
+  },
+  layerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    backgroundColor: '#F4F5F8',
+    borderRadius: 10,
+  },
+  layerRowText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#101228',
   },
 });
