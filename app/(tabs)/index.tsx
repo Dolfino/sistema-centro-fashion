@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { InteractiveMallMap, SignagePin } from '../../src/components/InteractiveMallMap';
 
 // Sample real pins mapped to legacy sectors
 const initialPins: SignagePin[] = [
-  { id: '1', assetCode: 'SIG-20260814-0001', category: 'Placa informativa', sector: 'SETOR_AZUL', status: 'ATIVA', normalizedX: 0.38, normalizedY: 0.28, humanLocation: 'Corredor Central - Setor Azul' },
-  { id: '2', assetCode: 'SIG-20260814-0002', category: 'Placa informativa', sector: 'SETOR_AZUL', status: 'MANUTENCAO', normalizedX: 0.62, normalizedY: 0.35, humanLocation: 'Rua São José - Box 1020' },
-  { id: '3', assetCode: 'SIG-20260814-0003', category: 'Adesivo de piso', sector: 'SETOR_VERDE', status: 'ATIVA', normalizedX: 0.30, normalizedY: 0.65, humanLocation: 'Entrada Setor Verde' },
-  { id: '4', assetCode: 'SIG-20260814-0004', category: 'Placa de emergência', sector: 'SETOR_AMARELO', status: 'SUBSTITUIR', normalizedX: 0.70, normalizedY: 0.70, humanLocation: 'Saída de Emergência - Setor Amarelo' },
-  { id: '5', assetCode: 'SIG-20260814-0005', category: 'Totem Interativo', sector: 'SETOR_ROXO', status: 'ATIVA', normalizedX: 0.45, normalizedY: 0.50, humanLocation: 'Praça de Alimentação - Setor Roxo' },
+  { id: '1', assetCode: 'SIG-20260814-0001', category: 'Placa informativa', sector: 'SETOR_AZUL', status: 'ATIVA', normalizedX: 0.28, normalizedY: 0.28, humanLocation: 'Corredor Central - Setor Azul' },
+  { id: '2', assetCode: 'SIG-20260814-0002', category: 'Placa informativa', sector: 'SETOR_AZUL', status: 'MANUTENCAO', normalizedX: 0.52, normalizedY: 0.35, humanLocation: 'Rua São José - Box 1020' },
+  { id: '3', assetCode: 'SIG-20260814-0003', category: 'Adesivo de piso', sector: 'SETOR_AZUL', status: 'ATIVA', normalizedX: 0.25, normalizedY: 0.55, humanLocation: 'Entrada Setor Azul' },
+  { id: '4', assetCode: 'SIG-20260814-0004', category: 'Placa de emergência', sector: 'SETOR_AZUL', status: 'SUBSTITUIR', normalizedX: 0.65, normalizedY: 0.65, humanLocation: 'Saída de Emergência - Setor Azul' },
+  { id: '5', assetCode: 'SIG-20260814-0005', category: 'Totem Interativo', sector: 'SETOR_AZUL', status: 'ATIVA', normalizedX: 0.22, normalizedY: 0.80, humanLocation: 'Praça de Alimentação' },
 ];
 
 export default function MallMapScreen() {
@@ -42,7 +42,7 @@ export default function MallMapScreen() {
     setPinsList((prev) => [...prev, newPin]);
     Alert.alert(
       'Sinalização Cadastrada!',
-      `A placa ${newCode} foi gravada na coordenada X: ${(normX * 100).toFixed(1)}%, Y: ${(normY * 100).toFixed(1)}% e sincronizada.`,
+      `A placa ${newCode} foi posicionada em X: ${(normX * 100).toFixed(1)}%, Y: ${(normY * 100).toFixed(1)}% e sincronizada.`,
       [{ text: 'OK' }]
     );
   };
@@ -58,7 +58,6 @@ export default function MallMapScreen() {
 
         <View style={styles.headerCenter}>
           <View style={styles.connPill}>
-            <View style={styles.connDot} />
             <Text style={styles.connText}>Conectado (VPS K3s) • 200 ms</Text>
           </View>
         </View>
@@ -69,12 +68,38 @@ export default function MallMapScreen() {
       </View>
 
       {/* Main Content Area */}
-      <ScrollView style={styles.mainScroll}>
-        <View style={styles.mainContent}>
-          {/* Authentic Toolbar Card */}
-          <View style={styles.toolbarCard}>
-            <View style={styles.selectGroup}>
-              <Text style={styles.selectLabel}>Mapa / Visualização</Text>
+      <View style={styles.mainContent}>
+        {/* Authentic Toolbar Card */}
+        <View style={styles.toolbarCard}>
+          <View style={styles.selectGroup}>
+            <Text style={styles.selectLabel}>Mapa / Visualização</Text>
+            
+            {/* Native Web Select / Chip Dropdown */}
+            {Platform.OS === 'web' ? (
+              <select
+                value={selectedMapKey}
+                onChange={(e) => setSelectedMapKey(e.target.value)}
+                style={{
+                  minWidth: '280px',
+                  padding: '10px 14px',
+                  border: '1px solid #DFE2EA',
+                  borderRadius: '10px',
+                  backgroundColor: '#FFFFFF',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  color: '#101228',
+                  outline: 'none',
+                  cursor: 'pointer',
+                  marginTop: '4px',
+                }}
+              >
+                {mapsList.map((m) => (
+                  <option key={m.key} value={m.key}>
+                    {m.label}
+                  </option>
+                ))}
+              </select>
+            ) : (
               <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.selectorScroll}>
                 {mapsList.map((m) => (
                   <TouchableOpacity
@@ -88,32 +113,33 @@ export default function MallMapScreen() {
                   </TouchableOpacity>
                 ))}
               </ScrollView>
-            </View>
-
-            <View style={styles.actionGroup}>
-              <TouchableOpacity
-                style={styles.btnPrimaryRosa}
-                onPress={() => Alert.alert('Nova Sinalização', 'Clique em "+ Posicionar Placa" no mapa para escolher o local exato.')}
-              >
-                <Ionicons name="add" size={20} color="#FFFFFF" />
-                <Text style={styles.btnPrimaryRosaText}>Nova Placa</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity style={styles.btnMenu}>
-                <Ionicons name="menu-outline" size={20} color="#101228" />
-                <Text style={styles.btnMenuText}>Menu</Text>
-              </TouchableOpacity>
-            </View>
+            )}
           </View>
 
-          {/* Interactive Mall Map Stage */}
+          <View style={styles.actionGroup}>
+            <TouchableOpacity
+              style={styles.btnIconPlus}
+              onPress={() => Alert.alert('Nova Sinalização', 'Clique em "+ Posicionar Placa" para escolher a coordenada no mapa.')}
+            >
+              <Text style={styles.btnIconPlusText}>+</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.btnMenu}>
+              <Ionicons name="menu-outline" size={18} color="#101228" />
+              <Text style={styles.btnMenuText}>Menu</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Interactive Mall Map Stage Container */}
+        <View style={styles.stageFrame}>
           <InteractiveMallMap
             selectedMapKey={selectedMapKey}
             pins={pinsList}
             onAddPinAtLocation={handleAddPinAtLocation}
           />
         </View>
-      </ScrollView>
+      </View>
     </View>
   );
 }
@@ -124,8 +150,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#F4F5F8',
   },
   header: {
-    height: 68,
-    backgroundColor: '#171B68', // Azul Legado
+    height: 64,
+    backgroundColor: '#171B68',
     paddingHorizontal: 22,
     flexDirection: 'row',
     alignItems: 'center',
@@ -136,7 +162,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     color: '#FFFFFF',
-    fontSize: 20,
+    fontSize: 19,
     fontWeight: 'bold',
   },
   headerSub: {
@@ -148,19 +174,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   connPill: {
-    backgroundColor: 'rgba(255,255,255,0.15)',
-    paddingHorizontal: 12,
+    backgroundColor: 'rgba(255,255,255,0.18)',
+    paddingHorizontal: 14,
     paddingVertical: 6,
     borderRadius: 20,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  connDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#10B981',
   },
   connText: {
     color: '#FFFFFF',
@@ -168,8 +185,8 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   userPill: {
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    paddingHorizontal: 12,
+    backgroundColor: 'rgba(255,255,255,0.22)',
+    paddingHorizontal: 14,
     paddingVertical: 6,
     borderRadius: 20,
   },
@@ -178,10 +195,8 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: 'bold',
   },
-  mainScroll: {
-    flex: 1,
-  },
   mainContent: {
+    flex: 1,
     padding: 16,
     maxWidth: 1500,
     alignSelf: 'center',
@@ -192,8 +207,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#DFE2EA',
     borderRadius: 16,
-    padding: 14,
-    marginBottom: 16,
+    padding: 12,
+    marginBottom: 12,
     flexDirection: 'row',
     justify: 'space-between',
     alignItems: 'center',
@@ -202,25 +217,24 @@ const styles = StyleSheet.create({
   },
   selectGroup: {
     flex: 1,
-    minWidth: 260,
   },
   selectLabel: {
     fontSize: 12,
     fontWeight: '700',
     color: '#101228',
-    marginBottom: 6,
   },
   selectorScroll: {
     flexDirection: 'row',
+    marginTop: 4,
   },
   mapChip: {
     backgroundColor: '#F4F5F8',
     borderWidth: 1,
     borderColor: '#DFE2EA',
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 10,
-    marginRight: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    marginRight: 6,
   },
   mapChipActive: {
     backgroundColor: '#171B68',
@@ -237,28 +251,30 @@ const styles = StyleSheet.create({
   },
   actionGroup: {
     flexDirection: 'row',
+    alignItems: 'center',
     gap: 8,
   },
-  btnPrimaryRosa: {
-    backgroundColor: '#F50087', // Rosa Legado
-    paddingHorizontal: 16,
-    paddingVertical: 10,
+  btnIconPlus: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#DFE2EA',
+    width: 38,
+    height: 38,
     borderRadius: 10,
-    flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    justify: 'center',
   },
-  btnPrimaryRosaText: {
-    color: '#FFFFFF',
+  btnIconPlusText: {
+    color: '#171B68',
     fontWeight: 'bold',
-    fontSize: 13,
+    fontSize: 20,
   },
   btnMenu: {
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: '#DFE2EA',
     paddingHorizontal: 14,
-    paddingVertical: 10,
+    height: 38,
     borderRadius: 10,
     flexDirection: 'row',
     alignItems: 'center',
@@ -268,5 +284,13 @@ const styles = StyleSheet.create({
     color: '#101228',
     fontWeight: '700',
     fontSize: 13,
+  },
+  stageFrame: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#DFE2EA',
+    borderRadius: 16,
+    overflow: 'hidden',
   },
 });

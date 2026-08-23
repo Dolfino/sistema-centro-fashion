@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Modal, ScrollView, Image, ImageSourcePropType } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, ImageSourcePropType } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
-// Mapping local authentic map images from Cartografia 2025
 const MAP_IMAGES: Record<string, ImageSourcePropType> = {
   SETOR_AZUL: require('../../assets/maps/SETOR_AZUL.png'),
   SETOR_VERDE: require('../../assets/maps/SETOR_VERDE.png'),
@@ -18,8 +17,8 @@ export interface SignagePin {
   category: string;
   sector: string;
   status: 'ATIVA' | 'MANUTENCAO' | 'SUBSTITUIR' | 'REMOVER' | 'INATIVA';
-  normalizedX: number; // 0.0 to 1.0
-  normalizedY: number; // 0.0 to 1.0
+  normalizedX: number;
+  normalizedY: number;
   notes?: string;
   humanLocation?: string;
 }
@@ -61,14 +60,63 @@ export const InteractiveMallMap: React.FC<InteractiveMallMapProps> = ({
       case 'REMOVER':
         return '#7b1fa2'; // Roxo Legado
       default:
-        return '#68717d'; // Cinza Legado
+        return '#68717d';
     }
   };
 
   return (
     <View style={styles.container}>
-      {/* Map Control Bar */}
-      <View style={styles.mapControlBar}>
+      {/* Map Stage Viewport */}
+      <ScrollView
+        horizontal
+        style={styles.viewportScroll}
+        contentContainerStyle={styles.viewportContent}
+      >
+        <ScrollView
+          style={styles.viewportScrollY}
+          contentContainerStyle={styles.viewportContentY}
+        >
+          <TouchableOpacity
+            activeOpacity={1}
+            onPress={handleStageClick}
+            style={[styles.stageContainer, { transform: [{ scale: zoomLevel }] }]}
+          >
+            {/* Authentic Floor Plan Map Image */}
+            <Image
+              source={mapSource}
+              style={styles.floorPlanImage}
+              resizeMode="contain"
+            />
+
+            {/* Authentic Teardrop Pins Layer */}
+            {pins.map((pin) => {
+              const color = getPinColor(pin.status);
+              const topPercent = `${pin.normalizedY * 88}%`;
+              const leftPercent = `${pin.normalizedX * 88}%`;
+
+              return (
+                <TouchableOpacity
+                  key={pin.id}
+                  style={[
+                    styles.markerTeardrop,
+                    {
+                      top: topPercent as any,
+                      left: leftPercent as any,
+                      backgroundColor: color,
+                    },
+                  ]}
+                  onPress={() => setSelectedPin(pin)}
+                >
+                  <View style={styles.markerInnerDot} />
+                </TouchableOpacity>
+              );
+            })}
+          </TouchableOpacity>
+        </ScrollView>
+      </ScrollView>
+
+      {/* Floating Toolbar Bar at Bottom Right */}
+      <View style={styles.bottomToolbar}>
         <View style={styles.zoomControl}>
           <TouchableOpacity style={styles.zoomBtn} onPress={() => setZoomLevel((z) => Math.min(z + 0.2, 2.2))}>
             <Text style={styles.zoomBtnText}>+</Text>
@@ -84,56 +132,12 @@ export const InteractiveMallMap: React.FC<InteractiveMallMapProps> = ({
           onPress={() => setIsAddingMode(!isAddingMode)}
         >
           <Text style={[styles.addPinBtnText, isAddingMode && styles.addPinBtnTextActive]}>
-            {isAddingMode ? '📍 Clique no mapa para posicionar...' : '+ Posicionar Placa'}
+            {isAddingMode ? '📍 Clique na planta...' : '+ Posicionar Placa'}
           </Text>
         </TouchableOpacity>
       </View>
 
-      {/* Map Viewport Stage */}
-      <ScrollView
-        horizontal
-        style={styles.viewportScroll}
-        contentContainerStyle={styles.viewportContent}
-      >
-        <TouchableOpacity
-          activeOpacity={1}
-          onPress={handleStageClick}
-          style={[styles.stageContainer, { transform: [{ scale: zoomLevel }] }]}
-        >
-          {/* Authentic Floor Plan Map Image */}
-          <Image
-            source={mapSource}
-            style={styles.floorPlanImage}
-            resizeMode="contain"
-          />
-
-          {/* Authentic Pin Markers Layer */}
-          {pins.map((pin) => {
-            const color = getPinColor(pin.status);
-            const topPercent = `${pin.normalizedY * 85}%`;
-            const leftPercent = `${pin.normalizedX * 85}%`;
-
-            return (
-              <TouchableOpacity
-                key={pin.id}
-                style={[
-                  styles.markerTeardrop,
-                  {
-                    top: topPercent as any,
-                    left: leftPercent as any,
-                    backgroundColor: color,
-                  },
-                ]}
-                onPress={() => setSelectedPin(pin)}
-              >
-                <View style={styles.markerInnerDot} />
-              </TouchableOpacity>
-            );
-          })}
-        </TouchableOpacity>
-      </ScrollView>
-
-      {/* Legacy Floating Map Card (Sinalização Detail Card) */}
+      {/* Floating Legacy Map Card Modal */}
       {selectedPin && (
         <View style={styles.floatingCard}>
           <View style={styles.cardHeader}>
@@ -142,7 +146,7 @@ export const InteractiveMallMap: React.FC<InteractiveMallMapProps> = ({
               <Text style={styles.cardProtocol}>{selectedPin.assetCode}</Text>
             </View>
             <TouchableOpacity style={styles.cardCloseBtn} onPress={() => setSelectedPin(null)}>
-              <Ionicons name="close" size={20} color="#676A7A" />
+              <Ionicons name="close" size={18} color="#676A7A" />
             </TouchableOpacity>
           </View>
 
@@ -182,29 +186,92 @@ export const InteractiveMallMap: React.FC<InteractiveMallMapProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F4F5F8',
+    backgroundColor: '#E9EBF0', // Exact legacy background from styles.html
+    position: 'relative',
   },
-  mapControlBar: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  viewportScroll: {
+    flex: 1,
+  },
+  viewportContent: {
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
+    justify: 'center',
+    flexGrow: 1,
+  },
+  viewportScrollY: {
+    flex: 1,
+  },
+  viewportContentY: {
+    alignItems: 'center',
+    justify: 'center',
+    padding: 16,
+    flexGrow: 1,
+  },
+  stageContainer: {
+    width: 650,
+    height: 750,
     backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#DFE2EA',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#DFE2EA',
+    position: 'relative',
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
+    elevation: 3,
+  },
+  floorPlanImage: {
+    width: '100%',
+    height: '100%',
+  },
+  markerTeardrop: {
+    position: 'absolute',
+    width: 30,
+    height: 30,
+    borderTopLeftRadius: 15,
+    borderTopRightRadius: 15,
+    borderBottomLeftRadius: 15,
+    borderBottomRightRadius: 0,
+    transform: [{ rotate: '-45deg' }],
+    borderWidth: 3,
+    borderColor: '#FFFFFF',
+    alignItems: 'center',
+    justify: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.35,
+    shadowRadius: 4,
+    elevation: 6,
+    zIndex: 50,
+  },
+  markerInnerDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#FFFFFF',
+  },
+  bottomToolbar: {
+    position: 'absolute',
+    right: 16,
+    top: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    zIndex: 90,
   },
   zoomControl: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F4F5F8',
+    backgroundColor: '#FFFFFF',
     borderRadius: 10,
     borderWidth: 1,
     borderColor: '#DFE2EA',
     paddingHorizontal: 4,
+    elevation: 3,
   },
   zoomBtn: {
-    paddingHorizontal: 12,
+    paddingHorizontal: 10,
     paddingVertical: 6,
   },
   zoomBtnText: {
@@ -216,15 +283,16 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '700',
     color: '#101228',
-    paddingHorizontal: 6,
+    paddingHorizontal: 4,
   },
   addPinBtn: {
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: '#F50087',
     paddingHorizontal: 14,
-    paddingVertical: 8,
+    paddingVertical: 7,
     borderRadius: 10,
+    elevation: 3,
   },
   addPinBtnActive: {
     backgroundColor: '#F50087',
@@ -232,63 +300,10 @@ const styles = StyleSheet.create({
   addPinBtnText: {
     color: '#F50087',
     fontWeight: '700',
-    fontSize: 13,
+    fontSize: 12,
   },
   addPinBtnTextActive: {
     color: '#FFFFFF',
-  },
-  viewportScroll: {
-    flex: 1,
-  },
-  viewportContent: {
-    alignItems: 'center',
-    justify: 'center',
-    padding: 16,
-  },
-  stageContainer: {
-    width: 650,
-    height: 750,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#DFE2EA',
-    position: 'relative',
-    overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 3,
-  },
-  floorPlanImage: {
-    width: '100%',
-    height: '100%',
-  },
-  markerTeardrop: {
-    position: 'absolute',
-    width: 28,
-    height: 28,
-    borderTopLeftRadius: 14,
-    borderTopRightRadius: 14,
-    borderBottomLeftRadius: 14,
-    borderBottomRightRadius: 0,
-    transform: [{ rotate: '-45deg' }],
-    borderWidth: 2,
-    borderColor: '#FFFFFF',
-    alignItems: 'center',
-    justify: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 6,
-    zIndex: 50,
-  },
-  markerInnerDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#FFFFFF',
   },
   floatingCard: {
     position: 'absolute',
@@ -296,20 +311,20 @@ const styles = StyleSheet.create({
     bottom: 16,
     width: 360,
     backgroundColor: '#FFFFFF',
-    borderRadius: 16,
+    borderRadius: 18,
     padding: 16,
     borderWidth: 1,
     borderColor: '#DFE2EA',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
+    shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.18,
-    shadowRadius: 20,
-    elevation: 8,
+    shadowRadius: 24,
+    elevation: 10,
     zIndex: 100,
   },
   cardHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justify: 'space-between',
     alignItems: 'flex-start',
   },
   cardTitleGroup: {
@@ -328,16 +343,16 @@ const styles = StyleSheet.create({
   },
   cardCloseBtn: {
     backgroundColor: '#F4F5F8',
-    width: 30,
-    height: 30,
-    borderRadius: 15,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     alignItems: 'center',
     justify: 'center',
   },
   badgeRow: {
     flexDirection: 'row',
     gap: 8,
-    marginVertical: 12,
+    marginVertical: 10,
   },
   statusBadge: {
     paddingHorizontal: 10,
@@ -363,7 +378,7 @@ const styles = StyleSheet.create({
   cardLine: {
     color: '#3D4350',
     fontSize: 13,
-    marginBottom: 6,
+    marginBottom: 4,
   },
   boldText: {
     fontWeight: 'bold',
@@ -371,9 +386,9 @@ const styles = StyleSheet.create({
   },
   cardActions: {
     flexDirection: 'row',
-    justifyContent: 'flex-end',
+    justify: 'flex-end',
     gap: 10,
-    marginTop: 14,
+    marginTop: 12,
   },
   btnSecondary: {
     backgroundColor: '#F4F5F8',
