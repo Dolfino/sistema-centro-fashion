@@ -127,6 +127,9 @@ export default function MallMapScreen() {
             <TouchableOpacity style={styles.btnMenu}>
               <Ionicons name="menu-outline" size={18} color="#101228" />
               <Text style={styles.btnMenuText}>Menu</Text>
+              <View style={styles.menuBadge}>
+                <Text style={styles.menuBadgeText}>2</Text>
+              </View>
             </TouchableOpacity>
           </View>
         </View>
@@ -279,11 +282,25 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
+    position: 'relative',
   },
   btnMenuText: {
     color: '#101228',
     fontWeight: '700',
     fontSize: 13,
+  },
+  menuBadge: {
+    backgroundColor: '#F50087',
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    alignItems: 'center',
+    justify: 'center',
+  },
+  menuBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 11,
+    fontWeight: 'bold',
   },
   stageFrame: {
     flex: 1,
