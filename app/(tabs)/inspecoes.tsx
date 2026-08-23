@@ -1,34 +1,77 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, Alert } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, Alert, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { OutboxSyncEngine } from '../../src/sync/outboxEngine';
+import { MediaService, CapturedPhoto } from '../../src/services/mediaService';
 
 const outbox = new OutboxSyncEngine();
+const mediaService = new MediaService();
 
 export default function FieldInspectionScreen() {
   const [assetCode, setAssetCode] = useState<string>('SIG-20260814-0001');
-  const [conservationState, setConservationState] = useState<string>('GOOD');
+  const [conservationState, setConservationState] = useState<'GOOD' | 'REGULAR' | 'BAD' | 'CRITICAL'>('GOOD');
   const [notes, setNotes] = useState<string>('');
   const [recommendedAction, setRecommendedAction] = useState<string>('NONE');
-  const [hasPhoto, setHasPhoto] = useState<boolean>(false);
+  const [capturedPhoto, setCapturedPhoto] = useState<CapturedPhoto | null>(null);
   const [pendingCount, setPendingCount] = useState<number>(0);
+  const [isCapturing, setIsCapturing] = useState<boolean>(false);
+
+  const handleTakePhoto = async () => {
+    setIsCapturing(true);
+    const photo = await mediaService.capturePhoto(assetCode);
+    setCapturedPhoto(photo);
+    setIsCapturing(false);
+
+    Alert.alert(
+      'Foto Capturada!',
+      `Arquivo: ${photo.fileName}\nSHA256: ${photo.sha256.substring(0, 16)}...\nTamanho: ${(photo.sizeBytes / 1024 / 1024).toFixed(2)} MB`,
+      [{ text: 'OK' }]
+    );
+  };
 
   const handleSaveOffline = async () => {
-    const mutation = await outbox.addMutation('inspection', 'CREATE', {
+    const inspectionPayload = {
       assetCode,
       conservationState,
       notes,
       recommendedAction,
-      hasPhoto,
+      photo: capturedPhoto ? {
+        id: capturedPhoto.id,
+        fileName: capturedPhoto.fileName,
+        sha256: capturedPhoto.sha256,
+        sizeBytes: capturedPhoto.sizeBytes,
+      } : null,
       inspectorId: 'davidsilva.centrofashion@gmail.com',
-    });
+      inspectedAt: new Date().toISOString(),
+    };
+
+    // Registrar mutação no Outbox Engine
+    const mutation = await outbox.addMutation('inspection', 'CREATE', inspectionPayload);
+
+    // Se o estado for danificado/crítico, criar ação pendente automática
+    if (conservationState === 'BAD' || conservationState === 'CRITICAL') {
+      await outbox.addMutation('pending_action', 'CREATE', {
+        title: `Manutenção urgente em ${assetCode}`,
+        priority: conservationState === 'CRITICAL' ? 'CRITICAL' : 'HIGH',
+        description: `Inspeção identificou estado ${conservationState}. Ação recomendada: ${recommendedAction}`,
+        signageCode: assetCode,
+      });
+    }
 
     setPendingCount(outbox.getPendingQueue().length);
 
     Alert.alert(
-      'Salvo Localmente (Offline)',
-      `A inspeção (${assetCode}) foi gravada no banco local com UUID ${mutation.clientMutationId.substring(0, 8)}... e adicionada à fila Outbox.`,
-      [{ text: 'OK' }]
+      'Inspeção Salva (Offline Outbox)',
+      `Registro gravado localmente com UUID ${mutation.clientMutationId.substring(0, 8)}... e vinculado à mídia S3.`,
+      [
+        {
+          text: 'OK',
+          onPress: () => {
+            setNotes('');
+            setCapturedPhoto(null);
+          },
+        },
+      ]
     );
   };
 
@@ -36,19 +79,19 @@ export default function FieldInspectionScreen() {
     <ScrollView style={styles.container}>
       <View style={styles.content}>
         <Text style={styles.title}>Nova Inspeção de Campo</Text>
-        <Text style={styles.subtitle}>Registro offline instantâneo com outbox sync engine</Text>
+        <Text style={styles.subtitle}>Registro de integridade, foto e outbox sync</Text>
 
         {/* Pending Queue Counter */}
         {pendingCount > 0 && (
           <View style={styles.pendingBadge}>
-            <Ionicons name="cloud-offline-outline" size={16} color="#F59E0B" />
-            <Text style={styles.pendingText}>{pendingCount} mutações salvas localmente aguardando envio</Text>
+            <Ionicons name="cloud-offline-outline" size={16} color="#FDE68A" />
+            <Text style={styles.pendingText}>{pendingCount} registros salvos localmente aguardando envio</Text>
           </View>
         )}
 
         {/* Asset Code Input */}
         <View style={styles.formGroup}>
-          <Text style={styles.label}>Código do Ativo / Placa Legada</Text>
+          <Text style={styles.label}>Código do Ativo / Placa</Text>
           <TextInput
             style={styles.input}
             value={assetCode}
@@ -65,6 +108,7 @@ export default function FieldInspectionScreen() {
             { key: 'GOOD', label: 'Bom', color: '#10B981' },
             { key: 'REGULAR', label: 'Regular', color: '#F59E0B' },
             { key: 'BAD', label: 'Danificado', color: '#EF4444' },
+            { key: 'CRITICAL', label: 'Crítico', color: '#B91C1C' },
           ].map((item) => (
             <TouchableOpacity
               key={item.key}
@@ -72,7 +116,7 @@ export default function FieldInspectionScreen() {
                 styles.stateChip,
                 conservationState === item.key && { backgroundColor: item.color, borderColor: item.color },
               ]}
-              onPress={() => setConservationState(item.key)}
+              onPress={() => setConservationState(item.key as any)}
             >
               <Text
                 style={[
@@ -86,23 +130,45 @@ export default function FieldInspectionScreen() {
           ))}
         </View>
 
-        {/* Photo Upload Sandbox */}
-        <Text style={styles.label}>Fotografia de Registro (MinIO S3)</Text>
+        {/* Photo Upload & Preview Card */}
+        <Text style={styles.label}>Fotografia de Registro (MinIO S3 / EXIF)</Text>
         <TouchableOpacity
-          style={[styles.photoBox, hasPhoto && styles.photoBoxSuccess]}
-          onPress={() => setHasPhoto(!hasPhoto)}
+          style={[styles.photoBox, capturedPhoto && styles.photoBoxSuccess]}
+          onPress={handleTakePhoto}
+          disabled={isCapturing}
         >
-          <Ionicons name={hasPhoto ? 'checkmark-circle' : 'camera'} size={32} color={hasPhoto ? '#10B981' : '#38BDF8'} />
+          <Ionicons
+            name={capturedPhoto ? 'checkmark-circle' : 'camera'}
+            size={32}
+            color={capturedPhoto ? '#10B981' : '#38BDF8'}
+          />
           <Text style={styles.photoText}>
-            {hasPhoto ? 'Foto capturada e salva no armazenamento local' : 'Toque para capturar foto de campo'}
+            {isCapturing
+              ? 'Processando captura...'
+              : capturedPhoto
+              ? `Foto OK: ${capturedPhoto.fileName}`
+              : 'Toque para capturar foto de campo com a câmera'}
           </Text>
         </TouchableOpacity>
+
+        {capturedPhoto && (
+          <View style={styles.photoMetadataCard}>
+            <View style={styles.metaRow}>
+              <Ionicons name="document-attach-outline" size={16} color="#38BDF8" />
+              <Text style={styles.metaText}>{capturedPhoto.fileName}</Text>
+            </View>
+            <View style={styles.metaRow}>
+              <Ionicons name="shield-checkmark-outline" size={16} color="#10B981" />
+              <Text style={styles.metaHash}>SHA256: {capturedPhoto.sha256}</Text>
+            </View>
+          </View>
+        )}
 
         {/* Action Recommended */}
         <View style={styles.formGroup}>
           <Text style={styles.label}>Ação Recomendada</Text>
           <View style={styles.actionContainer}>
-            {['NONE', 'CLEAN', 'REPAIR', 'REPLACE'].map((act) => (
+            {['NONE', 'CLEAN', 'REPAIR', 'REPLACE', 'MOVE'].map((act) => (
               <TouchableOpacity
                 key={act}
                 style={[styles.actionChip, recommendedAction === act && styles.actionChipActive]}
@@ -125,7 +191,7 @@ export default function FieldInspectionScreen() {
             onChangeText={setNotes}
             multiline
             numberOfLines={4}
-            placeholder="Detalhes de conservação ou substituição..."
+            placeholder="Detalhes adicionais sobre avarias ou necessidade de reposição..."
             placeholderTextColor="#64748B"
           />
         </View>
@@ -133,7 +199,7 @@ export default function FieldInspectionScreen() {
         {/* Submit Button */}
         <TouchableOpacity style={styles.saveBtn} onPress={handleSaveOffline}>
           <Ionicons name="save-outline" size={20} color="#0F172A" />
-          <Text style={styles.saveBtnText}>Salvar Inspeção Offline (Outbox Engine)</Text>
+          <Text style={styles.saveBtnText}>Finalizar e Salvar Inspeção (Outbox)</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>
@@ -197,7 +263,7 @@ const styles = StyleSheet.create({
   },
   stateContainer: {
     flexDirection: 'row',
-    gap: 8,
+    gap: 6,
     marginBottom: 16,
   },
   stateChip: {
@@ -211,7 +277,7 @@ const styles = StyleSheet.create({
   },
   stateText: {
     color: '#94A3B8',
-    fontSize: 13,
+    fontSize: 12,
   },
   photoBox: {
     backgroundColor: '#1E293B',
@@ -219,20 +285,44 @@ const styles = StyleSheet.create({
     borderColor: '#334155',
     borderStyle: 'dashed',
     borderRadius: 12,
-    padding: 20,
+    padding: 18,
     alignItems: 'center',
     justify: 'center',
     gap: 8,
-    marginBottom: 16,
+    marginBottom: 10,
   },
   photoBoxSuccess: {
     borderColor: '#10B981',
-    backgroundColor: '#064E3B',
+    backgroundColor: '#064E3B22',
   },
   photoText: {
     color: '#94A3B8',
     fontSize: 12,
     textAlign: 'center',
+  },
+  photoMetadataCard: {
+    backgroundColor: '#1E293B',
+    padding: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#334155',
+    marginBottom: 16,
+    gap: 6,
+  },
+  metaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  metaText: {
+    color: '#E2E8F0',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  metaHash: {
+    color: '#64748B',
+    fontSize: 10,
+    fontFamily: 'monospace',
   },
   actionContainer: {
     flexDirection: 'row',
