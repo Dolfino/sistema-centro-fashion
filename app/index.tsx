@@ -15,6 +15,10 @@ import { PendenciasModal } from '../src/components/PendenciasModal';
 import { CicloVidaModal } from '../src/components/CicloVidaModal';
 import { AntesDepoisModal } from '../src/components/AntesDepoisModal';
 import { DashboardModal } from '../src/components/DashboardModal';
+import { CentralGestaoModal } from '../src/components/CentralGestaoModal';
+import { RondaExecucaoModal } from '../src/components/RondaExecucaoModal';
+import { AlertasModal } from '../src/components/AlertasModal';
+import { AgendaModal } from '../src/components/AgendaModal';
 import { CapturedPhoto, mediaService } from '../src/services/mediaService';
 import { LegacyTheme } from '../src/theme/legacy-theme';
 
@@ -163,6 +167,12 @@ export default function LegacyMainShellScreen() {
   const [antesDepoisPin, setAntesDepoisPin] = useState<SignagePin | null>(null);
   const [dashboardOpen, setDashboardOpen] = useState<boolean>(false);
 
+  // Operação em Campo & Central de Gestão (Etapa 2)
+  const [centralGestaoOpen, setCentralGestaoOpen] = useState<boolean>(false);
+  const [rondaExecucaoOpen, setRondaExecucaoOpen] = useState<boolean>(false);
+  const [alertasOpen, setAlertasOpen] = useState<boolean>(false);
+  const [agendaOpen, setAgendaOpen] = useState<boolean>(false);
+
   const { width: windowWidth } = useWindowDimensions();
   const isMobile = windowWidth < 700;
 
@@ -276,7 +286,59 @@ export default function LegacyMainShellScreen() {
       setFilaOutboxOpen(true);
     } else if (itemId === 'dashboardBtn' || itemId === 'dashboard') {
       setDashboardOpen(true);
+    } else if (itemId === 'centralGestaoBtn' || itemId === 'central') {
+      setCentralGestaoOpen(true);
+    } else if (itemId === 'rondaBtn' || itemId === 'ronda') {
+      setRondaExecucaoOpen(true);
+    } else if (itemId === 'alertasBtnS21' || itemId === 'alertas') {
+      setAlertasOpen(true);
+    } else if (itemId === 'agendaBtnS19' || itemId === 'agenda') {
+      setAgendaOpen(true);
     }
+  };
+
+  const handleCriarOcorrenciaDaRonda = (ocorrenciaData: Partial<SignagePin>) => {
+    const timestamp = Date.now();
+    const newPin: SignagePin = {
+      id: String(timestamp),
+      assetCode: ocorrenciaData.assetCode || `OCR-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`,
+      entityType: 'OCORRENCIA',
+      category: ocorrenciaData.category || 'Operação',
+      categoryColor: ocorrenciaData.categoryColor || '#DC2626',
+      priority: ocorrenciaData.priority || 'ALTA',
+      prazoHoras: ocorrenciaData.prazoHoras || 24,
+      sector: ocorrenciaData.sector || selectedMapKey,
+      status: 'EM_ANDAMENTO',
+      conservationState: ocorrenciaData.conservationState || 'Danificada',
+      normalizedX: ocorrenciaData.normalizedX || 0.45,
+      normalizedY: ocorrenciaData.normalizedY || 0.5,
+      notes: ocorrenciaData.notes || 'Ocorrência registrada em ronda',
+      humanLocation: ocorrenciaData.humanLocation || 'Ponto identificado em ronda',
+      responsible: ocorrenciaData.responsible || 'Fiscal de Ronda',
+      photos: ocorrenciaData.photos || [],
+    };
+
+    setPinsList((prev) => {
+      const nextPins = [newPin, ...prev];
+      OfflineStorageService.savePins(nextPins);
+      return nextPins;
+    });
+
+    // Registra na outbox
+    const outboxEvent: OutboxItem = {
+      clientEventId: `evt_ronda_ocr_${timestamp}`,
+      type: 'NOVO_REGISTRO',
+      title: `Ocorrência da Ronda: ${newPin.assetCode} (${newPin.category})`,
+      status: networkState === 'ONLINE' ? 'CONCLUIDO' : 'PENDENTE',
+      retryCount: 0,
+      timestamp: 'Agora',
+    };
+
+    setOutboxItems((prev) => {
+      const nextOutbox = [outboxEvent, ...prev];
+      OfflineStorageService.saveOutbox(nextOutbox);
+      return nextOutbox;
+    });
   };
 
   const handleMapClick = (coords: { normalizedX: number; normalizedY: number }) => {
@@ -983,6 +1045,59 @@ export default function LegacyMainShellScreen() {
         onSelectPin={(pin) => {
           setSelectedPin(pin);
           setDashboardOpen(false);
+        }}
+      />
+
+      {/* 16. Modal Central de Gestão Tabular (Etapa 2) */}
+      <CentralGestaoModal
+        visible={centralGestaoOpen}
+        pins={pinsList}
+        onClose={() => setCentralGestaoOpen(false)}
+        onSelectPin={(pin) => {
+          setSelectedPin(pin);
+          setCentralGestaoOpen(false);
+        }}
+        onEditPin={(pin) => {
+          setFormMode('EDITAR');
+          setEditingPin(pin);
+          setCentralGestaoOpen(false);
+          setFormPanelVisible(true);
+        }}
+        onOpenPhotos={(pin) => {
+          setFotoPin(pin);
+          setFotoModalOpen(true);
+        }}
+        onOpenAntesDepois={(pin) => {
+          setAntesDepoisPin(pin);
+          setAntesDepoisOpen(true);
+        }}
+      />
+
+      {/* 17. Modal Execução de Ronda com Checklist (Etapa 2) */}
+      <RondaExecucaoModal
+        visible={rondaExecucaoOpen}
+        onClose={() => setRondaExecucaoOpen(false)}
+        onCriarOcorrencia={handleCriarOcorrenciaDaRonda}
+      />
+
+      {/* 18. Modal Central de Alertas e SLA (Etapa 2) */}
+      <AlertasModal
+        visible={alertasOpen}
+        pins={pinsList}
+        outboxPendingCount={pendingQueueCount}
+        onClose={() => setAlertasOpen(false)}
+        onSelectPin={(pin) => {
+          setSelectedPin(pin);
+          setAlertasOpen(false);
+        }}
+      />
+
+      {/* 19. Modal Agenda Operacional & Planos Preventivos (Etapa 2) */}
+      <AgendaModal
+        visible={agendaOpen}
+        onClose={() => setAgendaOpen(false)}
+        onIniciarRonda={(setor) => {
+          setRondaExecucaoOpen(true);
         }}
       />
     </View>
