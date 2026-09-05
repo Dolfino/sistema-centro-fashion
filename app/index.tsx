@@ -10,6 +10,9 @@ import { OfflineCacheModal } from '../src/components/OfflineCacheModal';
 import { FilaOutboxModal, OutboxItem } from '../src/components/FilaOutboxModal';
 import { FotoGaleriaModal } from '../src/components/FotoGaleriaModal';
 import { InspecaoModal } from '../src/components/InspecaoModal';
+import { HistoricoModal } from '../src/components/HistoricoModal';
+import { PendenciasModal } from '../src/components/PendenciasModal';
+import { CicloVidaModal } from '../src/components/CicloVidaModal';
 import { CapturedPhoto, mediaService } from '../src/services/mediaService';
 import { LegacyTheme } from '../src/theme/legacy-theme';
 
@@ -85,6 +88,16 @@ export default function LegacyMainShellScreen() {
   const [filterConservation, setFilterConservation] = useState<string>('TODOS');
   const [inspecaoModalOpen, setInspecaoModalOpen] = useState<boolean>(false);
   const [inspecaoPin, setInspecaoPin] = useState<SignagePin | null>(null);
+
+  // Ações do Card de Sinalização (UI-7)
+  const [historicoModalOpen, setHistoricoModalOpen] = useState<boolean>(false);
+  const [historicoPin, setHistoricoPin] = useState<SignagePin | null>(null);
+
+  const [pendenciasModalOpen, setPendenciasModalOpen] = useState<boolean>(false);
+  const [pendenciasPin, setPendenciasPin] = useState<SignagePin | null>(null);
+
+  const [cicloVidaModalOpen, setCicloVidaModalOpen] = useState<boolean>(false);
+  const [cicloVidaPin, setCicloVidaPin] = useState<SignagePin | null>(null);
 
   const { width: windowWidth } = useWindowDimensions();
   const isMobile = windowWidth < 700;
@@ -385,7 +398,78 @@ export default function LegacyMainShellScreen() {
     } else if (actionId === 'NOVA_INSPECAO') {
       setInspecaoPin(pin);
       setInspecaoModalOpen(true);
+    } else if (actionId === 'HISTORICO') {
+      setHistoricoPin(pin);
+      setHistoricoModalOpen(true);
+    } else if (actionId === 'PENDENCIAS') {
+      setPendenciasPin(pin);
+      setPendenciasModalOpen(true);
+    } else if (actionId === 'CICLO_VIDA') {
+      setCicloVidaPin(pin);
+      setCicloVidaModalOpen(true);
     }
+  };
+
+  const handleUpdateCicloVida = (newStatus: 'ATIVA' | 'MANUTENCAO' | 'SUBSTITUIR' | 'REMOVER' | 'INATIVA', justificativa: string) => {
+    if (!cicloVidaPin) return;
+
+    const updatedPin: SignagePin = {
+      ...cicloVidaPin,
+      status: newStatus,
+      notes: justificativa ? `${cicloVidaPin.notes || ''} [Transição: ${newStatus} - ${justificativa}]`.trim() : cicloVidaPin.notes,
+    };
+
+    setPinsList((prev) => {
+      const nextPins = prev.map((p) => (p.id === updatedPin.id ? updatedPin : p));
+      OfflineStorageService.savePins(nextPins);
+      return nextPins;
+    });
+
+    if (selectedPin?.id === updatedPin.id) {
+      setSelectedPin(updatedPin);
+    }
+
+    const outboxEvent: OutboxItem = {
+      clientEventId: `evt_ciclo_${Date.now()}`,
+      type: 'EDICAO_REGISTRO',
+      title: `Ciclo de Vida: ${updatedPin.assetCode} -> ${newStatus}`,
+      status: networkState === 'ONLINE' ? 'CONCLUIDO' : 'PENDENTE',
+      retryCount: 0,
+      timestamp: 'Agora',
+    };
+
+    setOutboxItems((prev) => {
+      const nextOutbox = [outboxEvent, ...prev];
+      OfflineStorageService.saveOutbox(nextOutbox);
+      return nextOutbox;
+    });
+  };
+
+  const handleDeletePin = (pinId: string) => {
+    setPinsList((prev) => {
+      const nextPins = prev.filter((p) => p.id !== pinId);
+      OfflineStorageService.savePins(nextPins);
+      return nextPins;
+    });
+
+    if (selectedPin?.id === pinId) {
+      setSelectedPin(null);
+    }
+
+    const outboxEvent: OutboxItem = {
+      clientEventId: `evt_del_${Date.now()}`,
+      type: 'EDICAO_REGISTRO',
+      title: `Desativação de Registro: ${pinId}`,
+      status: networkState === 'ONLINE' ? 'CONCLUIDO' : 'PENDENTE',
+      retryCount: 0,
+      timestamp: 'Agora',
+    };
+
+    setOutboxItems((prev) => {
+      const nextOutbox = [outboxEvent, ...prev];
+      OfflineStorageService.saveOutbox(nextOutbox);
+      return nextOutbox;
+    });
   };
 
   const handleSaveInspecao = (data: {
@@ -790,6 +874,29 @@ export default function LegacyMainShellScreen() {
         pin={inspecaoPin}
         onClose={() => setInspecaoModalOpen(false)}
         onSave={handleSaveInspecao}
+      />
+
+      {/* 11. Modal de Histórico (Superfície #10 - S8) */}
+      <HistoricoModal
+        visible={historicoModalOpen}
+        pin={historicoPin}
+        onClose={() => setHistoricoModalOpen(false)}
+      />
+
+      {/* 12. Modal de Pendências (Superfície #11 - S10) */}
+      <PendenciasModal
+        visible={pendenciasModalOpen}
+        pin={pendenciasPin}
+        onClose={() => setPendenciasModalOpen(false)}
+      />
+
+      {/* 13. Modal de Ciclo de Vida (Superfície #12 - S18) */}
+      <CicloVidaModal
+        visible={cicloVidaModalOpen}
+        pin={cicloVidaPin}
+        onClose={() => setCicloVidaModalOpen(false)}
+        onUpdateStatus={handleUpdateCicloVida}
+        onDeletePin={handleDeletePin}
       />
     </View>
   );
