@@ -19,6 +19,7 @@ import { CentralGestaoModal } from '../src/components/CentralGestaoModal';
 import { RondaExecucaoModal } from '../src/components/RondaExecucaoModal';
 import { AlertasModal } from '../src/components/AlertasModal';
 import { AgendaModal } from '../src/components/AgendaModal';
+import { RelatoriosSlidesModal } from '../src/components/RelatoriosSlidesModal';
 import { CapturedPhoto, mediaService } from '../src/services/mediaService';
 import { LegacyTheme } from '../src/theme/legacy-theme';
 
@@ -173,6 +174,9 @@ export default function LegacyMainShellScreen() {
   const [alertasOpen, setAlertasOpen] = useState<boolean>(false);
   const [agendaOpen, setAgendaOpen] = useState<boolean>(false);
 
+  // Relatórios Executivos & Apresentações em Slides (Etapa 3)
+  const [relatoriosOpen, setRelatoriosOpen] = useState<boolean>(false);
+
   const { width: windowWidth } = useWindowDimensions();
   const isMobile = windowWidth < 700;
 
@@ -294,6 +298,8 @@ export default function LegacyMainShellScreen() {
       setAlertasOpen(true);
     } else if (itemId === 'agendaBtnS19' || itemId === 'agenda') {
       setAgendaOpen(true);
+    } else if (itemId === 'relatoriosBtn' || itemId === 'relatorios') {
+      setRelatoriosOpen(true);
     }
   };
 
@@ -1098,6 +1104,17 @@ export default function LegacyMainShellScreen() {
         onClose={() => setAgendaOpen(false)}
         onIniciarRonda={(setor) => {
           setRondaExecucaoOpen(true);
+        }}
+      />
+
+      {/* 20. Modal Relatórios Executivos & Slides (Etapa 3) */}
+      <RelatoriosSlidesModal
+        visible={relatoriosOpen}
+        pins={pinsList}
+        onClose={() => setRelatoriosOpen(false)}
+        onSelectPin={(pin) => {
+          setSelectedPin(pin);
+          setRelatoriosOpen(false);
         }}
       />
     </View>
