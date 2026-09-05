@@ -83,7 +83,20 @@ export async function syncRoutes(fastify: FastifyInstance) {
           continue;
         }
 
-        if (mut.entityType === 'inspection') {
+        if (mut.entityType === 'signage' || mut.entityType === 'NOVO_REGISTRO') {
+          await client.query(
+            `INSERT INTO signage_assets (
+              asset_code, category, conservation_status, notes
+             ) VALUES ($1, $2, $3, $4)
+             ON CONFLICT (asset_code) DO UPDATE SET notes = EXCLUDED.notes`,
+            [
+              mut.payload.assetCode || `SIG-${Date.now()}`,
+              mut.payload.category || 'Placa informativa',
+              mut.payload.conservationState || 'GOOD',
+              mut.payload.notes || ''
+            ]
+          );
+        } else if (mut.entityType === 'inspection') {
           await client.query(
             `INSERT INTO inspections (
               client_inspection_id, signage_id, inspector_id, conservation_state, condition_notes,
@@ -117,7 +130,7 @@ export async function syncRoutes(fastify: FastifyInstance) {
       return reply.send({ success: true, results, syncedAt: new Date().toISOString() });
     } catch (err: any) {
       await client.query('ROLLBACK');
-      fastify.log.error('Erro na sincronização push:', err);
+      fastify.log.error(`Erro na sincronização push: ${err?.message || err}`);
       return reply.status(500).send({ error: 'Erro ao processar sincronização', message: err.message });
     } finally {
       client.release();

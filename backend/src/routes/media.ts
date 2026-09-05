@@ -38,7 +38,7 @@ export async function mediaRoutes(fastify: FastifyInstance) {
         expiresInSeconds: 3600,
       });
     } catch (err: any) {
-      fastify.log.error('Erro ao gerar presigned upload URL:', err);
+      fastify.log.error(`Erro ao gerar presigned upload URL: ${err?.message || err}`);
       return reply.status(500).send({ error: 'Erro ao gerar URL de upload MinIO S3', message: err.message });
     }
   });

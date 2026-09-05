@@ -1,0 +1,21 @@
+{
+  "deviceId": "dev_mobile_android_001",
+  "mutations": [
+    {
+      "clientMutationId": "c0260823-0001-4000-8000-000000000001",
+      "entityType": "signage",
+      "actionType": "CREATE",
+      "payload": {
+        "id": "pin_1724434200000",
+        "assetCode": "SIG-20260823-0006",
+        "category": "Placa informativa",
+        "sector": "SETOR_AZUL",
+        "status": "ATIVA",
+        "normalizedX": 0.35,
+        "normalizedY": 0.45,
+        "notes": "Placa Direcional Criada Offline"
+      },
+      "createdAt": "2026-08-23T20:20:00.000Z"
+    }
+  ]
+}

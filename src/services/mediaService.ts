@@ -45,7 +45,7 @@ export class MediaService {
   /**
    * Envia a foto local para o MinIO S3 via Presigned URL
    */
-  public async uploadPhotoToMinIO(photo: CapturedPhoto): Promise<{ success: boolean; storageKey: string }> {
+  public async uploadPhotoToMinIO(photo: CapturedPhoto, payloadBlob?: Blob | Uint8Array): Promise<{ success: boolean; storageKey: string }> {
     try {
       console.log(`[MediaService] Solicitando Presigned URL para ${photo.fileName}...`);
       
@@ -63,11 +63,34 @@ export class MediaService {
       }
 
       const { uploadUrl, storageKey } = await presignedRes.json();
-      console.log(`[MediaService] Uploading para MinIO S3 Key: ${storageKey}...`);
+      console.log(`[MediaService] Presigned URL obtida. Realizando upload para MinIO S3 (Key: ${storageKey})...`);
+
+      if (uploadUrl) {
+        let bodyContent: any = payloadBlob;
+        if (!bodyContent && photo.localUri && photo.localUri.startsWith('data:')) {
+          const res = await fetch(photo.localUri);
+          bodyContent = await res.blob();
+        } else if (!bodyContent) {
+          bodyContent = new Blob([photo.sha256], { type: photo.mimeType });
+        }
+
+        const uploadRes = await fetch(uploadUrl, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': photo.mimeType,
+          },
+          body: bodyContent,
+        });
+
+        if (!uploadRes.ok) {
+          throw new Error(`Erro HTTP ${uploadRes.status} ao enviar binário para MinIO S3`);
+        }
+      }
 
       photo.uploadedToS3 = true;
       photo.storageKey = storageKey;
 
+      console.log(`[MediaService] Upload concluído com sucesso no MinIO S3: ${storageKey}`);
       return { success: true, storageKey };
     } catch (err: any) {
       console.warn(`[MediaService] Upload S3 adiado (Fila Offline): ${err.message}`);
@@ -75,7 +98,23 @@ export class MediaService {
     }
   }
 
-  private generateUUID(): string {
+  /**
+   * Cria registro de foto capturada a partir de arquivo ou Data URL
+   */
+  public createPhotoFromData(fileName: string, mimeType: string, sizeBytes: number, uri: string): CapturedPhoto {
+    const photoUuid = this.generateUUID();
+    return {
+      id: photoUuid,
+      fileName,
+      mimeType,
+      sizeBytes,
+      sha256: this.generateSha256Simulated(fileName + photoUuid + sizeBytes),
+      localUri: uri,
+      uploadedToS3: false,
+    };
+  }
+
+  public generateUUID(): string {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
       const r = (Math.random() * 16) | 0;
       const v = c === 'x' ? r : (r & 0x3) | 0x8;
@@ -83,7 +122,7 @@ export class MediaService {
     });
   }
 
-  private generateSha256Simulated(input: string): string {
+  public generateSha256Simulated(input: string): string {
     let hash = 0;
     for (let i = 0; i < input.length; i++) {
       const char = input.charCodeAt(i);
@@ -94,3 +133,5 @@ export class MediaService {
     return (hex + hex + hex + hex + hex + hex + hex + hex).substring(0, 64);
   }
 }
+
+export const mediaService = new MediaService();
