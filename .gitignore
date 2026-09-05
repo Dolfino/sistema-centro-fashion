@@ -3,3 +3,7 @@ dist/
 .expo/
 *.log
 /tmp/
+credentials/
+*.pem
+*.key
+.env
