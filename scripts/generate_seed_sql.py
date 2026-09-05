@@ -4,7 +4,10 @@ import os
 import uuid
 from datetime import datetime
 
+import json
+
 EXCEL_PATH = '/home/dns/Downloads/MALL-APP-MIGRACAO-REACT-NATIVE/Mapa - Sinalização do Mall.xlsx'
+SYNC_EXPORT_DIR = '/home/dns/Desenvolvimento/Sistema_Centro_Fashion/database/sync_export'
 OUTPUT_SQL = '/home/dns/Desenvolvimento/Sistema_Centro_Fashion/database/002_seed_data.sql'
 
 def escape_sql(val):
@@ -13,8 +16,24 @@ def escape_sql(val):
     val_str = str(val).replace("'", "''")
     return f"'{val_str}'"
 
+def get_table_rows(sheet_name, wb=None):
+    json_path = os.path.join(SYNC_EXPORT_DIR, f"{sheet_name}.json")
+    if os.path.exists(json_path):
+        with open(json_path, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    if wb and sheet_name in wb.sheetnames:
+        sheet = wb[sheet_name]
+        return list(sheet.iter_rows(values_only=True))
+    return []
+
 def generate_seed():
-    wb = openpyxl.load_workbook(EXCEL_PATH, data_only=True)
+    wb = None
+    if os.path.exists(EXCEL_PATH):
+        try:
+            wb = openpyxl.load_workbook(EXCEL_PATH, data_only=True)
+        except Exception:
+            wb = None
+
     sql_lines = [
         "-- ==============================================================================",
         "-- DADOS DE SEED E MIGRAÇÃO DO LEGADO (MAPA - SINALIZAÇÃO DO MALL)",
@@ -23,16 +42,15 @@ def generate_seed():
     ]
 
     # 1. MIGRAÇÃO DE SETORES
-    if 'SETORES' in wb.sheetnames:
+    sector_rows = get_table_rows('SETORES', wb)
+    if sector_rows:
         sql_lines.append("-- 1. SETORES")
-        sheet = wb['SETORES']
-        rows = list(sheet.iter_rows(values_only=True))
-        for row in rows[1:]:
+        for row in sector_rows[1:]:
             if not row or not row[0]:
                 continue
-            sector_code = row[3] or row[0]
-            name = row[2] or sector_code
-            color = row[4] or '#000000'
+            sector_code = row[3] if len(row) > 3 and row[3] else row[0]
+            name = row[2] if len(row) > 2 and row[2] else sector_code
+            color = row[4] if len(row) > 4 and row[4] else '#000000'
             sql = f"""INSERT INTO sectors (code, name, color_hex)
 VALUES ({escape_sql(sector_code)}, {escape_sql(name)}, {escape_sql(color)})
 ON CONFLICT (code) DO UPDATE SET name = EXCLUDED.name, color_hex = EXCLUDED.color_hex;"""
@@ -40,17 +58,16 @@ ON CONFLICT (code) DO UPDATE SET name = EXCLUDED.name, color_hex = EXCLUDED.colo
         sql_lines.append("")
 
     # 2. MIGRAÇÃO DE USUÁRIOS
-    if 'USUARIOS' in wb.sheetnames:
+    user_rows = get_table_rows('USUARIOS', wb)
+    if user_rows:
         sql_lines.append("-- 2. USUÁRIOS")
-        sheet = wb['USUARIOS']
-        rows = list(sheet.iter_rows(values_only=True))
-        for row in rows[1:]:
+        for row in user_rows[1:]:
             if not row or not row[0]:
                 continue
             email = row[0]
             name = row[1] or email
             role = str(row[2] or 'INSPECTOR').upper()
-            active = 'true' if row[3] is True or str(row[3]).upper() == 'SIM' else 'false'
+            active = 'true' if row[3] is True or str(row[3]).upper() == 'SIM' or str(row[3]).upper() == 'TRUE' else 'false'
             sql = f"""INSERT INTO users (email, name, profile_role, active)
 VALUES ({escape_sql(email)}, {escape_sql(name)}, {escape_sql(role)}, {active})
 ON CONFLICT (email) DO UPDATE SET name = EXCLUDED.name, profile_role = EXCLUDED.profile_role;"""
@@ -59,11 +76,10 @@ ON CONFLICT (email) DO UPDATE SET name = EXCLUDED.name, profile_role = EXCLUDED.
 
     # 3. MIGRAÇÃO DE SINALIZAÇÕES (REGISTROS)
     signage_map = {} # legacy_id -> uuid
-    if 'REGISTROS' in wb.sheetnames:
+    registro_rows = get_table_rows('REGISTROS', wb)
+    if registro_rows:
         sql_lines.append("-- 3. SINALIZAÇÕES DE CAMPO (REGISTROS)")
-        sheet = wb['REGISTROS']
-        rows = list(sheet.iter_rows(values_only=True))
-        for row in rows[1:]:
+        for row in registro_rows[1:]:
             if not row or not row[0]:
                 continue
             legacy_id = str(row[0])
@@ -83,11 +99,10 @@ ON CONFLICT (asset_code) DO NOTHING;"""
         sql_lines.append("")
 
     # 4. MIGRAÇÃO DE FOTOS DE REGISTRO
-    if 'REGISTRO_FOTOS' in wb.sheetnames:
+    foto_rows = get_table_rows('REGISTRO_FOTOS', wb)
+    if foto_rows:
         sql_lines.append("-- 4. FOTOS E MÍDIAS DE CAMPO")
-        sheet = wb['REGISTRO_FOTOS']
-        rows = list(sheet.iter_rows(values_only=True))
-        for row in rows[1:]:
+        for row in foto_rows[1:]:
             if not row or not row[0]:
                 continue
             legacy_photo_id = str(row[0])

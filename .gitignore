@@ -7,3 +7,7 @@ credentials/
 *.pem
 *.key
 .env
+*client*.json
+*service_account*.json
+database/sync_export/
+assets/photos/
