@@ -27,7 +27,7 @@ export interface SignagePin {
   assetCode: string;
   category: string;
   sector: string;
-  status: 'ATIVA' | 'MANUTENCAO' | 'SUBSTITUIR' | 'REMOVER' | 'INATIVA';
+  status: 'ATIVA' | 'MANUTENCAO' | 'SUBSTITUIR' | 'REMOVER' | 'INATIVA' | 'EM_ANDAMENTO' | 'CONCLUIDA' | 'CANCELADA';
   conservationState?: string;
   normalizedX: number;
   normalizedY: number;
@@ -35,6 +35,15 @@ export interface SignagePin {
   humanLocation?: string;
   responsible?: string;
   photos?: CapturedPhoto[];
+  entityType?: 'SINALIZACAO' | 'OCORRENCIA';
+  categoryColor?: string;
+  priority?: 'BAIXA' | 'MEDIA' | 'ALTA' | 'CRITICA';
+  prazoHoras?: number;
+  prazoData?: string;
+  concludedPhotoUrl?: string;
+  concludedAt?: string;
+  concludedBy?: string;
+  resolutionNotes?: string;
 }
 
 export function computeContainTransform(
@@ -132,17 +141,27 @@ export const InteractiveMallMap: React.FC<InteractiveMallMapProps> = ({
     }
   };
 
-  const getPinColor = (status: string) => {
-    switch (status) {
+  const getPinColor = (pin: SignagePin) => {
+    if (pin.status === 'CONCLUIDA') {
+      return '#059669'; // Concluída (verde escuro esmeralda)
+    }
+    if (pin.entityType === 'OCORRENCIA' && pin.categoryColor) {
+      return pin.categoryColor;
+    }
+    if (pin.priority === 'CRITICA') {
+      return '#dc2626';
+    }
+    switch (pin.status) {
       case 'ATIVA':
         return '#12823b';
       case 'MANUTENCAO':
+      case 'EM_ANDAMENTO':
         return '#e08b00';
       case 'SUBSTITUIR':
       case 'REMOVER':
         return '#d94841';
       default:
-        return '#68717d';
+        return pin.categoryColor || '#68717d';
     }
   };
 
@@ -195,19 +214,25 @@ export const InteractiveMallMap: React.FC<InteractiveMallMapProps> = ({
             .filter((p) => {
               if (!filterConservation || filterConservation === 'TODOS') return true;
               if (filterConservation === 'ATENCAO') {
-                return p.conservationState === 'Danificada' || p.status === 'SUBSTITUIR' || p.status === 'MANUTENCAO';
+                return p.conservationState === 'Danificada' || p.status === 'SUBSTITUIR' || p.status === 'MANUTENCAO' || p.priority === 'CRITICA' || p.priority === 'ALTA';
               }
               if (filterConservation === 'MANUTENCAO') {
-                return p.status === 'MANUTENCAO' || p.conservationState === 'Regular';
+                return p.status === 'MANUTENCAO' || p.category === 'Manutenção' || p.conservationState === 'Regular';
               }
               if (filterConservation === 'ATIVAS') {
-                return p.status === 'ATIVA';
+                return p.status === 'ATIVA' || p.status === 'EM_ANDAMENTO';
+              }
+              if (filterConservation === 'OCORRENCIAS') {
+                return p.entityType === 'OCORRENCIA';
+              }
+              if (filterConservation === 'SINALIZACAO') {
+                return p.entityType !== 'OCORRENCIA';
               }
               return true;
             })
             .map((pin) => {
             const isSelected = pin.id === selectedPinId;
-            const color = getPinColor(pin.status);
+            const color = getPinColor(pin);
             const pinX = transform.offsetX + pin.normalizedX * transform.renderedWidth;
             const pinY = transform.offsetY + pin.normalizedY * transform.renderedHeight;
 

@@ -13,6 +13,8 @@ import { InspecaoModal } from '../src/components/InspecaoModal';
 import { HistoricoModal } from '../src/components/HistoricoModal';
 import { PendenciasModal } from '../src/components/PendenciasModal';
 import { CicloVidaModal } from '../src/components/CicloVidaModal';
+import { AntesDepoisModal } from '../src/components/AntesDepoisModal';
+import { DashboardModal } from '../src/components/DashboardModal';
 import { CapturedPhoto, mediaService } from '../src/services/mediaService';
 import { LegacyTheme } from '../src/theme/legacy-theme';
 
@@ -22,6 +24,63 @@ const initialPins: SignagePin[] = [
   { id: '3', assetCode: 'SIG-20260814-0003', category: 'Adesivo de piso', sector: 'SETOR_AZUL', status: 'INATIVA', conservationState: 'Regular', normalizedX: 0.25, normalizedY: 0.55, notes: 'Adesivo de uma amarelinha', humanLocation: 'Adesivo de uma amarelinha', responsible: 'Davidsilva • Operações' },
   { id: '4', assetCode: 'SIG-20260814-0004', category: 'Placa de emergência', sector: 'SETOR_AZUL', status: 'SUBSTITUIR', conservationState: 'Danificada', normalizedX: 0.65, normalizedY: 0.65, notes: 'Ambulatório ->', humanLocation: 'Ambulatório ->', responsible: 'Davidsilva • Operações' },
   { id: '5', assetCode: 'SIG-20260814-0005', category: 'Totem', sector: 'SETOR_AZUL', status: 'ATIVA', conservationState: 'Boa', normalizedX: 0.22, normalizedY: 0.80, notes: 'Promoção mês dos Pais', humanLocation: 'Promoção mês dos Pais', responsible: 'Davidsilva • Operações' },
+  {
+    id: '6',
+    assetCode: 'OCR-20260824-0001',
+    entityType: 'OCORRENCIA',
+    category: 'Manutenção',
+    categoryColor: '#F59E0B',
+    priority: 'ALTA',
+    prazoHoras: 72,
+    sector: 'SETOR_AZUL',
+    status: 'CONCLUIDA',
+    conservationState: 'Ótima',
+    normalizedX: 0.45,
+    normalizedY: 0.42,
+    notes: 'Luminária pendente solta no corredor B',
+    humanLocation: 'Corredor B — Entre lojas 1020 e 1022',
+    responsible: 'CEOP • Manutenção',
+    concludedAt: '04/09/2026 16:30',
+    concludedBy: 'Carlos Souza • CEOP',
+    resolutionNotes: 'Fixação da carcaça e substituição do reator elétrico.',
+    photos: [
+      {
+        id: 'foto_ant_1',
+        fileName: 'OCR_ANTES.jpg',
+        mimeType: 'image/jpeg',
+        sizeBytes: 154000,
+        sha256: 'a1b2c3d4e5f6',
+        localUri: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=800&auto=format&fit=crop&q=80',
+        uploadedToS3: true,
+      },
+      {
+        id: 'foto_dep_1',
+        fileName: 'OCR_DEPOIS.jpg',
+        mimeType: 'image/jpeg',
+        sizeBytes: 168000,
+        sha256: 'f6e5d4c3b2a1',
+        localUri: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=800&auto=format&fit=crop&q=80',
+        uploadedToS3: true,
+      },
+    ],
+  },
+  {
+    id: '7',
+    assetCode: 'OCR-20260825-0002',
+    entityType: 'OCORRENCIA',
+    category: 'Limpeza',
+    categoryColor: '#10B981',
+    priority: 'CRITICA',
+    prazoHoras: 24,
+    sector: 'SETOR_AZUL',
+    status: 'EM_ANDAMENTO',
+    conservationState: 'Regular',
+    normalizedX: 0.38,
+    normalizedY: 0.68,
+    notes: 'Vazamento de água próximo aos sanitários',
+    humanLocation: 'Sanitários Piso 1 — Bloco Central',
+    responsible: 'Limpeza • Equipe Operacional',
+  },
 ];
 
 const initialOutboxItems: OutboxItem[] = [
@@ -98,6 +157,11 @@ export default function LegacyMainShellScreen() {
 
   const [cicloVidaModalOpen, setCicloVidaModalOpen] = useState<boolean>(false);
   const [cicloVidaPin, setCicloVidaPin] = useState<SignagePin | null>(null);
+
+  // Comparador Antes e Depois & Dashboard Gerencial (Etapa 1)
+  const [antesDepoisOpen, setAntesDepoisOpen] = useState<boolean>(false);
+  const [antesDepoisPin, setAntesDepoisPin] = useState<SignagePin | null>(null);
+  const [dashboardOpen, setDashboardOpen] = useState<boolean>(false);
 
   const { width: windowWidth } = useWindowDimensions();
   const isMobile = windowWidth < 700;
@@ -206,10 +270,12 @@ export default function LegacyMainShellScreen() {
     } else if (itemId === 'camadasBtn') {
       setCamadasOpen(true);
       setShowCentralCamadas(false);
-    } else if (itemId === 'offline') {
+    } else if (itemId === 'prepararOffline' || itemId === 'offline') {
       setOfflineCacheOpen(true);
     } else if (itemId === 'filaBtn' || itemId === 'fila') {
       setFilaOutboxOpen(true);
+    } else if (itemId === 'dashboardBtn' || itemId === 'dashboard') {
+      setDashboardOpen(true);
     }
   };
 
@@ -407,6 +473,9 @@ export default function LegacyMainShellScreen() {
     } else if (actionId === 'CICLO_VIDA') {
       setCicloVidaPin(pin);
       setCicloVidaModalOpen(true);
+    } else if (actionId === 'ANTES_DEPOIS') {
+      setAntesDepoisPin(pin);
+      setAntesDepoisOpen(true);
     }
   };
 
@@ -897,6 +966,24 @@ export default function LegacyMainShellScreen() {
         onClose={() => setCicloVidaModalOpen(false)}
         onUpdateStatus={handleUpdateCicloVida}
         onDeletePin={handleDeletePin}
+      />
+
+      {/* 14. Modal Comparador Antes & Depois (Etapa 1) */}
+      <AntesDepoisModal
+        visible={antesDepoisOpen}
+        pin={antesDepoisPin || selectedPin}
+        onClose={() => setAntesDepoisOpen(false)}
+      />
+
+      {/* 15. Modal Dashboard de Indicadores & SLA (Etapa 1) */}
+      <DashboardModal
+        visible={dashboardOpen}
+        pins={pinsList}
+        onClose={() => setDashboardOpen(false)}
+        onSelectPin={(pin) => {
+          setSelectedPin(pin);
+          setDashboardOpen(false);
+        }}
       />
     </View>
   );

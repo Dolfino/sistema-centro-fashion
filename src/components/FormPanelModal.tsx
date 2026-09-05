@@ -27,6 +27,10 @@ export const FormPanelModal: React.FC<FormPanelModalProps> = ({
   const { width: windowWidth } = useWindowDimensions();
   const isMobile = windowWidth < 700;
 
+  const [entityType, setEntityType] = useState<'SINALIZACAO' | 'OCORRENCIA'>('SINALIZACAO');
+  const [categoriaOcorrencia, setCategoriaOcorrencia] = useState<string>('Manutenção');
+  const [prioridade, setPrioridade] = useState<'BAIXA' | 'MEDIA' | 'ALTA' | 'CRITICA'>('MEDIA');
+
   const [tipo, setTipo] = useState<string>('Placa informativa');
   const [finalidade, setFinalidade] = useState<string>('Orientação');
   const [titulo, setTitulo] = useState<string>('');
@@ -55,13 +59,22 @@ export const FormPanelModal: React.FC<FormPanelModalProps> = ({
 
   useEffect(() => {
     if (mode === 'EDITAR' && initialPin) {
-      setTipo(initialPin.category || 'Placa informativa');
-      setTitulo(initialPin.notes || initialPin.category || 'Placa Informativa');
-      setDescricao(initialPin.humanLocation || 'Sinalização localizada no setor');
+      setEntityType(initialPin.entityType || 'SINALIZACAO');
+      if (initialPin.entityType === 'OCORRENCIA') {
+        setCategoriaOcorrencia(initialPin.category || 'Manutenção');
+        setPrioridade(initialPin.priority || 'MEDIA');
+      } else {
+        setTipo(initialPin.category || 'Placa informativa');
+      }
+      setTitulo(initialPin.notes || initialPin.category || 'Registro');
+      setDescricao(initialPin.humanLocation || 'Localizado no setor');
       setEstadoConservacao(initialPin.conservationState || 'Boa');
       setResponsavel(initialPin.responsible || 'Davidsilva • Operações');
       setPhotos(initialPin.photos || []);
     } else {
+      setEntityType('SINALIZACAO');
+      setCategoriaOcorrencia('Manutenção');
+      setPrioridade('MEDIA');
       setTitulo('Placa Direcional — Setor Azul');
       setDescricao('Placa informativa de orientação para visitantes no corredor principal.');
       setPhotos([]);
@@ -107,15 +120,30 @@ export const FormPanelModal: React.FC<FormPanelModalProps> = ({
     setPhotos((prev) => prev.filter((p) => p.id !== photoId));
   };
 
+  const CATEGORIAS_OCORRENCIA = [
+    { id: 'CAT-MANUTENCAO', nome: 'Manutenção', cor: '#F59E0B', slaHoras: 72, equipe: 'CEOP' },
+    { id: 'CAT-LIMPEZA', nome: 'Limpeza', cor: '#10B981', slaHoras: 24, equipe: 'Limpeza' },
+    { id: 'CAT-SEGURANCA', nome: 'Segurança', cor: '#DC2626', slaHoras: 2, equipe: 'Segurança' },
+    { id: 'CAT-ILUMINACAO', nome: 'Iluminação', cor: '#EAB308', slaHoras: 24, equipe: 'CEOP' },
+    { id: 'CAT-COM-VISUAL', nome: 'Comunicação Visual', cor: '#EF4444', slaHoras: 72, equipe: 'Marketing' },
+  ];
+
+  const currentCatObj = CATEGORIAS_OCORRENCIA.find((c) => c.nome === categoriaOcorrencia) || CATEGORIAS_OCORRENCIA[0];
+
   const handleSubmit = () => {
+    const isOcorrencia = entityType === 'OCORRENCIA';
     onSave({
-      category: tipo,
+      entityType,
+      category: isOcorrencia ? currentCatObj.nome : tipo,
+      categoryColor: isOcorrencia ? currentCatObj.cor : undefined,
+      priority: isOcorrencia ? prioridade : undefined,
+      prazoHoras: isOcorrencia ? currentCatObj.slaHoras : undefined,
       notes: titulo,
       humanLocation: descricao,
       sector: confirmedSector || 'SETOR_AZUL',
-      status: 'ATIVA',
-      conservationState: estadoConservacao,
-      responsible: responsavel,
+      status: isOcorrencia ? 'EM_ANDAMENTO' : 'ATIVA',
+      conservationState: isOcorrencia ? prioridade : estadoConservacao,
+      responsible: isOcorrencia ? `${currentCatObj.equipe} • Operações` : responsavel,
       normalizedX,
       normalizedY,
       photos,
@@ -135,7 +163,9 @@ export const FormPanelModal: React.FC<FormPanelModalProps> = ({
               {mode === 'EDITAR' ? 'Edição de registro' : 'Novo registro'}
             </Text>
             <Text id="formTituloS237" style={styles.headTitle}>
-              {mode === 'EDITAR' ? 'Editar sinalização' : 'Cadastro de sinalização'}
+              {mode === 'EDITAR'
+                ? entityType === 'OCORRENCIA' ? 'Editar ocorrência' : 'Editar sinalização'
+                : entityType === 'OCORRENCIA' ? 'Nova ocorrência operacional' : 'Cadastro de sinalização'}
             </Text>
           </View>
 
@@ -155,51 +185,129 @@ export const FormPanelModal: React.FC<FormPanelModalProps> = ({
           </Text>
         </View>
 
+        {/* Seletor de Tipo de Entidade (Sinalização vs Ocorrência Geral) */}
+        <View style={styles.entitySelectorWrap}>
+          <TouchableOpacity
+            style={[styles.entityTypeBtn, entityType === 'SINALIZACAO' && styles.entityTypeBtnActive]}
+            onPress={() => setEntityType('SINALIZACAO')}
+          >
+            <Text style={[styles.entityTypeBtnText, entityType === 'SINALIZACAO' && styles.entityTypeBtnTextActive]}>
+              🏷️ Sinalização Física
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.entityTypeBtn, entityType === 'OCORRENCIA' && styles.entityTypeBtnActive]}
+            onPress={() => setEntityType('OCORRENCIA')}
+          >
+            <Text style={[styles.entityTypeBtnText, entityType === 'OCORRENCIA' && styles.entityTypeBtnTextActive]}>
+              ⚠️ Ocorrência Operacional
+            </Text>
+          </TouchableOpacity>
+        </View>
+
         <ScrollView style={styles.formBody} contentContainerStyle={styles.formBodyContent}>
           <input id="editModeS237" type="hidden" value={mode} />
           <input id="editIdRegistroS237" type="hidden" value={initialPin?.id || ''} />
           <input id="editProtocoloS237" type="hidden" value={initialPin?.assetCode || ''} />
 
-          {/* Grid de Campos */}
-          <View style={styles.fieldGrid}>
-            {/* Tipo */}
-            <View style={styles.fieldGroup}>
-              <Text style={styles.label}>Tipo *</Text>
-              {Platform.OS === 'web' ? (
-                <select
-                  id="tipo"
-                  value={tipo}
-                  onChange={(e) => setTipo(e.target.value)}
-                  style={webSelectStyle}
-                >
-                  <option value="Placa informativa">Placa informativa</option>
-                  <option value="Placa de emergência">Placa de emergência</option>
-                  <option value="Adesivo de piso">Adesivo de piso</option>
-                  <option value="Totem">Totem</option>
-                </select>
-              ) : (
-                <Text style={styles.fallbackValue}>{tipo}</Text>
-              )}
-            </View>
+          {/* Se for OCORRÊNCIA */}
+          {entityType === 'OCORRENCIA' ? (
+            <View style={styles.fieldGrid}>
+              <View style={styles.fieldGroup}>
+                <Text style={styles.label}>Categoria da Ocorrência *</Text>
+                {Platform.OS === 'web' ? (
+                  <select
+                    id="categoriaOcorrenciaSelect"
+                    value={categoriaOcorrencia}
+                    onChange={(e) => setCategoriaOcorrencia(e.target.value)}
+                    style={webSelectStyle}
+                  >
+                    {CATEGORIAS_OCORRENCIA.map((cat) => (
+                      <option key={cat.id} value={cat.nome}>
+                        {cat.nome} ({cat.equipe})
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <Text style={styles.fallbackValue}>{categoriaOcorrencia}</Text>
+                )}
+              </View>
 
-            {/* Finalidade */}
-            <View style={styles.fieldGroup}>
-              <Text style={styles.label}>Finalidade *</Text>
-              {Platform.OS === 'web' ? (
-                <select
-                  id="finalidade"
-                  value={finalidade}
-                  onChange={(e) => setFinalidade(e.target.value)}
-                  style={webSelectStyle}
-                >
-                  <option value="Orientação">Orientação</option>
-                  <option value="Segurança">Segurança</option>
-                  <option value="Comercial">Comercial</option>
-                </select>
-              ) : (
-                <Text style={styles.fallbackValue}>{finalidade}</Text>
-              )}
+              <View style={styles.fieldGroup}>
+                <Text style={styles.label}>Prioridade (SLA) *</Text>
+                {Platform.OS === 'web' ? (
+                  <select
+                    id="prioridadeSelect"
+                    value={prioridade}
+                    onChange={(e) => setPrioridade(e.target.value as any)}
+                    style={webSelectStyle}
+                  >
+                    <option value="BAIXA">Baixa (Até 72h)</option>
+                    <option value="MEDIA">Média (Até 24h)</option>
+                    <option value="ALTA">Alta (Até 8h)</option>
+                    <option value="CRITICA">Crítica (Até 2h)</option>
+                  </select>
+                ) : (
+                  <Text style={styles.fallbackValue}>{prioridade}</Text>
+                )}
+              </View>
+
+              <View style={styles.fieldGroupFull}>
+                <View style={[styles.slaBanner, { borderColor: currentCatObj.cor }]}>
+                  <Text style={styles.slaBannerTitle}>
+                    ⏱️ SLA de Resolução: <Text style={{ fontWeight: '700', color: currentCatObj.cor }}>{currentCatObj.slaHoras} horas</Text>
+                  </Text>
+                  <Text style={styles.slaBannerSub}>
+                    Equipe responsável padrão: {currentCatObj.equipe} • Prioridade selecionada: {prioridade}
+                  </Text>
+                </View>
+              </View>
             </View>
+          ) : (
+            /* Se for SINALIZAÇÃO FÍSICA */
+            <View style={styles.fieldGrid}>
+              {/* Tipo */}
+              <View style={styles.fieldGroup}>
+                <Text style={styles.label}>Tipo *</Text>
+                {Platform.OS === 'web' ? (
+                  <select
+                    id="tipo"
+                    value={tipo}
+                    onChange={(e) => setTipo(e.target.value)}
+                    style={webSelectStyle}
+                  >
+                    <option value="Placa informativa">Placa informativa</option>
+                    <option value="Placa de emergência">Placa de emergência</option>
+                    <option value="Adesivo de piso">Adesivo de piso</option>
+                    <option value="Totem">Totem</option>
+                  </select>
+                ) : (
+                  <Text style={styles.fallbackValue}>{tipo}</Text>
+                )}
+              </View>
+
+              {/* Finalidade */}
+              <View style={styles.fieldGroup}>
+                <Text style={styles.label}>Finalidade *</Text>
+                {Platform.OS === 'web' ? (
+                  <select
+                    id="finalidade"
+                    value={finalidade}
+                    onChange={(e) => setFinalidade(e.target.value)}
+                    style={webSelectStyle}
+                  >
+                    <option value="Orientação">Orientação</option>
+                    <option value="Segurança">Segurança</option>
+                    <option value="Comercial">Comercial</option>
+                  </select>
+                ) : (
+                  <Text style={styles.fallbackValue}>{finalidade}</Text>
+                )}
+              </View>
+            </View>
+          )}
+
+          <View style={styles.fieldGrid}>
 
             {/* Título */}
             <View style={styles.fieldGroupFull}>
@@ -717,5 +825,55 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '700',
     color: '#FFFFFF',
+  },
+  entitySelectorWrap: {
+    flexDirection: 'row',
+    gap: 8,
+    marginHorizontal: 16,
+    marginTop: 8,
+    marginBottom: 6,
+    backgroundColor: '#F0F2F7',
+    padding: 4,
+    borderRadius: 10,
+  },
+  entityTypeBtn: {
+    flex: 1,
+    paddingVertical: 8,
+    alignItems: 'center',
+    borderRadius: 8,
+  },
+  entityTypeBtnActive: {
+    backgroundColor: '#FFFFFF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.12,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  entityTypeBtnText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#676A7A',
+  },
+  entityTypeBtnTextActive: {
+    color: '#171B68',
+    fontWeight: '700',
+  },
+  slaBanner: {
+    backgroundColor: '#F9FAFC',
+    borderLeftWidth: 4,
+    borderRadius: 6,
+    padding: 10,
+    marginBottom: 4,
+  },
+  slaBannerTitle: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#1E293B',
+    marginBottom: 2,
+  },
+  slaBannerSub: {
+    fontSize: 11,
+    color: '#64748B',
   },
 });

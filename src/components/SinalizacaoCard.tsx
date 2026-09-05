@@ -97,13 +97,25 @@ export const SinalizacaoCard: React.FC<SinalizacaoCardProps> = ({
         </View>
       </View>
 
-      {/* Badges Status & Conservação */}
+      {/* Badges Status, Prioridade & Conservação */}
       <View style={styles.badgesRow}>
         <View style={[styles.sigBadge, { backgroundColor: statusStyle.backgroundColor }]}>
           <Text id="sigCardStatus" style={styles.sigBadgeText}>
             {pin.status}
           </Text>
         </View>
+
+        {pin.categoryColor && (
+          <View style={[styles.sigBadge, { backgroundColor: pin.categoryColor }]}>
+            <Text style={styles.sigBadgeText}>{pin.category}</Text>
+          </View>
+        )}
+
+        {pin.priority && (
+          <View style={[styles.sigBadge, { backgroundColor: pin.priority === 'CRITICA' ? '#DC2626' : pin.priority === 'ALTA' ? '#EA580C' : '#4B5563' }]}>
+            <Text style={styles.sigBadgeText}>{pin.priority}</Text>
+          </View>
+        )}
 
         <View style={styles.sigBadgeLight}>
           <Text id="sigCardEstado" style={styles.sigBadgeLightText}>
@@ -114,7 +126,7 @@ export const SinalizacaoCard: React.FC<SinalizacaoCardProps> = ({
 
       {/* Linhas Descritivas Fies ao Legado */}
       <Text id="sigCardTipo" style={styles.lineText}>
-        <Text style={styles.lineLabel}>Tipo: </Text>
+        <Text style={styles.lineLabel}>Tipo / Categoria: </Text>
         {pin.category}
       </Text>
 
@@ -127,6 +139,15 @@ export const SinalizacaoCard: React.FC<SinalizacaoCardProps> = ({
         <Text style={styles.lineLabel}>Responsável: </Text>
         {pin.responsible || 'Davidsilva • Operações'}
       </Text>
+
+      {/* Botão Destaque: Comparador Antes & Depois */}
+      <TouchableOpacity
+        id="btnCompararAntesDepois"
+        style={styles.btnAntesDepois}
+        onPress={() => onActionClick('ANTES_DEPOIS', pin)}
+      >
+        <Text style={styles.btnAntesDepoisText}>🔄 Comparador Antes & Depois</Text>
+      </TouchableOpacity>
 
       {/* Ações do Card */}
       <View style={styles.actionsRow}>
@@ -347,5 +368,20 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '700',
     color: '#FFFFFF',
+  },
+  btnAntesDepois: {
+    backgroundColor: '#F0F9FF',
+    borderWidth: 1,
+    borderColor: '#BAE6FD',
+    borderRadius: 8,
+    paddingVertical: 7,
+    paddingHorizontal: 10,
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  btnAntesDepoisText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#0369A1',
   },
 });

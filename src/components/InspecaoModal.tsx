@@ -9,7 +9,7 @@ interface InspecaoModalProps {
   onClose: () => void;
   onSave: (inspectionData: {
     conservationState: string;
-    status: 'ATIVA' | 'MANUTENCAO' | 'SUBSTITUIR' | 'REMOVER' | 'INATIVA';
+    status: 'ATIVA' | 'MANUTENCAO' | 'SUBSTITUIR' | 'REMOVER' | 'INATIVA' | 'EM_ANDAMENTO' | 'CONCLUIDA' | 'CANCELADA';
     notes?: string;
     photo?: CapturedPhoto;
   }) => void;
@@ -25,7 +25,7 @@ export const InspecaoModal: React.FC<InspecaoModalProps> = ({
   const isMobile = windowWidth < 700;
 
   const [estado, setEstado] = useState<string>('Boa');
-  const [status, setStatus] = useState<'ATIVA' | 'MANUTENCAO' | 'SUBSTITUIR' | 'REMOVER' | 'INATIVA'>('ATIVA');
+  const [status, setStatus] = useState<'ATIVA' | 'MANUTENCAO' | 'SUBSTITUIR' | 'REMOVER' | 'INATIVA' | 'EM_ANDAMENTO' | 'CONCLUIDA' | 'CANCELADA'>('ATIVA');
   const [observacoes, setObservacoes] = useState<string>('');
   const [photo, setPhoto] = useState<CapturedPhoto | null>(null);
 
