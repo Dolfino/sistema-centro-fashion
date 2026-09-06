@@ -21,7 +21,8 @@ import { AlertasModal } from '../src/components/AlertasModal';
 import { AgendaModal } from '../src/components/AgendaModal';
 import { RelatoriosSlidesModal } from '../src/components/RelatoriosSlidesModal';
 import { Loja360Modal } from '../src/components/Loja360Modal';
-import { FichaLoja360 } from '../src/services/loja360Service';
+import { FichaLoja360, Loja360Service } from '../src/services/loja360Service';
+import { CentralGestaoLojistasModal } from '../src/components/CentralGestaoLojistasModal';
 import { AtivoMallModal } from '../src/components/AtivoMallModal';
 import { AtivoMidiaPonto } from '../src/services/ativoMallService';
 import { CampanhaCentralModal } from '../src/components/CampanhaCentralModal';
@@ -193,6 +194,7 @@ export default function LegacyMainShellScreen() {
   // Loja 360 & Gestão de Boxes (Paridade Google Apps Script)
   const [loja360Open, setLoja360Open] = useState<boolean>(false);
   const [lojaSelecionada360, setLojaSelecionada360] = useState<FichaLoja360 | null>(null);
+  const [centralGestaoLojistasOpen, setCentralGestaoLojistasOpen] = useState<boolean>(false);
 
   // Ativos do Mall & Fiscalização de Mídia Física (Paridade Google Apps Script)
   const [ativoMallOpen, setAtivoMallOpen] = useState<boolean>(false);
@@ -324,7 +326,7 @@ export default function LegacyMainShellScreen() {
     } else if (itemId === 'dashboardBtn' || itemId === 'dashboard') {
       setDashboardOpen(true);
     } else if (itemId === 'centralGestaoBtn' || itemId === 'central') {
-      setCentralGestaoOpen(true);
+      setCentralGestaoLojistasOpen(true);
     } else if (itemId === 'loja360Btn' || itemId === 'loja360') {
       setLoja360Open(true);
     } else if (itemId === 'ativoMallBtn' || itemId === 'ativoMall' || itemId === 'midia') {
@@ -378,6 +380,23 @@ export default function LegacyMainShellScreen() {
   const handleVerCampanhaNoMapa = (p: ParticipacaoLojaCampanha) => {
     setCampanhaAtivaId(p.idCampanha);
     const foundPin = pinsList.find((pin) => pin.id === p.idLojaMapa || pin.humanLocation?.includes(p.numeroBox));
+    if (foundPin) {
+      setSelectedPin(foundPin);
+    }
+  };
+
+  const handleAbrirFicha360DaCentral = (idLojaMapa: string) => {
+    setCentralGestaoLojistasOpen(false);
+    const loja = Loja360Service.obterFicha(idLojaMapa);
+    if (loja) {
+      setLojaSelecionada360(loja);
+      setLoja360Open(true);
+    }
+  };
+
+  const handleVerNoMapaDaCentral = (idLojaMapa: string, numeroBox: string) => {
+    setCentralGestaoLojistasOpen(false);
+    const foundPin = pinsList.find((pin) => pin.id === idLojaMapa || pin.humanLocation?.includes(numeroBox));
     if (foundPin) {
       setSelectedPin(foundPin);
     }
@@ -1354,6 +1373,14 @@ export default function LegacyMainShellScreen() {
         onClose={() => setLevantamentoRegistroOpen(false)}
         onSalvo={handleSalvarLevantamento}
         onSalvarEProximo={handleSalvarEProximoLevantamento}
+      />
+
+      {/* 26. Central Administrativa de Gestão de Lojistas e Permissionários (L3.0/L3.1) */}
+      <CentralGestaoLojistasModal
+        visible={centralGestaoLojistasOpen}
+        onClose={() => setCentralGestaoLojistasOpen(false)}
+        onAbrirFicha360={handleAbrirFicha360DaCentral}
+        onVerNoMapa={handleVerNoMapaDaCentral}
       />
     </View>
   );
