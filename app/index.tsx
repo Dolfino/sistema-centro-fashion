@@ -39,6 +39,8 @@ import { AuditoriaVendasCentralModal } from '../src/components/AuditoriaVendasCe
 import { AuditoriaVendasEditorModal } from '../src/components/AuditoriaVendasEditorModal';
 import { RegistroAuditoriaVenda } from '../src/services/auditoriaVendasService';
 import { CentralAnaliticaModal } from '../src/components/CentralAnaliticaModal';
+import { AdminModal } from '../src/components/AdminModal';
+import { CentralCartograficaModal } from '../src/components/CentralCartograficaModal';
 import { AtivoMallModal } from '../src/components/AtivoMallModal';
 import { AtivoMidiaPonto } from '../src/services/ativoMallService';
 import { CampanhaCentralModal } from '../src/components/CampanhaCentralModal';
@@ -236,6 +238,13 @@ export default function LegacyMainShellScreen() {
   // Central Analítica Comercial (Fase L3.9)
   const [centralAnaliticaOpen, setCentralAnaliticaOpen] = useState<boolean>(false);
 
+  // Central de Administração Global & Governança Cartográfica (Fase L5.0)
+  const [adminModalOpen, setAdminModalOpen] = useState<boolean>(false);
+  const [centralCartograficaOpen, setCentralCartograficaOpen] = useState<boolean>(false);
+  const [abaCartograficaInicial, setAbaCartograficaInicial] = useState<
+    'CARTOGRAFIA' | 'CALIBRACAO' | 'ESTACIONAMENTO' | 'AREAS_NIVEL_1' | 'SNAPSHOTS'
+  >('CARTOGRAFIA');
+
   // Ativos do Mall & Fiscalização de Mídia Física (Paridade Google Apps Script)
   const [ativoMallOpen, setAtivoMallOpen] = useState<boolean>(false);
 
@@ -389,6 +398,20 @@ export default function LegacyMainShellScreen() {
       setAgendaOpen(true);
     } else if (itemId === 'relatoriosBtn' || itemId === 'relatorios') {
       setRelatoriosOpen(true);
+    } else if (itemId === 'adminBtnS14' || itemId === 'admin') {
+      setAdminModalOpen(true);
+    } else if (itemId === 'calibracaoBtnS242' || itemId === 'calibrar') {
+      setAbaCartograficaInicial('CALIBRACAO');
+      setCentralCartograficaOpen(true);
+    } else if (itemId === 'areaVermelhaBtnS244' || itemId === 'estacionamento') {
+      setAbaCartograficaInicial('ESTACIONAMENTO');
+      setCentralCartograficaOpen(true);
+    } else if (itemId === 'areasNivel1BtnS246' || itemId === 'nivel1') {
+      setAbaCartograficaInicial('AREAS_NIVEL_1');
+      setCentralCartograficaOpen(true);
+    } else if (itemId === 'centralCartograficaBtn' || itemId === 'cartografia') {
+      setAbaCartograficaInicial('CARTOGRAFIA');
+      setCentralCartograficaOpen(true);
     }
   };
 
@@ -1711,6 +1734,21 @@ export default function LegacyMainShellScreen() {
         onAbrirAuditoria={(_idLoja) => {
           setAuditoriaCentralOpen(true);
         }}
+      />
+
+      {/* 36. Central de Administração do Mall (Fase L5.0 - Superfícies #24 a #32) */}
+      <AdminModal
+        visible={adminModalOpen}
+        userRole="ADMIN"
+        onClose={() => setAdminModalOpen(false)}
+      />
+
+      {/* 37. Central Cartográfica & Governança Espacial (Fase L5.0 - Superfícies #33 a #42) */}
+      <CentralCartograficaModal
+        visible={centralCartograficaOpen}
+        userRole="ADMIN"
+        abaInicial={abaCartograficaInicial}
+        onClose={() => setCentralCartograficaOpen(false)}
       />
     </View>
   );

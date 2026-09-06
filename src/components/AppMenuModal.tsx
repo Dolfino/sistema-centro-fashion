@@ -53,6 +53,7 @@ export const AppMenuModal: React.FC<AppMenuModalProps> = ({
     { id: 'calibracaoBtnS242', icon: '⌖', label: 'Calibrar níveis', primary: false, adminOnly: true, financeiroOnly: false },
     { id: 'areaVermelhaBtnS244', icon: '▱', label: 'Delimitar estacionamento', primary: false, adminOnly: true, financeiroOnly: false },
     { id: 'areasNivel1BtnS246', icon: '⌗', label: 'Delimitar áreas do Nível 1', primary: false, adminOnly: true, financeiroOnly: false },
+    { id: 'centralCartograficaBtn', icon: '◈', label: 'Central Cartográfica', primary: false, adminOnly: true, financeiroOnly: false },
     { id: 'adminBtnS14', icon: '⚙', label: 'Administração', primary: false, adminOnly: true, financeiroOnly: false },
   ];
 
