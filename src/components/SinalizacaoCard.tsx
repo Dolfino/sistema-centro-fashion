@@ -176,6 +176,14 @@ export const SinalizacaoCard: React.FC<SinalizacaoCardProps> = ({
         </TouchableOpacity>
 
         <TouchableOpacity
+          id="btnLevantamentoCampoCard"
+          style={[styles.btnPrimary, { backgroundColor: '#0284c7' }]}
+          onPress={() => onActionClick('LEVANTAMENTO', pin)}
+        >
+          <Text style={styles.btnPrimaryText}>✍️ Vistoria de Campo</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
           id="btnNovaInspecao"
           style={styles.btnPrimary}
           onPress={() => onActionClick('NOVA_INSPECAO', pin)}

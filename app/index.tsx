@@ -26,6 +26,13 @@ import { AtivoMallModal } from '../src/components/AtivoMallModal';
 import { AtivoMidiaPonto } from '../src/services/ativoMallService';
 import { CampanhaCentralModal } from '../src/components/CampanhaCentralModal';
 import { CampanhaService, ParticipacaoLojaCampanha } from '../src/services/campanhaService';
+import { LevantamentoModal } from '../src/components/LevantamentoModal';
+import { LevantamentoRegistroModal } from '../src/components/LevantamentoRegistroModal';
+import {
+  PontoLevantamento,
+  getPontosSessao,
+  obterProximoPontoPendente,
+} from '../src/services/levantamentoCampoService';
 import { CapturedPhoto, mediaService } from '../src/services/mediaService';
 import { LegacyTheme } from '../src/theme/legacy-theme';
 
@@ -194,6 +201,11 @@ export default function LegacyMainShellScreen() {
   const [campanhaAtivaId, setCampanhaAtivaId] = useState<string | null>(null);
   const [campanhasCentralOpen, setCampanhasCentralOpen] = useState<boolean>(false);
 
+  // Modo Levantamento de Campo & Salvar e Próximo (Fase L2.6)
+  const [levantamentoModalOpen, setLevantamentoModalOpen] = useState<boolean>(false);
+  const [levantamentoRegistroOpen, setLevantamentoRegistroOpen] = useState<boolean>(false);
+  const [pontoLevantamentoSelecionado, setPontoLevantamentoSelecionado] = useState<PontoLevantamento | null>(null);
+
   const campanhaAdesoesMap = campanhaAtivaId ? CampanhaService.obterMapaCoresAdesao(campanhaAtivaId) : {};
   const campanhaAtivaInfo = campanhaAtivaId ? CampanhaService.obterCampanha(campanhaAtivaId) : null;
   const metricasCampanhaAtiva = campanhaAtivaId ? CampanhaService.obterMetricasCampanha(campanhaAtivaId) : null;
@@ -319,6 +331,8 @@ export default function LegacyMainShellScreen() {
       setAtivoMallOpen(true);
     } else if (itemId === 'campanhasBtn' || itemId === 'campanhas') {
       setCampanhasCentralOpen(true);
+    } else if (itemId === 'levantamentoBtn' || itemId === 'levantamento') {
+      setLevantamentoModalOpen(true);
     } else if (itemId === 'rondaBtn' || itemId === 'ronda') {
       setRondaExecucaoOpen(true);
     } else if (itemId === 'alertasBtnS21' || itemId === 'alertas') {
@@ -327,6 +341,37 @@ export default function LegacyMainShellScreen() {
       setAgendaOpen(true);
     } else if (itemId === 'relatoriosBtn' || itemId === 'relatorios') {
       setRelatoriosOpen(true);
+    }
+  };
+
+  const handleContinuarLevantamentoNoMapa = (ponto: PontoLevantamento) => {
+    setLevantamentoModalOpen(false);
+    const foundPin = pinsList.find((pin) => pin.id === ponto.idLojaMapa || pin.humanLocation?.includes(ponto.numeroBox));
+    if (foundPin) {
+      setSelectedPin(foundPin);
+    }
+    setPontoLevantamentoSelecionado(ponto);
+    setLevantamentoRegistroOpen(true);
+  };
+
+  const handleSalvarLevantamento = (pontoAtualizado: PontoLevantamento) => {
+    setLevantamentoRegistroOpen(false);
+    setPontoLevantamentoSelecionado(null);
+  };
+
+  const handleSalvarEProximoLevantamento = (pontoAtualizado: PontoLevantamento) => {
+    const proximo = obterProximoPontoPendente(pontoAtualizado.idPonto);
+    if (proximo) {
+      const foundPin = pinsList.find((pin) => pin.id === proximo.idLojaMapa || pin.humanLocation?.includes(proximo.numeroBox));
+      if (foundPin) {
+        setSelectedPin(foundPin);
+      }
+      setPontoLevantamentoSelecionado(proximo);
+      // O modal de registro continua aberto com o novo ponto!
+    } else {
+      setLevantamentoRegistroOpen(false);
+      setPontoLevantamentoSelecionado(null);
+      alert('🎉 Parabéns! Todos os pontos desta sessão de campo foram concluídos com sucesso!');
     }
   };
 
@@ -597,6 +642,30 @@ export default function LegacyMainShellScreen() {
     } else if (actionId === 'ANTES_DEPOIS') {
       setAntesDepoisPin(pin);
       setAntesDepoisOpen(true);
+    } else if (actionId === 'LEVANTAMENTO') {
+      const pontos = getPontosSessao();
+      const pontoEncontrado = pontos.find((p) => p.idLojaMapa === pin.id || pin.humanLocation?.includes(p.numeroBox));
+      if (pontoEncontrado) {
+        setPontoLevantamentoSelecionado(pontoEncontrado);
+      } else {
+        setPontoLevantamentoSelecionado({
+          idPonto: `PL-${pin.id}`,
+          idSessao: 'SESSAO-CENSO-2026',
+          idLojaMapa: pin.id,
+          idEspaco: `ESP-${pin.id}`,
+          numeroBox: pin.humanLocation?.replace(/\D/g, '') || pin.id,
+          nomeLoja: pin.notes || 'Unidade Comercial',
+          segmento: pin.category || 'Varejo',
+          setor: pin.sector || 'Setor Geral',
+          corredor: pin.humanLocation || 'Corredor Geral',
+          ordemNoCorredor: 99,
+          situacao: 'EM_OPERACAO',
+          resultado: 'PENDENTE',
+          percentualCompletude: 50,
+          statusSync: 'SINCRONIZADO',
+        });
+      }
+      setLevantamentoRegistroOpen(true);
     }
   };
 
@@ -883,6 +952,20 @@ export default function LegacyMainShellScreen() {
               aria-label="Centralizar mapa"
             >
               <Text style={styles.btnCentralizarIcon}>⌖</Text>
+            </TouchableOpacity>
+
+            {/* Botão Levantamento de Campo (L2.6) */}
+            <TouchableOpacity
+              id="btnLevantamentoToolbar"
+              style={[
+                styles.btnCentralizar,
+                { width: 'auto', paddingHorizontal: 10, gap: 4, flexDirection: 'row', backgroundColor: '#0284c7' },
+              ]}
+              onPress={() => setLevantamentoModalOpen(true)}
+              aria-label="Levantamento de Campo"
+            >
+              <Text style={{ fontSize: 13 }}>📋</Text>
+              {!isMobile && <Text style={{ color: '#fff', fontSize: 12, fontWeight: '700' }}>Levantamento</Text>}
             </TouchableOpacity>
 
             {/* Botão Menu (#appMenuBtnS22513) */}
@@ -1251,6 +1334,26 @@ export default function LegacyMainShellScreen() {
         campanhaAtivaId={campanhaAtivaId}
         onAplicarNoMapa={(campId) => setCampanhaAtivaId(campId)}
         onVerNoMapa={handleVerCampanhaNoMapa}
+      />
+
+      {/* 24. Modal de Levantamento de Campo (Fase L2.6) */}
+      <LevantamentoModal
+        visible={levantamentoModalOpen}
+        onClose={() => setLevantamentoModalOpen(false)}
+        onContinuarNoMapa={handleContinuarLevantamentoNoMapa}
+        onAbrirRegistroPonto={(ponto) => {
+          setPontoLevantamentoSelecionado(ponto);
+          setLevantamentoRegistroOpen(true);
+        }}
+      />
+
+      {/* 25. Formulário de Registro de Levantamento & Salvar e Próximo (Fase L2.6) */}
+      <LevantamentoRegistroModal
+        visible={levantamentoRegistroOpen}
+        ponto={pontoLevantamentoSelecionado}
+        onClose={() => setLevantamentoRegistroOpen(false)}
+        onSalvo={handleSalvarLevantamento}
+        onSalvarEProximo={handleSalvarEProximoLevantamento}
       />
     </View>
   );
