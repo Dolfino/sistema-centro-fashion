@@ -22,6 +22,8 @@ import { AgendaModal } from '../src/components/AgendaModal';
 import { RelatoriosSlidesModal } from '../src/components/RelatoriosSlidesModal';
 import { Loja360Modal } from '../src/components/Loja360Modal';
 import { FichaLoja360 } from '../src/services/loja360Service';
+import { AtivoMallModal } from '../src/components/AtivoMallModal';
+import { AtivoMidiaPonto } from '../src/services/ativoMallService';
 import { CapturedPhoto, mediaService } from '../src/services/mediaService';
 import { LegacyTheme } from '../src/theme/legacy-theme';
 
@@ -183,6 +185,9 @@ export default function LegacyMainShellScreen() {
   const [loja360Open, setLoja360Open] = useState<boolean>(false);
   const [lojaSelecionada360, setLojaSelecionada360] = useState<FichaLoja360 | null>(null);
 
+  // Ativos do Mall & Fiscalização de Mídia Física (Paridade Google Apps Script)
+  const [ativoMallOpen, setAtivoMallOpen] = useState<boolean>(false);
+
   const { width: windowWidth } = useWindowDimensions();
   const isMobile = windowWidth < 700;
 
@@ -300,6 +305,8 @@ export default function LegacyMainShellScreen() {
       setCentralGestaoOpen(true);
     } else if (itemId === 'loja360Btn' || itemId === 'loja360') {
       setLoja360Open(true);
+    } else if (itemId === 'ativoMallBtn' || itemId === 'ativoMall' || itemId === 'midia') {
+      setAtivoMallOpen(true);
     } else if (itemId === 'rondaBtn' || itemId === 'ronda') {
       setRondaExecucaoOpen(true);
     } else if (itemId === 'alertasBtnS21' || itemId === 'alertas') {
@@ -316,6 +323,15 @@ export default function LegacyMainShellScreen() {
     setEditingPin(null);
     setPositioningMode(false);
     setDraftPin({ normalizedX: loja.x || 0.35, normalizedY: loja.y || 0.45 });
+    setFormMode('NOVO');
+    setFormPanelVisible(true);
+  };
+
+  const handleAbrirOcorrenciaDaMidia = (ponto: AtivoMidiaPonto) => {
+    setSelectedPin(null);
+    setEditingPin(null);
+    setPositioningMode(false);
+    setDraftPin({ normalizedX: ponto.x || 0.35, normalizedY: ponto.y || 0.45 });
     setFormMode('NOVO');
     setFormPanelVisible(true);
   };
@@ -1141,6 +1157,13 @@ export default function LegacyMainShellScreen() {
         onClose={() => setLoja360Open(false)}
         lojaInicial={lojaSelecionada360}
         onAbrirOcorrenciaParaLoja={handleAbrirOcorrenciaDaLoja}
+      />
+
+      {/* 22. Modal Ativos do Mall & Fiscalização de Mídia (Paridade Google Apps Script) */}
+      <AtivoMallModal
+        visible={ativoMallOpen}
+        onClose={() => setAtivoMallOpen(false)}
+        onAbrirOcorrenciaParaMidia={handleAbrirOcorrenciaDaMidia}
       />
     </View>
   );
