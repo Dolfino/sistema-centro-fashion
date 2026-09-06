@@ -1,11 +1,23 @@
 /**
  * Serviço de Inteligência Executiva e Dashboard (Fases L4.0 e L4.1) - Centro Fashion Fortaleza
  * Paridade com L40_DashboardExecutivoService.gs e L41_FiltrosDashboardService.gs
+ *
+ * Governança:
+ * - Visão Macrogencial de Ocupação, Vacância e Mix por Setor/Piso
+ * - Consolidação Financeira e Auditoria Fiscal de Vendas por RBAC
+ * - Matriz de Riscos e Gestão por Exceção
+ * - Exportação Executiva em formato CSV estruturado
  */
+
+import { AuditoriaVendasService } from './auditoriaVendasService';
+import { FinanceiroRestritoService } from './financeiroRestritoService';
 
 export interface ResumoExecutivoKPIs {
   totalOperacoes: number;
   espacosAtuais: number;
+  espacosVagos: number;
+  taxaOcupacao: number; // %
+  taxaVacancia: number; // %
   completudeMedia: number;
   operacoesConcluidas: number;
   operacoesComContato: number;
@@ -26,6 +38,8 @@ export interface CoberturaSetorItem {
   piso: string;
   totalEspacos: number;
   operacoesAtivas: number;
+  espacosVagos: number;
+  taxaOcupacao: number;
   completudeMedia: number;
   corHex: string;
 }
@@ -50,7 +64,12 @@ export interface BlocoRestritoFinanceiro {
   contratosAtivos: number;
   permissionariosInadimplentes: number;
   saldoTotalVencido: number;
+  taxaAdimplencia: number; // %
   auditoriasComDivergencia: number;
+  faturamentoDeclaradoTotal: number;
+  faturamentoAuditadoTotal: number;
+  diferencaFaturamentoTotal: number;
+  aluguelReferenciaTotal: number;
 }
 
 export interface PrioridadeExecutivaItem {
@@ -61,6 +80,7 @@ export interface PrioridadeExecutivaItem {
   numeroBox: string;
   setor: string;
   segmento: string;
+  grauRisco: 'CRITICO' | 'ALTO' | 'MEDIO';
   totalSinaisAtencao: number;
   sinais: string[];
 }
@@ -124,13 +144,19 @@ export class DashboardExecutivoService {
       fatorEscala *= 0.35;
     }
 
-    const totalOps = Math.round(4954 * fatorEscala);
-    const totalEsp = Math.round(5120 * fatorEscala);
+    const totalOps = Math.max(3, Math.round(4954 * fatorEscala));
+    const totalEsp = Math.max(totalOps, Math.round(5120 * fatorEscala));
+    const espacosVagos = Math.max(0, totalEsp - totalOps);
+    const taxaOcupacao = Math.round((totalOps / totalEsp) * 1000) / 10;
+    const taxaVacancia = Math.round((100 - taxaOcupacao) * 10) / 10;
 
     // 1. Resumo Executivo Dinâmico
     const resumoKPIs: ResumoExecutivoKPIs = {
       totalOperacoes: totalOps,
       espacosAtuais: totalEsp,
+      espacosVagos,
+      taxaOcupacao,
+      taxaVacancia,
       completudeMedia: completudeBase,
       operacoesConcluidas: Math.round(totalOps * (completudeBase / 100)),
       operacoesComContato: Math.round(totalOps * 0.86),
@@ -154,13 +180,15 @@ export class DashboardExecutivoService {
       mixSegmentos = mixSegmentos.filter((m) => m.segmento === filtros.segmento);
     }
 
-    // 3. Cobertura por Setor / Piso
+    // 3. Cobertura e Ocupação por Setor / Piso
     let coberturaSetores: CoberturaSetorItem[] = [
       {
         setorNome: 'Setor Azul',
         piso: 'Piso 1',
         totalEspacos: 1480,
         operacoesAtivas: 1420,
+        espacosVagos: 60,
+        taxaOcupacao: 95.9,
         completudeMedia: 88.2,
         corHex: '#0284c7',
       },
@@ -169,6 +197,8 @@ export class DashboardExecutivoService {
         piso: 'Piso 1',
         totalEspacos: 1320,
         operacoesAtivas: 1250,
+        espacosVagos: 70,
+        taxaOcupacao: 94.7,
         completudeMedia: 81.4,
         corHex: '#10b981',
       },
@@ -177,6 +207,8 @@ export class DashboardExecutivoService {
         piso: 'Piso 2',
         totalEspacos: 1100,
         operacoesAtivas: 1020,
+        espacosVagos: 80,
+        taxaOcupacao: 92.7,
         completudeMedia: 74.0,
         corHex: '#f59e0b',
       },
@@ -185,6 +217,8 @@ export class DashboardExecutivoService {
         piso: 'Piso 2',
         totalEspacos: 740,
         operacoesAtivas: 690,
+        espacosVagos: 50,
+        taxaOcupacao: 93.2,
         completudeMedia: 68.5,
         corHex: '#cbd5e1',
       },
@@ -193,6 +227,8 @@ export class DashboardExecutivoService {
         piso: 'Piso 3',
         totalEspacos: 480,
         operacoesAtivas: 420,
+        espacosVagos: 60,
+        taxaOcupacao: 87.5,
         completudeMedia: 62.1,
         corHex: '#8b5cf6',
       },
@@ -220,8 +256,24 @@ export class DashboardExecutivoService {
       cadastroPendente: Math.round(1544 * fatorEscala),
     };
 
-    // 6. Prioridades Executivas (Gestão por Exceção)
+    // 6. Prioridades Executivas (Gestão por Exceção & Matriz de Risco)
     let prioridadesExecutivas: PrioridadeExecutivaItem[] = [
+      {
+        idOperacao: 'OP-001',
+        idLojaMapa: '1',
+        nomeFantasia: 'Aurora Concept',
+        razaoSocial: 'Comercial Aurora 0024',
+        numeroBox: '1106',
+        setor: 'Setor Azul',
+        segmento: 'Moda Feminina',
+        grauRisco: 'CRITICO',
+        totalSinaisAtencao: 3,
+        sinais: [
+          'Auditoria Divergente (+25% faturamento)',
+          'Aluguel variável pendente de apuração',
+          'Aferição presencial necessária',
+        ],
+      },
       {
         idOperacao: 'OP-003',
         idLojaMapa: '3',
@@ -230,8 +282,13 @@ export class DashboardExecutivoService {
         numeroBox: '1178',
         setor: 'Setor Azul',
         segmento: 'Jeanswear & Denim',
+        grauRisco: 'CRITICO',
         totalSinaisAtencao: 3,
-        sinais: ['Inadimplente (45 dias)', 'Sem visita há +30d', 'Renegociação pendente'],
+        sinais: [
+          'Inadimplente (45 dias)',
+          'Sem visita há +30d',
+          'Renegociação e Acordo pendente',
+        ],
       },
       {
         idOperacao: 'OP-004',
@@ -241,8 +298,9 @@ export class DashboardExecutivoService {
         numeroBox: '1179',
         setor: 'Setor Azul',
         segmento: 'Moda Infantil',
+        grauRisco: 'ALTO',
         totalSinaisAtencao: 2,
-        sinais: ['Completude cadastral 70%', 'Sem produtos no catálogo'],
+        sinais: ['Completude cadastral 70%', 'Sem produtos no catálogo vitrine'],
       },
       {
         idOperacao: 'OP-005',
@@ -252,8 +310,9 @@ export class DashboardExecutivoService {
         numeroBox: '1180',
         setor: 'Setor Azul',
         segmento: 'Bijuterias e Bolsas',
+        grauRisco: 'MEDIO',
         totalSinaisAtencao: 2,
-        sinais: ['Não aderiu a nenhuma campanha', 'Completude 60%'],
+        sinais: ['Não aderiu a nenhuma campanha vigente', 'Completude cadastral 60%'],
       },
     ];
 
@@ -265,14 +324,31 @@ export class DashboardExecutivoService {
       prioridadesExecutivas = prioridadesExecutivas.filter((p) => p.segmento === filtros.segmento);
     }
 
-    // 7. Bloco Restrito
+    // 7. Bloco Restrito de Governança Financeira & Auditoria Fiscal
     let blocoRestrito: BlocoRestritoFinanceiro | undefined = undefined;
     if (isAdminOuFinanceiro) {
+      // Obter dados reais de auditoria se disponíveis
+      const kpisAuditoria = AuditoriaVendasService.obterKPIs();
+      const carteiraFin = FinanceiroRestritoService.obterCarteiraGlobal({}, 'ADMIN');
+
+      const declarados = (kpisAuditoria.faturamentoDeclaradoTotal || 415000) * fatorEscala;
+      const auditados = (kpisAuditoria.faturamentoAuditadoTotal || 480000) * fatorEscala;
+      const diferenca = auditados - declarados;
+      const aluguelRef = (kpisAuditoria.aluguelReferenciaTotal || 20225) * fatorEscala;
+
+      const inadimplentesCount = carteiraFin.filter((c) => c.situacao === 'INADIMPLENTE').length || Math.round(142 * fatorEscala);
+      const saldoVencido = carteiraFin.reduce((acc, c) => acc + c.saldoTotalVencido, 0) || Math.round(348500.0 * fatorEscala);
+
       blocoRestrito = {
         contratosAtivos: Math.round(4720 * fatorEscala),
-        permissionariosInadimplentes: Math.max(1, Math.round(142 * fatorEscala)),
-        saldoTotalVencido: Math.round(348500.0 * fatorEscala),
-        auditoriasComDivergencia: Math.max(1, Math.round(28 * fatorEscala)),
+        permissionariosInadimplentes: Math.max(1, inadimplentesCount),
+        saldoTotalVencido: saldoVencido,
+        taxaAdimplencia: 96.8,
+        auditoriasComDivergencia: Math.max(1, kpisAuditoria.totalDivergentes || Math.round(28 * fatorEscala)),
+        faturamentoDeclaradoTotal: Math.round(declarados),
+        faturamentoAuditadoTotal: Math.round(auditados),
+        diferencaFaturamentoTotal: Math.round(diferenca),
+        aluguelReferenciaTotal: Math.round(aluguelRef),
       };
     }
 
@@ -287,6 +363,80 @@ export class DashboardExecutivoService {
       prioridadesExecutivas,
       blocoRestrito,
     };
+  }
+
+  /**
+   * Exporta os dados consolidados do dashboard em formato CSV estruturado
+   */
+  static exportarRelatorioExecutivoCSV(
+    userRole: string = 'ADMIN',
+    filtros: FiltrosDashboardExecutivo = {}
+  ): string {
+    const dados = this.obterDadosDashboard(userRole, filtros);
+    const linhas: string[] = [];
+
+    linhas.push('RELATÓRIO EXECUTIVO & BI OPERACIONAL — CENTRO FASHION FORTALEZA');
+    linhas.push(`Data de Geração: ${dados.dataGeracao}`);
+    linhas.push(`Filtros: Setor=${dados.filtrosAplicados.setor || 'TODOS'}; Segmento=${dados.filtrosAplicados.segmento || 'TODOS'}`);
+    linhas.push('');
+
+    // Seção 1: Indicadores Globais
+    linhas.push('--- 1. INDICADORES GLOBAIS DO MALL ---');
+    linhas.push('Métrica;Valor');
+    linhas.push(`Operações Ativas;${dados.resumoKPIs.totalOperacoes}`);
+    linhas.push(`Espaços Totais Mapeados;${dados.resumoKPIs.espacosAtuais}`);
+    linhas.push(`Espaços Vagos;${dados.resumoKPIs.espacosVagos}`);
+    linhas.push(`Taxa de Ocupação;${dados.resumoKPIs.taxaOcupacao}%`);
+    linhas.push(`Taxa de Vacância;${dados.resumoKPIs.taxaVacancia}%`);
+    linhas.push(`Completude Cadastral Média;${dados.resumoKPIs.completudeMedia}%`);
+    linhas.push(`Operações 100% Cadastradas;${dados.resumoKPIs.operacoesConcluidas}`);
+    linhas.push(`Operações com Contato Direto;${dados.resumoKPIs.operacoesComContato}`);
+    linhas.push(`Operações com Mix/Catálogo;${dados.resumoKPIs.operacoesComMixProduto}`);
+    linhas.push(`Operações em Campanhas Ativas;${dados.resumoKPIs.operacoesComCampanha}`);
+    linhas.push(`Operações Visitadas em 30 Dias;${dados.resumoKPIs.visitadasUltimos30Dias}`);
+    linhas.push('');
+
+    // Seção 2: Ocupação por Setor
+    linhas.push('--- 2. OCUPAÇÃO POR SETOR E PISO ---');
+    linhas.push('Setor;Piso;Total Espaços;Operações Ativas;Vagos;Taxa Ocupação;Completude');
+    dados.coberturaSetores.forEach((s) => {
+      linhas.push(`${s.setorNome};${s.piso};${s.totalEspacos};${s.operacoesAtivas};${s.espacosVagos};${s.taxaOcupacao}%;${s.completudeMedia}%`);
+    });
+    linhas.push('');
+
+    // Seção 3: Mix de Merchandising
+    linhas.push('--- 3. MIX COMERCIAL POR SEGMENTO ---');
+    linhas.push('Segmento;Quantidade de Lojas;Percentual');
+    dados.mixSegmentos.forEach((m) => {
+      linhas.push(`${m.segmento};${m.quantidadeLojas};${m.percentual}%`);
+    });
+    linhas.push('');
+
+    // Seção 4: Bloco Restrito Financeiro e Fiscal (se autorizado)
+    if (dados.blocoRestrito) {
+      linhas.push('--- 4. GOVERNANÇA FINANCEIRA E AUDITORIA FISCAL (ACESSO RESTRITO) ---');
+      linhas.push('Indicador;Valor');
+      linhas.push(`Contratos Ativos;${dados.blocoRestrito.contratosAtivos}`);
+      linhas.push(`Taxa de Adimplência Geral;${dados.blocoRestrito.taxaAdimplencia}%`);
+      linhas.push(`Permissionários Inadimplentes;${dados.blocoRestrito.permissionariosInadimplentes}`);
+      linhas.push(`Saldo Total Vencido;${dados.blocoRestrito.saldoTotalVencido.toFixed(2)}`);
+      linhas.push(`Auditorias com Divergência Fiscal;${dados.blocoRestrito.auditoriasComDivergencia}`);
+      linhas.push(`Faturamento Declarado;${dados.blocoRestrito.faturamentoDeclaradoTotal.toFixed(2)}`);
+      linhas.push(`Faturamento Auditado;${dados.blocoRestrito.faturamentoAuditadoTotal.toFixed(2)}`);
+      linhas.push(`Diferença de Faturamento;${dados.blocoRestrito.diferencaFaturamentoTotal.toFixed(2)}`);
+      linhas.push(`Aluguel de Referência Apurado;${dados.blocoRestrito.aluguelReferenciaTotal.toFixed(2)}`);
+      linhas.push('');
+    }
+
+    // Seção 5: Matriz de Riscos
+    linhas.push('--- 5. MATRIZ DE RISCO OPERACIONAL & PRIORIDADES EXECUTIVAS ---');
+    linhas.push('Box;Loja;Razão Social;Setor;Segmento;Grau de Risco;Alertas Identificados');
+    dados.prioridadesExecutivas.forEach((p) => {
+      const sinais = p.sinais.join(' | ');
+      linhas.push(`${p.numeroBox};${p.nomeFantasia};${p.razaoSocial};${p.setor};${p.segmento};${p.grauRisco};"${sinais}"`);
+    });
+
+    return linhas.join('\n');
   }
 
   static formatarMoeda(valor: number): string {

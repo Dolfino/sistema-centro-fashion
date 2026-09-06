@@ -22,6 +22,8 @@ interface DashboardExecutivoModalProps {
   onVerNoMapa: (idLojaMapa: string, numeroBox: string) => void;
 }
 
+type TabExecutiva = 'TODOS' | 'SETORES' | 'MIX' | 'FINANCEIRO' | 'RISCOS';
+
 export const DashboardExecutivoModal: React.FC<DashboardExecutivoModalProps> = ({
   visible,
   userRole = 'ADMIN',
@@ -32,6 +34,8 @@ export const DashboardExecutivoModal: React.FC<DashboardExecutivoModalProps> = (
   const [dados, setDados] = useState<DadosDashboardExecutivo | null>(null);
   const [filtroSetor, setFiltroSetor] = useState<string>('TODOS');
   const [filtroSegmento, setFiltroSegmento] = useState<string>('TODOS');
+  const [abaAtiva, setAbaAtiva] = useState<TabExecutiva>('TODOS');
+  const [mensagemExportacao, setMensagemExportacao] = useState<string | null>(null);
 
   const carregarDados = () => {
     const filtros: FiltrosDashboardExecutivo = {
@@ -57,28 +61,75 @@ export const DashboardExecutivoModal: React.FC<DashboardExecutivoModalProps> = (
     setFiltroSegmento('TODOS');
   };
 
+  const handleExportarCSV = () => {
+    try {
+      const csv = DashboardExecutivoService.exportarRelatorioExecutivoCSV(userRole, {
+        setor: filtroSetor,
+        segmento: filtroSegmento,
+      });
+
+      if (typeof window !== 'undefined' && typeof document !== 'undefined') {
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `relatorio_executivo_bi_${Date.now()}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      }
+
+      setMensagemExportacao('Relatório executivo exportado com sucesso em .CSV!');
+      setTimeout(() => setMensagemExportacao(null), 4000);
+    } catch {
+      setMensagemExportacao('Erro ao exportar o relatório.');
+      setTimeout(() => setMensagemExportacao(null), 3000);
+    }
+  };
+
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
-      <View style={styles.overlay}>
+      <View style={styles.overlay} id="dashboardExecutivoModal">
         <View style={styles.container}>
           {/* Header Executivo */}
           <View style={styles.header}>
             <View style={styles.headerTitleGroup}>
               <View style={styles.badgeRow}>
                 <View style={styles.headerBadge}>
-                  <Text style={styles.headerBadgeText}>FASE L4.1 • RECORTE ANALÍTICO INTERATIVO</Text>
+                  <Text style={styles.headerBadgeText}>FASE L4.0 • DASHBOARD EXECUTIVO & BI</Text>
                 </View>
                 <Text style={styles.dataGeracaoText}>Apuração: {dados.dataGeracao}</Text>
               </View>
               <Text style={styles.headerTitle}>Dashboard Executivo & Inteligência Comercial</Text>
               <Text style={styles.headerSubtitle}>
-                Painel analítico e exploração dinâmica do Centro Fashion Fortaleza
+                Consolidação macrogencial de ocupação, vacância, mix, finanças e riscos do Centro Fashion Fortaleza
               </Text>
             </View>
-            <TouchableOpacity style={styles.closeBtn} onPress={onClose}>
-              <Text style={styles.closeBtnText}>✕</Text>
-            </TouchableOpacity>
+
+            <View style={styles.headerActionGroup}>
+              <TouchableOpacity
+                id="btnExportarCsvExecutivo"
+                style={styles.btnExportar}
+                onPress={handleExportarCSV}
+                accessibilityLabel="Exportar Relatório CSV"
+              >
+                <Text style={styles.btnExportarIcon}>📥</Text>
+                <Text style={styles.btnExportarText}>Exportar CSV</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.closeBtn} onPress={onClose}>
+                <Text style={styles.closeBtnText}>✕</Text>
+              </TouchableOpacity>
+            </View>
           </View>
+
+          {/* Alerta temporário de exportação */}
+          {mensagemExportacao && (
+            <View style={styles.alertSuccess}>
+              <Text style={styles.alertSuccessText}>✓ {mensagemExportacao}</Text>
+            </View>
+          )}
 
           {/* Barra de Filtros Globais Dinâmicos (L4.1) */}
           <View style={styles.filtrosBar}>
@@ -150,64 +201,108 @@ export const DashboardExecutivoModal: React.FC<DashboardExecutivoModalProps> = (
             )}
           </View>
 
+          {/* Abas de Navegação Temática do BI */}
+          <View style={styles.tabsNavRow}>
+            {[
+              { key: 'TODOS', label: '📊 Visão Executiva' },
+              { key: 'SETORES', label: '🏢 Setores & Ocupação' },
+              { key: 'MIX', label: '👗 Mix Comercial' },
+              { key: 'FINANCEIRO', label: '💰 Finanças & Fiscal (RBAC)' },
+              { key: 'RISCOS', label: '🚨 Matriz de Riscos' },
+            ].map((tab) => {
+              const ativa = abaAtiva === tab.key;
+              return (
+                <TouchableOpacity
+                  key={tab.key}
+                  style={[styles.tabNavBtn, ativa && styles.tabNavBtnAtiva]}
+                  onPress={() => setAbaAtiva(tab.key as TabExecutiva)}
+                >
+                  <Text style={[styles.tabNavBtnText, ativa && styles.tabNavBtnTextAtiva]}>
+                    {tab.label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+
           <ScrollView style={styles.scrollArea} showsVerticalScrollIndicator={false}>
-            {/* 1. Resumo Executivo - KPIs Principais */}
-            <View style={styles.kpiGrid}>
-              <View style={[styles.kpiCard, { borderColor: '#3b82f6' }]}>
-                <Text style={[styles.kpiValor, { color: '#38bdf8' }]}>
-                  {dados.resumoKPIs.totalOperacoes.toLocaleString('pt-BR')}
-                </Text>
-                <Text style={styles.kpiRotulo}>Operações no Recorte</Text>
-                <Text style={styles.kpiSub}>Em {dados.resumoKPIs.espacosAtuais.toLocaleString('pt-BR')} boxes</Text>
-              </View>
+            {/* 1. Resumo Executivo - KPIs Principais (Visível na aba TODOS ou em qualquer aba no topo) */}
+            {(abaAtiva === 'TODOS' || abaAtiva === 'SETORES') && (
+              <View style={styles.kpiGrid}>
+                <View style={[styles.kpiCard, { borderColor: '#3b82f6' }]}>
+                  <Text style={[styles.kpiValor, { color: '#38bdf8' }]}>
+                    {dados.resumoKPIs.taxaOcupacao}%
+                  </Text>
+                  <Text style={styles.kpiRotulo}>Taxa de Ocupação</Text>
+                  <Text style={styles.kpiSub}>
+                    {dados.resumoKPIs.totalOperacoes.toLocaleString('pt-BR')} de {dados.resumoKPIs.espacosAtuais.toLocaleString('pt-BR')} boxes
+                  </Text>
+                </View>
 
-              <View style={[styles.kpiCard, { borderColor: '#10b981' }]}>
-                <Text style={[styles.kpiValor, { color: '#10b981' }]}>
-                  {dados.resumoKPIs.completudeMedia}%
-                </Text>
-                <Text style={styles.kpiRotulo}>Completude Média</Text>
-                <Text style={styles.kpiSub}>{dados.resumoKPIs.operacoesConcluidas.toLocaleString('pt-BR')} 100% concluídas</Text>
-              </View>
+                <View style={[styles.kpiCard, { borderColor: '#10b981' }]}>
+                  <Text style={[styles.kpiValor, { color: '#10b981' }]}>
+                    {dados.resumoKPIs.completudeMedia}%
+                  </Text>
+                  <Text style={styles.kpiRotulo}>Completude Média</Text>
+                  <Text style={styles.kpiSub}>
+                    {dados.resumoKPIs.operacoesConcluidas.toLocaleString('pt-BR')} 100% concluídas
+                  </Text>
+                </View>
 
-              <View style={[styles.kpiCard, { borderColor: '#f59e0b' }]}>
-                <Text style={[styles.kpiValor, { color: '#f59e0b' }]}>
-                  {dados.resumoKPIs.operacoesComCampanha.toLocaleString('pt-BR')}
-                </Text>
-                <Text style={styles.kpiRotulo}>Em Campanhas</Text>
-                <Text style={styles.kpiSub}>Aderiram a eventos do mall</Text>
-              </View>
+                <View style={[styles.kpiCard, { borderColor: '#f59e0b' }]}>
+                  <Text style={[styles.kpiValor, { color: '#f59e0b' }]}>
+                    {dados.resumoKPIs.operacoesComCampanha.toLocaleString('pt-BR')}
+                  </Text>
+                  <Text style={styles.kpiRotulo}>Em Campanhas</Text>
+                  <Text style={styles.kpiSub}>Aderiram a promoções vigentes</Text>
+                </View>
 
-              <View style={[styles.kpiCard, { borderColor: '#a855f7' }]}>
-                <Text style={[styles.kpiValor, { color: '#a855f7' }]}>
-                  {dados.resumoKPIs.visitadasUltimos30Dias.toLocaleString('pt-BR')}
-                </Text>
-                <Text style={styles.kpiRotulo}>Visitadas em 30d</Text>
-                <Text style={styles.kpiSub}>Censo de campo recente</Text>
+                <View style={[styles.kpiCard, { borderColor: '#a855f7' }]}>
+                  <Text style={[styles.kpiValor, { color: '#a855f7' }]}>
+                    {dados.resumoKPIs.visitadasUltimos30Dias.toLocaleString('pt-BR')}
+                  </Text>
+                  <Text style={styles.kpiRotulo}>Visitadas em 30d</Text>
+                  <Text style={styles.kpiSub}>Censo presencial recente</Text>
+                </View>
               </View>
-            </View>
+            )}
 
-            {/* 2. Bloco Restrito de Diretoria (Contratos & Finanças) */}
-            {dados.blocoRestrito && (
+            {/* 2. Bloco Restrito de Diretoria (Contratos, Finanças e Auditoria Fiscal) */}
+            {dados.blocoRestrito && (abaAtiva === 'TODOS' || abaAtiva === 'FINANCEIRO') && (
               <View style={styles.blocoRestritoContainer}>
                 <View style={styles.blocoRestritoHeader}>
                   <View style={styles.securityTag}>
-                    <Text style={styles.securityTagText}>🔒 ACESSO RESTRITO • DIRETORIA & FINANCEIRO</Text>
+                    <Text style={styles.securityTagText}>🔒 ACESSO RESTRITO • DIRETORIA, AUDITORIA & FINANCEIRO</Text>
                   </View>
-                  <Text style={styles.blocoRestritoTitle}>Governança Financeira & Contratual</Text>
+                  <Text style={styles.blocoRestritoTitle}>Governança Financeira & Auditoria Fiscal de Vendas</Text>
                 </View>
 
                 <View style={styles.blocoRestritoGrid}>
                   <View style={styles.blocoRestritoItem}>
-                    <Text style={styles.blocoRestritoRotulo}>Contratos Ativos</Text>
-                    <Text style={styles.blocoRestritoValor}>
-                      {dados.blocoRestrito.contratosAtivos.toLocaleString('pt-BR')} un.
+                    <Text style={styles.blocoRestritoRotulo}>Faturamento Auditado</Text>
+                    <Text style={[styles.blocoRestritoValor, { color: '#38bdf8' }]}>
+                      {DashboardExecutivoService.formatarMoeda(dados.blocoRestrito.faturamentoAuditadoTotal)}
+                    </Text>
+                    <Text style={styles.blocoRestritoSub}>
+                      Declarado: {DashboardExecutivoService.formatarMoeda(dados.blocoRestrito.faturamentoDeclaradoTotal)}
                     </Text>
                   </View>
 
                   <View style={styles.blocoRestritoItem}>
-                    <Text style={styles.blocoRestritoRotulo}>Titulares Inadimplentes</Text>
-                    <Text style={[styles.blocoRestritoValor, { color: '#ef4444' }]}>
-                      {dados.blocoRestrito.permissionariosInadimplentes} titulares
+                    <Text style={styles.blocoRestritoRotulo}>Aluguel Referência</Text>
+                    <Text style={[styles.blocoRestritoValor, { color: '#10b981' }]}>
+                      {DashboardExecutivoService.formatarMoeda(dados.blocoRestrito.aluguelReferenciaTotal)}
+                    </Text>
+                    <Text style={styles.blocoRestritoSub}>Base percentual vs mínimo</Text>
+                  </View>
+
+                  <View style={styles.blocoRestritoItem}>
+                    <Text style={styles.blocoRestritoRotulo}>Taxa de Adimplência</Text>
+                    <Text style={[styles.blocoRestritoValor, { color: '#10b981' }]}>
+                      {dados.blocoRestrito.taxaAdimplencia}%
+                    </Text>
+                    <Text style={styles.blocoRestritoSub}>
+                      {dados.blocoRestrito.permissionariosInadimplentes} em atraso
                     </Text>
                   </View>
 
@@ -216,12 +311,8 @@ export const DashboardExecutivoModal: React.FC<DashboardExecutivoModalProps> = (
                     <Text style={[styles.blocoRestritoValor, { color: '#ef4444' }]}>
                       {DashboardExecutivoService.formatarMoeda(dados.blocoRestrito.saldoTotalVencido)}
                     </Text>
-                  </View>
-
-                  <View style={styles.blocoRestritoItem}>
-                    <Text style={styles.blocoRestritoRotulo}>Auditorias Divergentes</Text>
-                    <Text style={[styles.blocoRestritoValor, { color: '#f59e0b' }]}>
-                      {dados.blocoRestrito.auditoriasComDivergencia} casos
+                    <Text style={styles.blocoRestritoSub}>
+                      {dados.blocoRestrito.auditoriasComDivergencia} auditorias divergentes
                     </Text>
                   </View>
                 </View>
@@ -229,179 +320,209 @@ export const DashboardExecutivoModal: React.FC<DashboardExecutivoModalProps> = (
             )}
 
             {/* 3. Duas Colunas: Mix por Segmento & Cobertura por Setor */}
-            <View style={styles.twoColRow}>
-              {/* Coluna 1: Mix Comercial */}
-              <View style={styles.colCard}>
-                <Text style={styles.sectionTitle}>👗 Mix Comercial por Segmento</Text>
-                <View style={styles.segmentosList}>
-                  {dados.mixSegmentos.map((item) => (
-                    <View key={item.segmento} style={styles.segmentoRow}>
-                      <View style={styles.segmentoLabelRow}>
-                        <Text style={styles.segmentoNome}>{item.segmento}</Text>
-                        <Text style={styles.segmentoQtd}>
-                          {item.quantidadeLojas.toLocaleString('pt-BR')} ({item.percentual}%)
-                        </Text>
-                      </View>
-                      <View style={styles.barTrack}>
-                        <View
-                          style={[
-                            styles.barFill,
-                            { width: `${item.percentual * 2.5}%`, backgroundColor: item.corHex },
-                          ]}
-                        />
-                      </View>
-                    </View>
-                  ))}
-                </View>
-              </View>
-
-              {/* Coluna 2: Cobertura por Setor */}
-              <View style={styles.colCard}>
-                <Text style={styles.sectionTitle}>📍 Cobertura Cadastral por Setor</Text>
-                <View style={styles.setoresList}>
-                  {dados.coberturaSetores.map((setor) => (
-                    <View key={setor.setorNome} style={styles.setorRow}>
-                      <View style={styles.setorTopRow}>
-                        <View style={styles.setorIdentificacao}>
-                          <View style={[styles.setorDot, { backgroundColor: setor.corHex }]} />
-                          <Text style={styles.setorNome}>{setor.setorNome}</Text>
-                          <Text style={styles.setorPiso}>• {setor.piso}</Text>
-                        </View>
-                        <Text style={styles.setorCompletudeText}>
-                          {setor.completudeMedia}% cadastrado
-                        </Text>
-                      </View>
-                      <View style={styles.barTrack}>
-                        <View
-                          style={[
-                            styles.barFill,
-                            { width: `${setor.completudeMedia}%`, backgroundColor: setor.corHex },
-                          ]}
-                        />
-                      </View>
-                      <Text style={styles.setorSubInfo}>
-                        {setor.operacoesAtivas} lojas em {setor.totalEspacos} espaços mapeados
-                      </Text>
-                    </View>
-                  ))}
-                </View>
-              </View>
-            </View>
-
-            {/* 4. Recência das Visitas & Governança Cadastral */}
-            <View style={styles.twoColRow}>
-              <View style={styles.colCard}>
-                <Text style={styles.sectionTitle}>⏱️ Recência das Visitas de Campo</Text>
-                <View style={styles.recenciaGrid}>
-                  <View style={styles.recenciaItem}>
-                    <Text style={[styles.recenciaValor, { color: '#10b981' }]}>
-                      {dados.recenciaVisitas.ate7Dias}
-                    </Text>
-                    <Text style={styles.recenciaRotulo}>Até 7 dias</Text>
-                  </View>
-                  <View style={styles.recenciaItem}>
-                    <Text style={[styles.recenciaValor, { color: '#38bdf8' }]}>
-                      {dados.recenciaVisitas.de8A30Dias}
-                    </Text>
-                    <Text style={styles.recenciaRotulo}>8 a 30 dias</Text>
-                  </View>
-                  <View style={styles.recenciaItem}>
-                    <Text style={[styles.recenciaValor, { color: '#f59e0b' }]}>
-                      {dados.recenciaVisitas.de31A90Dias}
-                    </Text>
-                    <Text style={styles.recenciaRotulo}>31 a 90 dias</Text>
-                  </View>
-                  <View style={styles.recenciaItem}>
-                    <Text style={[styles.recenciaValor, { color: '#ef4444' }]}>
-                      {dados.recenciaVisitas.maisDe90Dias}
-                    </Text>
-                    <Text style={styles.recenciaRotulo}>+90 dias</Text>
-                  </View>
-                </View>
-              </View>
-
-              <View style={styles.colCard}>
-                <Text style={styles.sectionTitle}>🛡️ Qualidade da Base & Pendências</Text>
-                <View style={styles.governancaList}>
-                  <View style={styles.governancaRow}>
-                    <Text style={styles.governancaTexto}>Lojas sem nenhum contato cadastrado</Text>
-                    <Text style={[styles.governancaQtd, { color: '#ef4444' }]}>
-                      {dados.qualidadeGovernanca.semContato}
-                    </Text>
-                  </View>
-                  <View style={styles.governancaRow}>
-                    <Text style={styles.governancaTexto}>Sem catálogo de produtos / mix comercial</Text>
-                    <Text style={[styles.governancaQtd, { color: '#f59e0b' }]}>
-                      {dados.qualidadeGovernanca.semProdutoMix}
-                    </Text>
-                  </View>
-                  <View style={styles.governancaRow}>
-                    <Text style={styles.governancaTexto}>Sem participação em campanhas</Text>
-                    <Text style={styles.governancaQtd}>
-                      {dados.qualidadeGovernanca.semCampanhaAtiva}
-                    </Text>
-                  </View>
-                  <View style={styles.governancaRow}>
-                    <Text style={styles.governancaTexto}>Sem vistoria presencial nos últimos 30 dias</Text>
-                    <Text style={[styles.governancaQtd, { color: '#f59e0b' }]}>
-                      {dados.qualidadeGovernanca.semVisitaRecente}
-                    </Text>
-                  </View>
-                </View>
-              </View>
-            </View>
-
-            {/* 5. Prioridades Executivas (Gestão por Exceção) */}
-            <View style={styles.prioridadesSection}>
-              <View style={styles.prioridadesHeader}>
-                <Text style={styles.sectionTitle}>🚨 Prioridades Executivas • Gestão por Exceção</Text>
-                <Text style={styles.prioridadesSub}>
-                  Operações com maior concentração de alertas objetivos no recorte selecionado
-                </Text>
-              </View>
-
-              <View style={styles.prioridadesGrid}>
-                {dados.prioridadesExecutivas.map((item) => (
-                  <View key={item.idOperacao} style={styles.prioridadeCard}>
-                    <View style={styles.prioridadeTop}>
-                      <View>
-                        <Text style={styles.prioridadeBox}>Box {item.numeroBox}</Text>
-                        <Text style={styles.prioridadeNome}>{item.nomeFantasia}</Text>
-                        <Text style={styles.prioridadeLocal}>{item.setor} • {item.segmento}</Text>
-                      </View>
-                      <View style={styles.sinaisBadge}>
-                        <Text style={styles.sinaisBadgeText}>{item.totalSinaisAtencao} alertas</Text>
-                      </View>
-                    </View>
-
-                    <View style={styles.sinaisList}>
-                      {item.sinais.map((s, idx) => (
-                        <View key={idx} style={styles.sinalRow}>
-                          <Text style={styles.sinalDot}>⚠️</Text>
-                          <Text style={styles.sinalText}>{s}</Text>
+            {(abaAtiva === 'TODOS' || abaAtiva === 'MIX' || abaAtiva === 'SETORES') && (
+              <View style={styles.twoColRow}>
+                {/* Coluna 1: Mix Comercial */}
+                {(abaAtiva === 'TODOS' || abaAtiva === 'MIX') && (
+                  <View style={styles.colCard}>
+                    <Text style={styles.sectionTitle}>👗 Mix Comercial por Segmento</Text>
+                    <View style={styles.segmentosList}>
+                      {dados.mixSegmentos.map((item) => (
+                        <View key={item.segmento} style={styles.segmentoRow}>
+                          <View style={styles.segmentoLabelRow}>
+                            <Text style={styles.segmentoNome}>{item.segmento}</Text>
+                            <Text style={styles.segmentoQtd}>
+                              {item.quantidadeLojas.toLocaleString('pt-BR')} ({item.percentual}%)
+                            </Text>
+                          </View>
+                          <View style={styles.barTrack}>
+                            <View
+                              style={[
+                                styles.barFill,
+                                { width: `${item.percentual * 2.5}%`, backgroundColor: item.corHex },
+                              ]}
+                            />
+                          </View>
                         </View>
                       ))}
                     </View>
+                  </View>
+                )}
 
-                    <View style={styles.prioridadeActionsRow}>
-                      <TouchableOpacity
-                        style={styles.btnAcaoPrioridade}
-                        onPress={() => onAbrirFicha360(item.idLojaMapa)}
-                      >
-                        <Text style={styles.btnAcaoPrioridadeText}>🏬 Ficha 360°</Text>
-                      </TouchableOpacity>
-
-                      <TouchableOpacity
-                        style={styles.btnAcaoMapa}
-                        onPress={() => onVerNoMapa(item.idLojaMapa, item.numeroBox)}
-                      >
-                        <Text style={styles.btnAcaoMapaText}>🗺️ Ver no Mapa</Text>
-                      </TouchableOpacity>
+                {/* Coluna 2: Cobertura por Setor */}
+                {(abaAtiva === 'TODOS' || abaAtiva === 'SETORES') && (
+                  <View style={styles.colCard}>
+                    <Text style={styles.sectionTitle}>📍 Cobertura e Ocupação por Setor</Text>
+                    <View style={styles.setoresList}>
+                      {dados.coberturaSetores.map((setor) => (
+                        <View key={setor.setorNome} style={styles.setorRow}>
+                          <View style={styles.setorTopRow}>
+                            <View style={styles.setorIdentificacao}>
+                              <View style={[styles.setorDot, { backgroundColor: setor.corHex }]} />
+                              <Text style={styles.setorNome}>{setor.setorNome}</Text>
+                              <Text style={styles.setorPiso}>• {setor.piso}</Text>
+                            </View>
+                            <Text style={styles.setorCompletudeText}>
+                              {setor.taxaOcupacao}% ocupado
+                            </Text>
+                          </View>
+                          <View style={styles.barTrack}>
+                            <View
+                              style={[
+                                styles.barFill,
+                                { width: `${setor.taxaOcupacao}%`, backgroundColor: setor.corHex },
+                              ]}
+                            />
+                          </View>
+                          <Text style={styles.setorSubInfo}>
+                            {setor.operacoesAtivas} ativas • {setor.espacosVagos} vagos ({setor.totalEspacos} boxes)
+                          </Text>
+                        </View>
+                      ))}
                     </View>
                   </View>
-                ))}
+                )}
               </View>
-            </View>
+            )}
+
+            {/* 4. Recência das Visitas & Governança Cadastral */}
+            {(abaAtiva === 'TODOS' || abaAtiva === 'SETORES') && (
+              <View style={styles.twoColRow}>
+                <View style={styles.colCard}>
+                  <Text style={styles.sectionTitle}>⏱️ Recência das Visitas de Campo</Text>
+                  <View style={styles.recenciaGrid}>
+                    <View style={styles.recenciaItem}>
+                      <Text style={[styles.recenciaValor, { color: '#10b981' }]}>
+                        {dados.recenciaVisitas.ate7Dias}
+                      </Text>
+                      <Text style={styles.recenciaRotulo}>Até 7 dias</Text>
+                    </View>
+                    <View style={styles.recenciaItem}>
+                      <Text style={[styles.recenciaValor, { color: '#38bdf8' }]}>
+                        {dados.recenciaVisitas.de8A30Dias}
+                      </Text>
+                      <Text style={styles.recenciaRotulo}>8 a 30 dias</Text>
+                    </View>
+                    <View style={styles.recenciaItem}>
+                      <Text style={[styles.recenciaValor, { color: '#f59e0b' }]}>
+                        {dados.recenciaVisitas.de31A90Dias}
+                      </Text>
+                      <Text style={styles.recenciaRotulo}>31 a 90 dias</Text>
+                    </View>
+                    <View style={styles.recenciaItem}>
+                      <Text style={[styles.recenciaValor, { color: '#ef4444' }]}>
+                        {dados.recenciaVisitas.maisDe90Dias}
+                      </Text>
+                      <Text style={styles.recenciaRotulo}>+90 dias</Text>
+                    </View>
+                  </View>
+                </View>
+
+                <View style={styles.colCard}>
+                  <Text style={styles.sectionTitle}>🛡️ Qualidade da Base & Pendências</Text>
+                  <View style={styles.governancaList}>
+                    <View style={styles.governancaRow}>
+                      <Text style={styles.governancaTexto}>Lojas sem nenhum contato cadastrado</Text>
+                      <Text style={[styles.governancaQtd, { color: '#ef4444' }]}>
+                        {dados.qualidadeGovernanca.semContato}
+                      </Text>
+                    </View>
+                    <View style={styles.governancaRow}>
+                      <Text style={styles.governancaTexto}>Sem catálogo de produtos / mix comercial</Text>
+                      <Text style={[styles.governancaQtd, { color: '#f59e0b' }]}>
+                        {dados.qualidadeGovernanca.semProdutoMix}
+                      </Text>
+                    </View>
+                    <View style={styles.governancaRow}>
+                      <Text style={styles.governancaTexto}>Sem participação em campanhas</Text>
+                      <Text style={styles.governancaQtd}>
+                        {dados.qualidadeGovernanca.semCampanhaAtiva}
+                      </Text>
+                    </View>
+                    <View style={styles.governancaRow}>
+                      <Text style={styles.governancaTexto}>Sem vistoria presencial nos últimos 30 dias</Text>
+                      <Text style={[styles.governancaQtd, { color: '#f59e0b' }]}>
+                        {dados.qualidadeGovernanca.semVisitaRecente}
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+              </View>
+            )}
+
+            {/* 5. Prioridades Executivas / Matriz de Riscos (Gestão por Exceção) */}
+            {(abaAtiva === 'TODOS' || abaAtiva === 'RISCOS') && (
+              <View style={styles.prioridadesSection}>
+                <View style={styles.prioridadesHeader}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                    <Text style={styles.sectionTitle}>🚨 Matriz de Risco Operacional • Gestão por Exceção</Text>
+                    <View style={styles.matrizBadge}>
+                      <Text style={styles.matrizBadgeText}>{dados.prioridadesExecutivas.length} Casos Críticos</Text>
+                    </View>
+                  </View>
+                  <Text style={styles.prioridadesSub}>
+                    Operações com maior concentração de alertas fiscais, financeiros ou cadastrais no recorte
+                  </Text>
+                </View>
+
+                <View style={styles.prioridadesGrid}>
+                  {dados.prioridadesExecutivas.map((item) => {
+                    const isCritico = item.grauRisco === 'CRITICO';
+                    const isAlto = item.grauRisco === 'ALTO';
+                    const badgeColor = isCritico ? '#ef4444' : isAlto ? '#f59e0b' : '#38bdf8';
+
+                    return (
+                      <View key={item.idOperacao} style={styles.prioridadeCard}>
+                        <View style={styles.prioridadeTop}>
+                          <View>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                              <Text style={styles.prioridadeBox}>Box {item.numeroBox}</Text>
+                              <View style={[styles.grauBadge, { borderColor: badgeColor }]}>
+                                <Text style={[styles.grauBadgeText, { color: badgeColor }]}>
+                                  RISCO {item.grauRisco}
+                                </Text>
+                              </View>
+                            </View>
+                            <Text style={styles.prioridadeNome}>{item.nomeFantasia}</Text>
+                            <Text style={styles.prioridadeLocal}>
+                              {item.razaoSocial} • {item.setor} • {item.segmento}
+                            </Text>
+                          </View>
+                          <View style={styles.sinaisBadge}>
+                            <Text style={styles.sinaisBadgeText}>{item.totalSinaisAtencao} alertas</Text>
+                          </View>
+                        </View>
+
+                        <View style={styles.sinaisList}>
+                          {item.sinais.map((s, idx) => (
+                            <View key={idx} style={styles.sinalRow}>
+                              <Text style={styles.sinalDot}>⚠️</Text>
+                              <Text style={styles.sinalText}>{s}</Text>
+                            </View>
+                          ))}
+                        </View>
+
+                        <View style={styles.prioridadeActionsRow}>
+                          <TouchableOpacity
+                            style={styles.btnAcaoPrioridade}
+                            onPress={() => onAbrirFicha360(item.idLojaMapa)}
+                          >
+                            <Text style={styles.btnAcaoPrioridadeText}>🏬 Ficha 360°</Text>
+                          </TouchableOpacity>
+
+                          <TouchableOpacity
+                            style={styles.btnAcaoMapa}
+                            onPress={() => onVerNoMapa(item.idLojaMapa, item.numeroBox)}
+                          >
+                            <Text style={styles.btnAcaoMapaText}>🗺️ Ver no Mapa</Text>
+                          </TouchableOpacity>
+                        </View>
+                      </View>
+                    );
+                  })}
+                </View>
+              </View>
+            )}
           </ScrollView>
         </View>
       </View>
@@ -420,8 +541,8 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   container: {
-    width: Math.min(1100, width - 24),
-    maxHeight: Math.min(840, height - 24),
+    width: Math.min(1120, width - 24),
+    maxHeight: Math.min(860, height - 24),
     backgroundColor: '#0f172a',
     borderRadius: 20,
     borderWidth: 1,
@@ -445,6 +566,30 @@ const styles = StyleSheet.create({
   },
   headerTitleGroup: {
     flex: 1,
+  },
+  headerActionGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  btnExportar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#0284c7',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#38bdf8',
+  },
+  btnExportarIcon: {
+    fontSize: 14,
+  },
+  btnExportarText: {
+    color: '#ffffff',
+    fontSize: 12,
+    fontWeight: '700',
   },
   badgeRow: {
     flexDirection: 'row',
@@ -492,6 +637,18 @@ const styles = StyleSheet.create({
     color: '#cbd5e1',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  alertSuccess: {
+    backgroundColor: 'rgba(16, 185, 129, 0.2)',
+    borderBottomWidth: 1,
+    borderBottomColor: '#10b981',
+    paddingHorizontal: 20,
+    paddingVertical: 8,
+  },
+  alertSuccessText: {
+    color: '#6ee7b7',
+    fontSize: 12,
+    fontWeight: '700',
   },
   filtrosBar: {
     backgroundColor: '#131d36',
@@ -557,6 +714,33 @@ const styles = StyleSheet.create({
   recorteAtivoText: {
     fontSize: 11,
     color: '#38bdf8',
+  },
+  tabsNavRow: {
+    flexDirection: 'row',
+    backgroundColor: '#0f172a',
+    borderBottomWidth: 1,
+    borderBottomColor: '#334155',
+    paddingHorizontal: 20,
+    paddingTop: 8,
+    gap: 8,
+  },
+  tabNavBtn: {
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderBottomWidth: 2,
+    borderBottomColor: 'transparent',
+  },
+  tabNavBtnAtiva: {
+    borderBottomColor: '#38bdf8',
+  },
+  tabNavBtnText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#94a3b8',
+  },
+  tabNavBtnTextAtiva: {
+    color: '#38bdf8',
+    fontWeight: '800',
   },
   scrollArea: {
     padding: 20,
@@ -644,6 +828,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '800',
     color: '#f8fafc',
+  },
+  blocoRestritoSub: {
+    fontSize: 10,
+    color: '#64748b',
+    marginTop: 2,
   },
   twoColRow: {
     flexDirection: 'row',
@@ -790,6 +979,19 @@ const styles = StyleSheet.create({
   prioridadesHeader: {
     marginBottom: 14,
   },
+  matrizBadge: {
+    backgroundColor: 'rgba(239, 68, 68, 0.2)',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#ef4444',
+  },
+  matrizBadgeText: {
+    color: '#f87171',
+    fontSize: 11,
+    fontWeight: '800',
+  },
   prioridadesSub: {
     fontSize: 12,
     color: '#94a3b8',
@@ -816,10 +1018,21 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     color: '#38bdf8',
   },
+  grauBadge: {
+    paddingHorizontal: 6,
+    paddingVertical: 1,
+    borderRadius: 4,
+    borderWidth: 1,
+  },
+  grauBadgeText: {
+    fontSize: 9,
+    fontWeight: '800',
+  },
   prioridadeNome: {
     fontSize: 15,
     fontWeight: '700',
     color: '#f8fafc',
+    marginTop: 2,
   },
   prioridadeLocal: {
     fontSize: 11,

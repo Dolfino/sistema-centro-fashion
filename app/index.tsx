@@ -1075,6 +1075,20 @@ export default function LegacyMainShellScreen() {
               {!isMobile && <Text style={{ color: '#bfdbfe', fontSize: 12, fontWeight: '700' }}>Analítica</Text>}
             </TouchableOpacity>
 
+            {/* Botão Dashboard Executivo BI (L4.0) */}
+            <TouchableOpacity
+              id="btnDashboardToolbar"
+              style={[
+                styles.btnCentralizar,
+                { width: 'auto', paddingHorizontal: 10, gap: 4, flexDirection: 'row', backgroundColor: '#312e81', borderColor: '#6366f1' },
+              ]}
+              onPress={() => setDashboardOpen(true)}
+              aria-label="Dashboard Executivo BI"
+            >
+              <Text style={{ fontSize: 13 }}>🏙️</Text>
+              {!isMobile && <Text style={{ color: '#c7d2fe', fontSize: 12, fontWeight: '700' }}>BI Mall</Text>}
+            </TouchableOpacity>
+
             {/* Botão Menu (#appMenuBtnS22513) */}
             <TouchableOpacity
               id="appMenuBtnS22513"
