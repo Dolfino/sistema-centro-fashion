@@ -28,6 +28,10 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Set lower case owner name
+        run: |
+          echo "IMAGE_OWNER=${GITHUB_REPOSITORY_OWNER,,}" >> $GITHUB_ENV
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -46,8 +50,8 @@ jobs:
           file: ./Dockerfile.web
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/sistema-centro-fashion-web:latest
-            ghcr.io/${{ github.repository_owner }}/sistema-centro-fashion-web:${{ github.sha }}
+            ghcr.io/${{ env.IMAGE_OWNER }}/sistema-centro-fashion-web:latest
+            ghcr.io/${{ env.IMAGE_OWNER }}/sistema-centro-fashion-web:${{ github.sha }}
 
       - name: Build and push Backend API container
         uses: docker/build-push-action@v5
@@ -56,5 +60,5 @@ jobs:
           file: ./backend/Dockerfile
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/sistema-centro-fashion-api:latest
-            ghcr.io/${{ github.repository_owner }}/sistema-centro-fashion-api:${{ github.sha }}
+            ghcr.io/${{ env.IMAGE_OWNER }}/sistema-centro-fashion-api:latest
+            ghcr.io/${{ env.IMAGE_OWNER }}/sistema-centro-fashion-api:${{ github.sha }}
