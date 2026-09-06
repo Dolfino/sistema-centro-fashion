@@ -78,31 +78,102 @@ export interface ContratoEventoHistorico {
   observacao?: string;
 }
 
+export type TipoCobrancaFinanceira =
+  | 'ALUGUEL_MINIMO'
+  | 'FUNDO_PROMOCAO'
+  | 'CONDOMINIO'
+  | 'ENERGIA'
+  | 'TAXA_OPERACIONAL'
+  | 'MULTA'
+  | 'ENCARGOS'
+  | 'OUTRO';
+
+export type StatusLancamentoFinanceiro =
+  | 'PAGO'
+  | 'ABERTO'
+  | 'VENCIDO'
+  | 'A_VENCER'
+  | 'PARCIAL'
+  | 'VENCIDO_PARCIAL';
+
 export interface LancamentoFinanceiro {
   idLancamento: string;
+  idContrato?: string;
   competencia: string; // MM/AAAA
-  tipoCobranca: 'ALUGUEL_MINIMO' | 'CONDOMINIO' | 'FUNDO_PROMOCAO' | 'ENERGIA' | 'TAXA_OPERACIONAL';
+  tipoCobranca: TipoCobrancaFinanceira;
   descricao: string;
+  dataEmissao?: string;
   dataVencimento: string;
   dataPagamento?: string;
   valorOriginal: number;
+  acrescimos?: number;
+  descontos?: number;
   valorPago: number;
   saldoAberto: number;
-  status: 'PAGO' | 'ABERTO' | 'VENCIDO' | 'A_VENCER';
+  status: StatusLancamentoFinanceiro;
   diasAtraso: number;
+  documentoUrl?: string;
+  justificativaAjuste?: string;
+  ativo?: boolean;
 }
+
+export type TipoAcordoFinanceiro =
+  | 'PARCELAMENTO'
+  | 'RENEGOCIACAO'
+  | 'DESCONTO'
+  | 'CONFISSAO_DIVIDA'
+  | 'DESCONTO_PONTUAL'
+  | 'COMPOSICAO_DIVIDA'
+  | 'OUTRO';
+
+export type StatusAcordoFinanceiro =
+  | 'ATIVO'
+  | 'EM_ANDAMENTO'
+  | 'QUITADO'
+  | 'ENCERRADO'
+  | 'CANCELADO'
+  | 'CUMPRIDO'
+  | 'INADIMPLIDO';
 
 export interface AcordoFinanceiro {
   idAcordo: string;
-  tipo: 'PARCELAMENTO' | 'DESCONTO_PONTUAL' | 'COMPOSICAO_DIVIDA';
+  idContrato?: string;
+  tipo: TipoAcordoFinanceiro;
   dataAcordo: string;
   valorOriginal: number;
   valorNegociado: number;
   quantidadeParcelas: number;
   parcelasPagas: number;
-  status: 'CUMPRIDO' | 'EM_ANDAMENTO' | 'INADIMPLIDO';
+  status: StatusAcordoFinanceiro;
   responsavelNegociacao: string;
+  documentoUrl?: string;
   observacao?: string;
+  ativo?: boolean;
+}
+
+export interface HistoricoFinanceiroEvento {
+  idEvento: string;
+  tipoAlvo: 'LANCAMENTO' | 'ACORDO';
+  idAlvo: string;
+  idPermissionario: string;
+  idContrato?: string;
+  tipoEvento:
+    | 'LANCAMENTO_CRIADO'
+    | 'LANCAMENTO_AJUSTADO'
+    | 'PAGAMENTO_PARCIAL'
+    | 'BAIXA_TOTAL'
+    | 'ACORDO_CRIADO'
+    | 'ACORDO_ATUALIZADO';
+  dataHora: string;
+  idUsuario: string;
+  emailUsuario: string;
+  clientRequestId?: string;
+  valorMovimento?: number;
+  camposAlterados: string[];
+  snapshotAntes?: any;
+  snapshotDepois?: any;
+  observacao?: string;
+  ativo?: boolean;
 }
 
 export interface ResumoFinanceiroPermissionario {
@@ -912,6 +983,421 @@ export class FinanceiroRestritoService {
 
     return novoContrato;
   }
+
+  /**
+   * Recalcula os totais e status de adimplência do permissionário
+   */
+  static recalcularTotaisPermissionario(idPermissionario: string): void {
+    const perm = DADOS_FINANCEIROS_PERMISSIONARIOS[idPermissionario];
+    if (!perm) return;
+
+    let saldoTotalAberto = 0;
+    let saldoTotalVencido = 0;
+    let quantidadeLancamentosVencidos = 0;
+    let maiorAtrasoDias = 0;
+
+    for (const lan of perm.lancamentosRecentes) {
+      if (lan.ativo === false) continue;
+      saldoTotalAberto += lan.saldoAberto;
+
+      if (lan.status === 'VENCIDO' || lan.status === 'VENCIDO_PARCIAL') {
+        saldoTotalVencido += lan.saldoAberto;
+        quantidadeLancamentosVencidos += 1;
+        if (lan.diasAtraso > maiorAtrasoDias) {
+          maiorAtrasoDias = lan.diasAtraso;
+        }
+      }
+    }
+
+    perm.saldoTotalAberto = Math.max(0, saldoTotalAberto);
+    perm.saldoTotalVencido = Math.max(0, saldoTotalVencido);
+    perm.quantidadeLancamentosVencidos = quantidadeLancamentosVencidos;
+    perm.maiorAtrasoDias = maiorAtrasoDias;
+
+    if (quantidadeLancamentosVencidos > 0) {
+      perm.situacao = 'INADIMPLENTE';
+    } else if (saldoTotalAberto > 0) {
+      perm.situacao = 'PENDENTE';
+    } else if (perm.lancamentosRecentes.length > 0) {
+      perm.situacao = 'ADIMPLENTE';
+    } else {
+      perm.situacao = 'SEM_LANCAMENTOS';
+    }
+  }
+
+  /**
+   * Cria um novo lançamento financeiro (Fase L3.7)
+   */
+  static criarLancamento(
+    idPermissionario: string,
+    dados: Omit<LancamentoFinanceiro, 'idLancamento' | 'saldoAberto' | 'valorPago' | 'status' | 'diasAtraso'> & {
+      valorPago?: number;
+    },
+    userRole: string = 'ADMIN',
+    userId: string = 'USER-ADMIN',
+    userEmail: string = 'admin@cfmall.com.br',
+    clientRequestId?: string
+  ): LancamentoFinanceiro {
+    if (!this.verificarPermissaoEdicaoContrato(userRole)) {
+      throw new Error('ACESSO_NEGADO_L37: Apenas ADMIN e FINANCEIRO podem criar lançamentos.');
+    }
+
+    const perm = DADOS_FINANCEIROS_PERMISSIONARIOS[idPermissionario];
+    if (!perm) throw new Error(`Permissionário ${idPermissionario} não encontrado.`);
+
+    // Prevenção de duplicidade por idempotência
+    if (clientRequestId) {
+      const hist = HISTORICO_FINANCEIRO.find((h) => h.clientRequestId === clientRequestId);
+      if (hist) {
+        const lan = perm.lancamentosRecentes.find((l) => l.idLancamento === hist.idAlvo);
+        if (lan) return lan;
+      }
+    }
+
+    const valorOriginal = Number(dados.valorOriginal) || 0;
+    const acrescimos = Number(dados.acrescimos) || 0;
+    const descontos = Number(dados.descontos) || 0;
+    const valorPago = Number(dados.valorPago) || 0;
+    const saldoAberto = Math.max(0, valorOriginal + acrescimos - descontos - valorPago);
+
+    const agora = new Date();
+    const dataHoraIso = `${agora.toLocaleDateString('pt-BR')} ${agora.toLocaleTimeString('pt-BR')}`;
+    const idLancamento = `LAN-${Date.now().toString(36).toUpperCase()}`;
+
+    // Determina status
+    let status: StatusLancamentoFinanceiro = 'A_VENCER';
+    if (saldoAberto <= 0) {
+      status = 'PAGO';
+    } else if (valorPago > 0) {
+      status = 'PARCIAL';
+    }
+
+    const novoLancamento: LancamentoFinanceiro = {
+      idLancamento,
+      idContrato: dados.idContrato,
+      competencia: dados.competencia,
+      tipoCobranca: dados.tipoCobranca,
+      descricao: dados.descricao,
+      dataEmissao: dados.dataEmissao || agora.toLocaleDateString('pt-BR'),
+      dataVencimento: dados.dataVencimento,
+      valorOriginal,
+      acrescimos,
+      descontos,
+      valorPago,
+      saldoAberto,
+      status,
+      diasAtraso: 0,
+      ativo: true,
+    };
+
+    perm.lancamentosRecentes.unshift(novoLancamento);
+    this.recalcularTotaisPermissionario(idPermissionario);
+
+    HISTORICO_FINANCEIRO.unshift({
+      idEvento: `EVT-LAN-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      tipoAlvo: 'LANCAMENTO',
+      idAlvo: idLancamento,
+      idPermissionario,
+      idContrato: dados.idContrato,
+      tipoEvento: 'LANCAMENTO_CRIADO',
+      dataHora: dataHoraIso,
+      idUsuario: userId,
+      emailUsuario: userEmail,
+      clientRequestId,
+      valorMovimento: saldoAberto,
+      camposAlterados: ['NOVO_LANCAMENTO', 'VALOR_ORIGINAL', 'COMPETENCIA'],
+      snapshotDepois: novoLancamento,
+      observacao: dados.descricao,
+    });
+
+    return novoLancamento;
+  }
+
+  /**
+   * Ajusta valores de um lançamento existente com justificativa obrigatória (Fase L3.7)
+   */
+  static ajustarLancamento(
+    idPermissionario: string,
+    idLancamento: string,
+    dados: Partial<LancamentoFinanceiro>,
+    justificativa: string,
+    userRole: string = 'ADMIN',
+    userId: string = 'USER-ADMIN',
+    userEmail: string = 'admin@cfmall.com.br',
+    clientRequestId?: string
+  ): LancamentoFinanceiro {
+    if (!this.verificarPermissaoEdicaoContrato(userRole)) {
+      throw new Error('ACESSO_NEGADO_L37: Apenas ADMIN e FINANCEIRO podem ajustar lançamentos.');
+    }
+
+    if (!justificativa || !justificativa.trim()) {
+      throw new Error('JUSTIFICATIVA_OBRIGATORIA: Informe o motivo da alteração deste lançamento.');
+    }
+
+    const perm = DADOS_FINANCEIROS_PERMISSIONARIOS[idPermissionario];
+    if (!perm) throw new Error(`Permissionário ${idPermissionario} não encontrado.`);
+
+    const indice = perm.lancamentosRecentes.findIndex((l) => l.idLancamento === idLancamento);
+    if (indice === -1) throw new Error(`Lançamento ${idLancamento} não encontrado.`);
+
+    const anterior = { ...perm.lancamentosRecentes[indice] };
+    const valorOriginal = dados.valorOriginal !== undefined ? Number(dados.valorOriginal) : anterior.valorOriginal;
+    const acrescimos = dados.acrescimos !== undefined ? Number(dados.acrescimos) : (anterior.acrescimos || 0);
+    const descontos = dados.descontos !== undefined ? Number(dados.descontos) : (anterior.descontos || 0);
+    const valorTotal = valorOriginal + acrescimos - descontos;
+
+    if (valorTotal < anterior.valorPago) {
+      throw new Error(
+        `VALOR_INVALIDO: O valor ajustado (R$ ${valorTotal}) não pode ser inferior ao valor já pago (R$ ${anterior.valorPago}).`
+      );
+    }
+
+    const saldoAberto = Math.max(0, valorTotal - anterior.valorPago);
+    let status = anterior.status;
+    if (saldoAberto <= 0) {
+      status = 'PAGO';
+    } else if (anterior.valorPago > 0) {
+      status = 'PARCIAL';
+    } else {
+      status = 'A_VENCER';
+    }
+
+    const atualizado: LancamentoFinanceiro = {
+      ...anterior,
+      ...dados,
+      valorOriginal,
+      acrescimos,
+      descontos,
+      saldoAberto,
+      status,
+      justificativaAjuste: justificativa.trim(),
+    };
+
+    perm.lancamentosRecentes[indice] = atualizado;
+    this.recalcularTotaisPermissionario(idPermissionario);
+
+    const agora = new Date();
+    const dataHoraIso = `${agora.toLocaleDateString('pt-BR')} ${agora.toLocaleTimeString('pt-BR')}`;
+
+    HISTORICO_FINANCEIRO.unshift({
+      idEvento: `EVT-LAN-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      tipoAlvo: 'LANCAMENTO',
+      idAlvo: idLancamento,
+      idPermissionario,
+      idContrato: atualizado.idContrato,
+      tipoEvento: 'LANCAMENTO_AJUSTADO',
+      dataHora: dataHoraIso,
+      idUsuario: userId,
+      emailUsuario: userEmail,
+      clientRequestId,
+      valorMovimento: saldoAberto,
+      camposAlterados: ['AJUSTE_VALOR', 'ACRESCIMOS', 'DESCONTOS'],
+      snapshotAntes: anterior,
+      snapshotDepois: atualizado,
+      observacao: justificativa.trim(),
+    });
+
+    return atualizado;
+  }
+
+  /**
+   * Registra pagamento parcial ou baixa total (Fase L3.7)
+   */
+  static registrarPagamento(
+    idPermissionario: string,
+    idLancamento: string,
+    valorPagamento: number,
+    observacao: string,
+    dataPagamento?: string,
+    userRole: string = 'ADMIN',
+    userId: string = 'USER-ADMIN',
+    userEmail: string = 'admin@cfmall.com.br',
+    clientRequestId?: string
+  ): LancamentoFinanceiro {
+    if (!this.verificarPermissaoEdicaoContrato(userRole)) {
+      throw new Error('ACESSO_NEGADO_L37: Apenas ADMIN e FINANCEIRO podem registrar pagamentos.');
+    }
+
+    if (valorPagamento <= 0) {
+      throw new Error('VALOR_PAGAMENTO_INVALIDO: O valor do pagamento deve ser maior que zero.');
+    }
+
+    const perm = DADOS_FINANCEIROS_PERMISSIONARIOS[idPermissionario];
+    if (!perm) throw new Error(`Permissionário ${idPermissionario} não encontrado.`);
+
+    const indice = perm.lancamentosRecentes.findIndex((l) => l.idLancamento === idLancamento);
+    if (indice === -1) throw new Error(`Lançamento ${idLancamento} não encontrado.`);
+
+    const anterior = { ...perm.lancamentosRecentes[indice] };
+    if (valorPagamento > anterior.saldoAberto) {
+      throw new Error(
+        `VALOR_EXCEDE_SALDO: O pagamento informado (R$ ${valorPagamento}) excede o saldo em aberto (R$ ${anterior.saldoAberto}).`
+      );
+    }
+
+    const novoValorPago = anterior.valorPago + valorPagamento;
+    const novoSaldo = Math.max(0, anterior.saldoAberto - valorPagamento);
+    const dataPag = dataPagamento || new Date().toLocaleDateString('pt-BR');
+
+    let novoStatus: StatusLancamentoFinanceiro;
+    let tipoEvento: 'PAGAMENTO_PARCIAL' | 'BAIXA_TOTAL';
+
+    if (novoSaldo <= 0) {
+      novoStatus = 'PAGO';
+      tipoEvento = 'BAIXA_TOTAL';
+    } else {
+      novoStatus = anterior.status === 'VENCIDO' || anterior.status === 'VENCIDO_PARCIAL' ? 'VENCIDO_PARCIAL' : 'PARCIAL';
+      tipoEvento = 'PAGAMENTO_PARCIAL';
+    }
+
+    const atualizado: LancamentoFinanceiro = {
+      ...anterior,
+      valorPago: novoValorPago,
+      saldoAberto: novoSaldo,
+      status: novoStatus,
+      dataPagamento: dataPag,
+    };
+
+    perm.lancamentosRecentes[indice] = atualizado;
+    perm.dataUltimoPagamento = dataPag;
+    this.recalcularTotaisPermissionario(idPermissionario);
+
+    const agora = new Date();
+    const dataHoraIso = `${agora.toLocaleDateString('pt-BR')} ${agora.toLocaleTimeString('pt-BR')}`;
+
+    HISTORICO_FINANCEIRO.unshift({
+      idEvento: `EVT-PAG-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      tipoAlvo: 'LANCAMENTO',
+      idAlvo: idLancamento,
+      idPermissionario,
+      idContrato: atualizado.idContrato,
+      tipoEvento,
+      dataHora: dataHoraIso,
+      idUsuario: userId,
+      emailUsuario: userEmail,
+      clientRequestId,
+      valorMovimento: valorPagamento,
+      camposAlterados: ['VALOR_PAGO', 'SALDO_ABERTO', 'STATUS'],
+      snapshotAntes: anterior,
+      snapshotDepois: atualizado,
+      observacao: observacao.trim() || 'Registro de pagamento.',
+    });
+
+    return atualizado;
+  }
+
+  /**
+   * Salva ou Edita um Acordo Financeiro (Fase L3.7)
+   */
+  static salvarAcordo(
+    idPermissionario: string,
+    dadosAcordo: Partial<AcordoFinanceiro> & { tipo: TipoAcordoFinanceiro; valorOriginal: number; valorNegociado: number },
+    userRole: string = 'ADMIN',
+    userId: string = 'USER-ADMIN',
+    userEmail: string = 'admin@cfmall.com.br',
+    clientRequestId?: string
+  ): AcordoFinanceiro {
+    if (!this.verificarPermissaoEdicaoContrato(userRole)) {
+      throw new Error('ACESSO_NEGADO_L37: Apenas ADMIN e FINANCEIRO podem registrar acordos.');
+    }
+
+    const perm = DADOS_FINANCEIROS_PERMISSIONARIOS[idPermissionario];
+    if (!perm) throw new Error(`Permissionário ${idPermissionario} não encontrado.`);
+
+    const agora = new Date();
+    const dataHoraIso = `${agora.toLocaleDateString('pt-BR')} ${agora.toLocaleTimeString('pt-BR')}`;
+    const dataHoje = agora.toLocaleDateString('pt-BR');
+
+    // Edição
+    if (dadosAcordo.idAcordo) {
+      const idx = perm.acordos.findIndex((a) => a.idAcordo === dadosAcordo.idAcordo);
+      if (idx === -1) throw new Error(`Acordo ${dadosAcordo.idAcordo} não encontrado.`);
+
+      const anterior = { ...perm.acordos[idx] };
+      const atualizado: AcordoFinanceiro = {
+        ...anterior,
+        ...dadosAcordo,
+      };
+
+      perm.acordos[idx] = atualizado;
+
+      HISTORICO_FINANCEIRO.unshift({
+        idEvento: `EVT-ACD-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+        tipoAlvo: 'ACORDO',
+        idAlvo: atualizado.idAcordo,
+        idPermissionario,
+        idContrato: atualizado.idContrato,
+        tipoEvento: 'ACORDO_ATUALIZADO',
+        dataHora: dataHoraIso,
+        idUsuario: userId,
+        emailUsuario: userEmail,
+        clientRequestId,
+        camposAlterados: ['DADOS_ACORDO', 'STATUS'],
+        snapshotAntes: anterior,
+        snapshotDepois: atualizado,
+        observacao: atualizado.observacao || 'Atualização do acordo financeiro.',
+      });
+
+      return atualizado;
+    }
+
+    // Criação
+    const idAcordoNovo = `ACD-${Date.now().toString(36).toUpperCase()}`;
+    const novoAcordo: AcordoFinanceiro = {
+      idAcordo: idAcordoNovo,
+      idContrato: dadosAcordo.idContrato,
+      tipo: dadosAcordo.tipo,
+      dataAcordo: dadosAcordo.dataAcordo || dataHoje,
+      valorOriginal: Number(dadosAcordo.valorOriginal) || 0,
+      valorNegociado: Number(dadosAcordo.valorNegociado) || 0,
+      quantidadeParcelas: Number(dadosAcordo.quantidadeParcelas) || 1,
+      parcelasPagas: Number(dadosAcordo.parcelasPagas) || 0,
+      status: dadosAcordo.status || 'ATIVO',
+      responsavelNegociacao: dadosAcordo.responsavelNegociacao || 'Gerência Financeira',
+      observacao: dadosAcordo.observacao || '',
+      ativo: true,
+    };
+
+    perm.acordos.unshift(novoAcordo);
+
+    HISTORICO_FINANCEIRO.unshift({
+      idEvento: `EVT-ACD-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      tipoAlvo: 'ACORDO',
+      idAlvo: idAcordoNovo,
+      idPermissionario,
+      idContrato: novoAcordo.idContrato,
+      tipoEvento: 'ACORDO_CRIADO',
+      dataHora: dataHoraIso,
+      idUsuario: userId,
+      emailUsuario: userEmail,
+      clientRequestId,
+      valorMovimento: novoAcordo.valorNegociado,
+      camposAlterados: ['NOVO_ACORDO', 'VALOR_NEGOCIADO', 'PARCELAS'],
+      snapshotDepois: novoAcordo,
+      observacao: novoAcordo.observacao || 'Termo de acordo de parcelamento cadastrado.',
+    });
+
+    return novoAcordo;
+  }
+
+  /**
+   * Consulta a trilha de auditoria financeira do permissionário ou item alvo (Fase L3.7)
+   */
+  static obterHistoricoFinanceiro(
+    idPermissionario: string,
+    idAlvo?: string,
+    userRole: string = 'ADMIN'
+  ): HistoricoFinanceiroEvento[] {
+    if (!this.verificarPermissaoLeitura(userRole)) {
+      throw new Error('ACESSO_NEGADO_L37: Acesso não autorizado ao histórico financeiro.');
+    }
+
+    return HISTORICO_FINANCEIRO.filter((h) => {
+      if (h.idPermissionario !== idPermissionario) return false;
+      if (idAlvo && h.idAlvo !== idAlvo) return false;
+      return true;
+    });
+  }
 }
 
 // Repositórios em memória para L3.6 (Zero-Cache e Auditabilidade)
@@ -979,5 +1465,34 @@ const HISTORICO_CONTRATOS: ContratoEventoHistorico[] = [
     emailUsuario: 'contratos@cfmall.com.br',
     camposAlterados: ['NOVO_CONTRATO', 'ESPACOS'],
     observacao: 'Contrato padrão de locação comercial Box 1318.',
+  },
+];
+
+const HISTORICO_FINANCEIRO: HistoricoFinanceiroEvento[] = [
+  {
+    idEvento: 'EVT-INIT-LAN-001',
+    tipoAlvo: 'LANCAMENTO',
+    idAlvo: 'LAN-BELLA-02',
+    idPermissionario: 'PERM-002',
+    tipoEvento: 'LANCAMENTO_CRIADO',
+    dataHora: '10/08/2026 08:00:00',
+    idUsuario: 'SISTEMA-LEGADO',
+    emailUsuario: 'financeiro@cfmall.com.br',
+    valorMovimento: 3500,
+    camposAlterados: ['NOVO_LANCAMENTO', 'VALOR_ORIGINAL'],
+    observacao: 'Lançamento gerado pela competência mensal 08/2026.',
+  },
+  {
+    idEvento: 'EVT-INIT-PAG-001',
+    tipoAlvo: 'LANCAMENTO',
+    idAlvo: 'LAN-BELLA-01',
+    idPermissionario: 'PERM-002',
+    tipoEvento: 'BAIXA_TOTAL',
+    dataHora: '08/07/2026 14:22:00',
+    idUsuario: 'SISTEMA-LEGADO',
+    emailUsuario: 'financeiro@cfmall.com.br',
+    valorMovimento: 3500,
+    camposAlterados: ['VALOR_PAGO', 'STATUS'],
+    observacao: 'Liquidação integral via boleto compensado.',
   },
 ];

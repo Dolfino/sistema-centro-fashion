@@ -15,6 +15,9 @@ import {
   ResumoFinanceiroPermissionario,
   SituacaoFinanceira,
   ContratoLocacao,
+  LancamentoFinanceiro,
+  AcordoFinanceiro,
+  HistoricoFinanceiroEvento,
 } from '../services/financeiroRestritoService';
 
 interface FinanceiroRestritoModalProps {
@@ -23,6 +26,9 @@ interface FinanceiroRestritoModalProps {
   userRole?: string;
   onClose: () => void;
   onAbrirEditorContrato?: (idPermissionario: string, contrato?: ContratoLocacao | null) => void;
+  onAbrirEditorLancamento?: (idPermissionario: string, lancamento?: LancamentoFinanceiro | null) => void;
+  onAbrirRegistroPagamento?: (idPermissionario: string, lancamento: LancamentoFinanceiro) => void;
+  onAbrirEditorAcordo?: (idPermissionario: string, acordo?: AcordoFinanceiro | null) => void;
 }
 
 export const FinanceiroRestritoModal: React.FC<FinanceiroRestritoModalProps> = ({
@@ -31,9 +37,14 @@ export const FinanceiroRestritoModal: React.FC<FinanceiroRestritoModalProps> = (
   userRole = 'ADMIN',
   onClose,
   onAbrirEditorContrato,
+  onAbrirEditorLancamento,
+  onAbrirRegistroPagamento,
+  onAbrirEditorAcordo,
 }) => {
   const [dados, setDados] = useState<ResumoFinanceiroPermissionario | null>(null);
   const [erroAcesso, setErroAcesso] = useState<string | null>(null);
+  const [abaAtiva, setAbaAtiva] = useState<'FINANCEIRO' | 'AUDITORIA'>('FINANCEIRO');
+  const [historicoFinanceiro, setHistoricoFinanceiro] = useState<HistoricoFinanceiroEvento[]>([]);
 
   useEffect(() => {
     if (visible && idPermissionario) {
@@ -250,78 +261,266 @@ export const FinanceiroRestritoModal: React.FC<FinanceiroRestritoModalProps> = (
                 )}
               </View>
 
-              {/* Seção de Lançamentos Recentes */}
-              <View style={styles.section}>
-                <Text style={styles.sectionTitle}>💰 Lançamentos Recentes & Cobranças</Text>
-                <View style={styles.lancamentosList}>
-                  {dados.lancamentosRecentes.map((lan) => (
-                    <View key={lan.idLancamento} style={styles.lancamentoRow}>
-                      <View style={styles.lancamentoInfo}>
-                        <View style={styles.lancamentoMetaRow}>
-                          <Text style={styles.competenciaBadge}>{lan.competencia}</Text>
-                          <Text style={styles.lancamentoDescricao}>{lan.descricao}</Text>
-                        </View>
-                        <Text style={styles.lancamentoVencimento}>
-                          Vencimento: {lan.dataVencimento}
-                          {lan.diasAtraso > 0 && (
-                            <Text style={{ color: '#ef4444', fontWeight: 'bold' }}>
-                              {' '}• Atraso de {lan.diasAtraso} dias
-                            </Text>
-                          )}
-                        </Text>
-                      </View>
+              {/* Abas Superiores: Financeiro Ativo vs Auditoria Contábil */}
+              <View style={styles.abasFinanceiras}>
+                <TouchableOpacity
+                  style={[styles.abaFinBtn, abaAtiva === 'FINANCEIRO' && styles.abaFinBtnAtiva]}
+                  onPress={() => setAbaAtiva('FINANCEIRO')}
+                >
+                  <Ionicons
+                    name="wallet-outline"
+                    size={15}
+                    color={abaAtiva === 'FINANCEIRO' ? '#38bdf8' : '#94a3b8'}
+                  />
+                  <Text
+                    style={[
+                      styles.abaFinBtnText,
+                      abaAtiva === 'FINANCEIRO' && styles.abaFinBtnTextAtiva,
+                    ]}
+                  >
+                    Lançamentos, Cobranças & Acordos
+                  </Text>
+                </TouchableOpacity>
 
-                      <View style={styles.lancamentoValores}>
-                        <Text style={styles.valorOriginalText}>
-                          {FinanceiroRestritoService.formatarMoeda(lan.valorOriginal)}
-                        </Text>
-                        <View
-                          style={[
-                            styles.lancamentoStatusBadge,
-                            lan.status === 'PAGO' && { backgroundColor: 'rgba(16, 185, 129, 0.15)', borderColor: '#10b981' },
-                            lan.status === 'VENCIDO' && { backgroundColor: 'rgba(239, 68, 68, 0.15)', borderColor: '#ef4444' },
-                            lan.status === 'ABERTO' && { backgroundColor: 'rgba(245, 158, 11, 0.15)', borderColor: '#f59e0b' },
-                          ]}
-                        >
-                          <Text
-                            style={[
-                              styles.lancamentoStatusText,
-                              lan.status === 'PAGO' && { color: '#10b981' },
-                              lan.status === 'VENCIDO' && { color: '#ef4444' },
-                              lan.status === 'ABERTO' && { color: '#f59e0b' },
-                            ]}
-                          >
-                            {lan.status}
-                          </Text>
-                        </View>
-                      </View>
-                    </View>
-                  ))}
-                </View>
+                <TouchableOpacity
+                  style={[styles.abaFinBtn, abaAtiva === 'AUDITORIA' && styles.abaFinBtnAtiva]}
+                  onPress={() => setAbaAtiva('AUDITORIA')}
+                >
+                  <Ionicons
+                    name="shield-checkmark-outline"
+                    size={15}
+                    color={abaAtiva === 'AUDITORIA' ? '#10b981' : '#94a3b8'}
+                  />
+                  <Text
+                    style={[
+                      styles.abaFinBtnText,
+                      abaAtiva === 'AUDITORIA' && styles.abaFinBtnTextAtiva,
+                    ]}
+                  >
+                    Trilha de Auditoria ({historicoFinanceiro.length})
+                  </Text>
+                </TouchableOpacity>
               </View>
 
-              {/* Seção de Acordos e Termos de Confissão */}
-              {dados.acordos.length > 0 && (
-                <View style={styles.section}>
-                  <Text style={styles.sectionTitle}>🤝 Acordos Financeiros & Renegociações</Text>
-                  {dados.acordos.map((ac) => (
-                    <View key={ac.idAcordo} style={styles.acordoCard}>
-                      <View style={styles.acordoTopRow}>
-                        <Text style={styles.acordoTipo}>{ac.tipo}</Text>
-                        <Text style={styles.acordoStatus}>{ac.status}</Text>
-                      </View>
-                      <Text style={styles.acordoDescricao}>
-                        Valor original de {FinanceiroRestritoService.formatarMoeda(ac.valorOriginal)} negociado por{' '}
-                        <Text style={{ color: '#38bdf8', fontWeight: 'bold' }}>
-                          {FinanceiroRestritoService.formatarMoeda(ac.valorNegociado)}
-                        </Text>{' '}
-                        em {ac.quantidadeParcelas} parcelas.
+              {abaAtiva === 'FINANCEIRO' ? (
+                <>
+                  {/* Seção de Lançamentos Recentes (Fase L3.7) */}
+                  <View style={styles.section}>
+                    <View style={styles.sectionHeaderBetween}>
+                      <Text style={styles.sectionTitle}>
+                        💰 Lançamentos Financeiros ({dados.lancamentosRecentes.length})
                       </Text>
-                      <Text style={styles.acordoResponsavel}>
-                        Responsável: {ac.responsavelNegociacao} • Data: {ac.dataAcordo}
-                      </Text>
+                      {FinanceiroRestritoService.verificarPermissaoEdicaoContrato(userRole) &&
+                        onAbrirEditorLancamento && (
+                          <TouchableOpacity
+                            style={styles.btnNovoLancamento}
+                            onPress={() => onAbrirEditorLancamento(dados.idPermissionario, null)}
+                          >
+                            <Ionicons name="add-circle-outline" size={14} color="#fff" />
+                            <Text style={styles.btnNovoLancamentoText}>Novo Lançamento</Text>
+                          </TouchableOpacity>
+                        )}
                     </View>
-                  ))}
+
+                    <View style={styles.lancamentosList}>
+                      {dados.lancamentosRecentes.length === 0 ? (
+                        <View style={styles.emptyCard}>
+                          <Text style={styles.emptyCardText}>Nenhum lançamento financeiro registrado.</Text>
+                        </View>
+                      ) : (
+                        dados.lancamentosRecentes.map((lan) => (
+                          <View key={lan.idLancamento} style={styles.lancamentoRowContainer}>
+                            <View style={styles.lancamentoRow}>
+                              <View style={styles.lancamentoInfo}>
+                                <View style={styles.lancamentoMetaRow}>
+                                  <Text style={styles.competenciaBadge}>{lan.competencia}</Text>
+                                  <Text style={styles.lancamentoDescricao}>{lan.descricao}</Text>
+                                </View>
+                                <Text style={styles.lancamentoVencimento}>
+                                  Vencimento: {lan.dataVencimento}
+                                  {lan.diasAtraso > 0 && (
+                                    <Text style={{ color: '#ef4444', fontWeight: 'bold' }}>
+                                      {' '}• Atraso de {lan.diasAtraso} dias
+                                    </Text>
+                                  )}
+                                </Text>
+                                {(lan.acrescimos || lan.descontos) && (
+                                  <Text style={styles.lancamentoAjustesSub}>
+                                    Ajustes: +{FinanceiroRestritoService.formatarMoeda(lan.acrescimos || 0)} / -{FinanceiroRestritoService.formatarMoeda(lan.descontos || 0)}
+                                  </Text>
+                                )}
+                              </View>
+
+                              <View style={styles.lancamentoValores}>
+                                <Text style={styles.valorOriginalText}>
+                                  Orig: {FinanceiroRestritoService.formatarMoeda(lan.valorOriginal)}
+                                </Text>
+                                <Text style={[styles.saldoAbertoDestaque, { color: lan.saldoAberto > 0 ? '#ef4444' : '#10b981' }]}>
+                                  Saldo: {FinanceiroRestritoService.formatarMoeda(lan.saldoAberto)}
+                                </Text>
+                                <View
+                                  style={[
+                                    styles.lancamentoStatusBadge,
+                                    lan.status === 'PAGO' && { backgroundColor: 'rgba(16, 185, 129, 0.15)', borderColor: '#10b981' },
+                                    lan.status === 'VENCIDO' && { backgroundColor: 'rgba(239, 68, 68, 0.15)', borderColor: '#ef4444' },
+                                    lan.status === 'PARCIAL' && { backgroundColor: 'rgba(245, 158, 11, 0.15)', borderColor: '#f59e0b' },
+                                    lan.status === 'VENCIDO_PARCIAL' && { backgroundColor: 'rgba(239, 68, 68, 0.2)', borderColor: '#ef4444' },
+                                    lan.status === 'A_VENCER' && { backgroundColor: 'rgba(56, 189, 248, 0.15)', borderColor: '#38bdf8' },
+                                    lan.status === 'ABERTO' && { backgroundColor: 'rgba(245, 158, 11, 0.15)', borderColor: '#f59e0b' },
+                                  ]}
+                                >
+                                  <Text
+                                    style={[
+                                      styles.lancamentoStatusText,
+                                      lan.status === 'PAGO' && { color: '#10b981' },
+                                      lan.status === 'VENCIDO' && { color: '#ef4444' },
+                                      lan.status === 'PARCIAL' && { color: '#f59e0b' },
+                                      lan.status === 'VENCIDO_PARCIAL' && { color: '#ef4444' },
+                                      lan.status === 'A_VENCER' && { color: '#38bdf8' },
+                                      lan.status === 'ABERTO' && { color: '#f59e0b' },
+                                    ]}
+                                  >
+                                    {lan.status}
+                                  </Text>
+                                </View>
+                              </View>
+                            </View>
+
+                            {/* Botões de Ação por Lançamento (Fase L3.7) */}
+                            {FinanceiroRestritoService.verificarPermissaoEdicaoContrato(userRole) && (
+                              <View style={styles.lancamentoAcoesBar}>
+                                <TouchableOpacity
+                                  style={styles.btnAcaoAjustar}
+                                  onPress={() => onAbrirEditorLancamento && onAbrirEditorLancamento(dados.idPermissionario, lan)}
+                                >
+                                  <Ionicons name="options-outline" size={13} color="#cbd5e1" />
+                                  <Text style={styles.btnAcaoAjustarText}>Editar / Ajustar</Text>
+                                </TouchableOpacity>
+
+                                {lan.saldoAberto > 0 && onAbrirRegistroPagamento && (
+                                  <TouchableOpacity
+                                    style={styles.btnAcaoPagamento}
+                                    onPress={() => onAbrirRegistroPagamento(dados.idPermissionario, lan)}
+                                  >
+                                    <Ionicons name="card-outline" size={13} color="#fff" />
+                                    <Text style={styles.btnAcaoPagamentoText}>Registrar Pagamento</Text>
+                                  </TouchableOpacity>
+                                )}
+                              </View>
+                            )}
+                          </View>
+                        ))
+                      )}
+                    </View>
+                  </View>
+
+                  {/* Seção de Acordos Financeiros (Fase L3.7) */}
+                  <View style={styles.section}>
+                    <View style={styles.sectionHeaderBetween}>
+                      <Text style={styles.sectionTitle}>
+                        🤝 Acordos Financeiros & Termos ({dados.acordos.length})
+                      </Text>
+                      {FinanceiroRestritoService.verificarPermissaoEdicaoContrato(userRole) &&
+                        onAbrirEditorAcordo && (
+                          <TouchableOpacity
+                            style={styles.btnNovoAcordo}
+                            onPress={() => onAbrirEditorAcordo(dados.idPermissionario, null)}
+                          >
+                            <Ionicons name="add-circle-outline" size={14} color="#fff" />
+                            <Text style={styles.btnNovoAcordoText}>Novo Acordo</Text>
+                          </TouchableOpacity>
+                        )}
+                    </View>
+
+                    {dados.acordos.length === 0 ? (
+                      <View style={styles.emptyCard}>
+                        <Text style={styles.emptyCardText}>Nenhum termo de acordo registrado.</Text>
+                      </View>
+                    ) : (
+                      dados.acordos.map((ac) => (
+                        <View key={ac.idAcordo} style={styles.acordoCard}>
+                          <View style={styles.acordoTopRow}>
+                            <Text style={styles.acordoTipo}>{ac.tipo}</Text>
+                            <Text style={styles.acordoStatus}>{ac.status}</Text>
+                          </View>
+                          <Text style={styles.acordoDescricao}>
+                            Valor original de {FinanceiroRestritoService.formatarMoeda(ac.valorOriginal)} negociado por{' '}
+                            <Text style={{ color: '#38bdf8', fontWeight: 'bold' }}>
+                              {FinanceiroRestritoService.formatarMoeda(ac.valorNegociado)}
+                            </Text>{' '}
+                            em {ac.quantidadeParcelas} parcelas.
+                          </Text>
+                          <View style={styles.acordoFooterRow}>
+                            <Text style={styles.acordoResponsavel}>
+                              Responsável: {ac.responsavelNegociacao} • Data: {ac.dataAcordo}
+                            </Text>
+
+                            {FinanceiroRestritoService.verificarPermissaoEdicaoContrato(userRole) &&
+                              onAbrirEditorAcordo && (
+                                <TouchableOpacity
+                                  style={styles.btnEditarAcordo}
+                                  onPress={() => onAbrirEditorAcordo(dados.idPermissionario, ac)}
+                                >
+                                  <Ionicons name="create-outline" size={12} color="#f8fafc" />
+                                  <Text style={styles.btnEditarAcordoText}>Editar Acordo</Text>
+                                </TouchableOpacity>
+                              )}
+                          </View>
+                        </View>
+                      ))
+                    )}
+                  </View>
+                </>
+              ) : (
+                /* Aba de Auditoria Financeira Imutável */
+                <View style={styles.section}>
+                  <View style={styles.auditoriaHeaderCard}>
+                    <Ionicons name="shield-checkmark" size={18} color="#10b981" />
+                    <Text style={styles.auditoriaHeaderText}>
+                      Trilha de Auditoria Financeira Imutável (Fase L3.7). Todas as criações, ajustes de valor,
+                      amortizações e baixas são registradas com integridade estrita e append-only.
+                    </Text>
+                  </View>
+
+                  {historicoFinanceiro.length === 0 ? (
+                    <View style={styles.emptyCard}>
+                      <Text style={styles.emptyCardText}>Nenhum evento financeiro auditado para este titular.</Text>
+                    </View>
+                  ) : (
+                    historicoFinanceiro.map((evt) => (
+                      <View key={evt.idEvento} style={styles.auditoriaEventoCard}>
+                        <View style={styles.auditoriaEventoTop}>
+                          <View style={styles.auditoriaBadgeTipo}>
+                            <Text style={styles.auditoriaBadgeTipoText}>{evt.tipoEvento}</Text>
+                          </View>
+                          <Text style={styles.auditoriaData}>{evt.dataHora}</Text>
+                        </View>
+
+                        <Text style={styles.auditoriaUsuario}>
+                          Operador: <Text style={{ color: '#cbd5e1' }}>{evt.emailUsuario}</Text> ({evt.idUsuario})
+                        </Text>
+
+                        {evt.valorMovimento !== undefined && (
+                          <Text style={styles.auditoriaValor}>
+                            Valor Movimentado: {FinanceiroRestritoService.formatarMoeda(evt.valorMovimento)}
+                          </Text>
+                        )}
+
+                        <View style={styles.auditoriaCamposRow}>
+                          <Text style={styles.auditoriaCamposLabel}>Campos: </Text>
+                          {evt.camposAlterados.map((c) => (
+                            <View key={c} style={styles.auditoriaCampoTag}>
+                              <Text style={styles.auditoriaCampoTagText}>{c}</Text>
+                            </View>
+                          ))}
+                        </View>
+
+                        {evt.observacao ? (
+                          <Text style={styles.auditoriaObs}>"{evt.observacao}"</Text>
+                        ) : null}
+                      </View>
+                    ))
+                  )}
                 </View>
               )}
             </ScrollView>
@@ -753,5 +952,222 @@ const styles = StyleSheet.create({
     color: '#f8fafc',
     fontSize: 11,
     fontWeight: 'bold',
+  },
+  abasFinanceiras: {
+    flexDirection: 'row',
+    borderBottomWidth: 1,
+    borderBottomColor: '#1e293b',
+    marginBottom: 16,
+    gap: 8,
+  },
+  abaFinBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderBottomWidth: 2,
+    borderBottomColor: 'transparent',
+  },
+  abaFinBtnAtiva: {
+    borderBottomColor: '#38bdf8',
+  },
+  abaFinBtnText: {
+    fontSize: 13,
+    color: '#94a3b8',
+    fontWeight: '600',
+  },
+  abaFinBtnTextAtiva: {
+    color: '#38bdf8',
+    fontWeight: '800',
+  },
+  btnNovoLancamento: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    backgroundColor: '#0284c7',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+  },
+  btnNovoLancamentoText: {
+    color: '#fff',
+    fontSize: 11,
+    fontWeight: 'bold',
+  },
+  lancamentoRowContainer: {
+    backgroundColor: '#1e293b',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#334155',
+    overflow: 'hidden',
+  },
+  lancamentoAjustesSub: {
+    fontSize: 10,
+    color: '#f59e0b',
+    marginTop: 2,
+  },
+  saldoAbertoDestaque: {
+    fontSize: 12,
+    fontWeight: '800',
+  },
+  lancamentoAcoesBar: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    backgroundColor: '#131d36',
+    borderTopWidth: 1,
+    borderTopColor: '#24324d',
+  },
+  btnAcaoAjustar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#334155',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 5,
+  },
+  btnAcaoAjustarText: {
+    color: '#cbd5e1',
+    fontSize: 11,
+    fontWeight: '600',
+  },
+  btnAcaoPagamento: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#10b981',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 5,
+  },
+  btnAcaoPagamentoText: {
+    color: '#ffffff',
+    fontSize: 11,
+    fontWeight: 'bold',
+  },
+  btnNovoAcordo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    backgroundColor: '#d97706',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+  },
+  btnNovoAcordoText: {
+    color: '#fff',
+    fontSize: 11,
+    fontWeight: 'bold',
+  },
+  acordoFooterRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 8,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: '#334155',
+  },
+  btnEditarAcordo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#334155',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 5,
+  },
+  btnEditarAcordoText: {
+    color: '#f8fafc',
+    fontSize: 11,
+    fontWeight: 'bold',
+  },
+  auditoriaHeaderCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+    borderWidth: 1,
+    borderColor: '#10b981',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 12,
+  },
+  auditoriaHeaderText: {
+    fontSize: 12,
+    color: '#cbd5e1',
+    flex: 1,
+    lineHeight: 18,
+  },
+  auditoriaEventoCard: {
+    backgroundColor: '#1e293b',
+    borderWidth: 1,
+    borderColor: '#334155',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 10,
+  },
+  auditoriaEventoTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  auditoriaBadgeTipo: {
+    backgroundColor: 'rgba(56, 189, 248, 0.15)',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  auditoriaBadgeTipoText: {
+    fontSize: 11,
+    color: '#38bdf8',
+    fontWeight: 'bold',
+  },
+  auditoriaData: {
+    fontSize: 11,
+    color: '#94a3b8',
+  },
+  auditoriaUsuario: {
+    fontSize: 11,
+    color: '#94a3b8',
+    marginBottom: 4,
+  },
+  auditoriaValor: {
+    fontSize: 12,
+    color: '#10b981',
+    fontWeight: '700',
+    marginBottom: 4,
+  },
+  auditoriaCamposRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 4,
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  auditoriaCamposLabel: {
+    fontSize: 11,
+    color: '#64748b',
+  },
+  auditoriaCampoTag: {
+    backgroundColor: '#334155',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  auditoriaCampoTagText: {
+    fontSize: 10,
+    color: '#cbd5e1',
+  },
+  auditoriaObs: {
+    fontSize: 11,
+    color: '#f8fafc',
+    fontStyle: 'italic',
+    marginTop: 4,
   },
 });

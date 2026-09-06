@@ -26,7 +26,15 @@ import { CentralGestaoLojistasModal } from '../src/components/CentralGestaoLojis
 import { FinanceiroRestritoModal } from '../src/components/FinanceiroRestritoModal';
 import { CentralFinanceiraModal } from '../src/components/CentralFinanceiraModal';
 import { ContratoEditorModal } from '../src/components/ContratoEditorModal';
-import { ContratoLocacao } from '../src/services/financeiroRestritoService';
+import { LancamentoEditorModal } from '../src/components/LancamentoEditorModal';
+import { PagamentoRegistroModal } from '../src/components/PagamentoRegistroModal';
+import { AcordoEditorModal } from '../src/components/AcordoEditorModal';
+import {
+  ContratoLocacao,
+  LancamentoFinanceiro,
+  AcordoFinanceiro,
+  FinanceiroRestritoService,
+} from '../src/services/financeiroRestritoService';
 import { AtivoMallModal } from '../src/components/AtivoMallModal';
 import { AtivoMidiaPonto } from '../src/services/ativoMallService';
 import { CampanhaCentralModal } from '../src/components/CampanhaCentralModal';
@@ -200,13 +208,20 @@ export default function LegacyMainShellScreen() {
   const [lojaSelecionada360, setLojaSelecionada360] = useState<FichaLoja360 | null>(null);
   const [centralGestaoLojistasOpen, setCentralGestaoLojistasOpen] = useState<boolean>(false);
 
-  // Contratos & Financeiro Restrito (Fase L3.4, L3.5 e L3.6)
+  // Contratos & Financeiro Restrito (Fase L3.4, L3.5, L3.6 e L3.7)
   const [financeiroModalOpen, setFinanceiroModalOpen] = useState<boolean>(false);
   const [financeiroPermissionarioId, setFinanceiroPermissionarioId] = useState<string | null>(null);
   const [centralFinanceiraOpen, setCentralFinanceiraOpen] = useState<boolean>(false);
   const [contratoEditorOpen, setContratoEditorOpen] = useState<boolean>(false);
   const [contratoEditorPermissionarioId, setContratoEditorPermissionarioId] = useState<string | null>(null);
   const [contratoParaEditar, setContratoParaEditar] = useState<ContratoLocacao | null>(null);
+  const [lancamentoEditorOpen, setLancamentoEditorOpen] = useState<boolean>(false);
+  const [lancamentoParaAjustar, setLancamentoParaAjustar] = useState<LancamentoFinanceiro | null>(null);
+  const [pagamentoModalOpen, setPagamentoModalOpen] = useState<boolean>(false);
+  const [lancamentoParaPagamento, setLancamentoParaPagamento] = useState<LancamentoFinanceiro | null>(null);
+  const [acordoEditorOpen, setAcordoEditorOpen] = useState<boolean>(false);
+  const [acordoParaEditar, setAcordoParaEditar] = useState<AcordoFinanceiro | null>(null);
+  const [financeiroUpdateKey, setFinanceiroUpdateKey] = useState<number>(0);
 
   // Ativos do Mall & Fiscalização de Mídia Física (Paridade Google Apps Script)
   const [ativoMallOpen, setAtivoMallOpen] = useState<boolean>(false);
@@ -1427,8 +1442,10 @@ export default function LegacyMainShellScreen() {
         userRole="ADMIN"
       />
 
-      {/* 27. Modal de Contratos & Financeiro Restrito (Fase L3.4) */}
+
+      {/* 27. Modal de Contratos & Financeiro Restrito (Fase L3.4, L3.6 e L3.7) */}
       <FinanceiroRestritoModal
+        key={`fin-modal-${financeiroPermissionarioId}-${financeiroUpdateKey}`}
         visible={financeiroModalOpen}
         idPermissionario={financeiroPermissionarioId}
         userRole="ADMIN"
@@ -1441,10 +1458,26 @@ export default function LegacyMainShellScreen() {
           setContratoParaEditar(contrato || null);
           setContratoEditorOpen(true);
         }}
+        onAbrirEditorLancamento={(idPerm, lancamento) => {
+          setFinanceiroPermissionarioId(idPerm);
+          setLancamentoParaAjustar(lancamento || null);
+          setLancamentoEditorOpen(true);
+        }}
+        onAbrirRegistroPagamento={(idPerm, lancamento) => {
+          setFinanceiroPermissionarioId(idPerm);
+          setLancamentoParaPagamento(lancamento);
+          setPagamentoModalOpen(true);
+        }}
+        onAbrirEditorAcordo={(idPerm, acordo) => {
+          setFinanceiroPermissionarioId(idPerm);
+          setAcordoParaEditar(acordo || null);
+          setAcordoEditorOpen(true);
+        }}
       />
 
       {/* 28. Central Financeira e de Contratos (Fase L3.5) */}
       <CentralFinanceiraModal
+        key={`central-fin-${financeiroUpdateKey}`}
         visible={centralFinanceiraOpen}
         onClose={() => setCentralFinanceiraOpen(false)}
         userRole="ADMIN"
@@ -1478,6 +1511,63 @@ export default function LegacyMainShellScreen() {
           setContratoEditorOpen(false);
           setContratoEditorPermissionarioId(null);
           setContratoParaEditar(null);
+          setFinanceiroUpdateKey((k) => k + 1);
+        }}
+      />
+
+      {/* 30. Editor de Lançamentos Financeiros (Fase L3.7) */}
+      <LancamentoEditorModal
+        visible={lancamentoEditorOpen}
+        idPermissionario={financeiroPermissionarioId || ''}
+        contratosDisponiveis={
+          financeiroPermissionarioId
+            ? FinanceiroRestritoService.obterResumoFinanceiro(financeiroPermissionarioId).contratos
+            : []
+        }
+        lancamentoParaAjustar={lancamentoParaAjustar}
+        userRole="ADMIN"
+        onClose={() => {
+          setLancamentoEditorOpen(false);
+          setLancamentoParaAjustar(null);
+        }}
+        onLancamentoSalvo={(_lanSalvo) => {
+          setLancamentoEditorOpen(false);
+          setLancamentoParaAjustar(null);
+          setFinanceiroUpdateKey((k) => k + 1);
+        }}
+      />
+
+      {/* 31. Registro de Pagamentos e Baixa (Fase L3.7) */}
+      <PagamentoRegistroModal
+        visible={pagamentoModalOpen}
+        idPermissionario={financeiroPermissionarioId || ''}
+        lancamento={lancamentoParaPagamento}
+        userRole="ADMIN"
+        onClose={() => {
+          setPagamentoModalOpen(false);
+          setLancamentoParaPagamento(null);
+        }}
+        onPagamentoRegistrado={(_lanAtualizado) => {
+          setPagamentoModalOpen(false);
+          setLancamentoParaPagamento(null);
+          setFinanceiroUpdateKey((k) => k + 1);
+        }}
+      />
+
+      {/* 32. Editor de Acordos Financeiros (Fase L3.7) */}
+      <AcordoEditorModal
+        visible={acordoEditorOpen}
+        idPermissionario={financeiroPermissionarioId || ''}
+        acordoParaEditar={acordoParaEditar}
+        userRole="ADMIN"
+        onClose={() => {
+          setAcordoEditorOpen(false);
+          setAcordoParaEditar(null);
+        }}
+        onAcordoSalvo={(_acordoSalvo) => {
+          setAcordoEditorOpen(false);
+          setAcordoParaEditar(null);
+          setFinanceiroUpdateKey((k) => k + 1);
         }}
       />
     </View>
