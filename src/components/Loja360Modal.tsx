@@ -28,7 +28,9 @@ export const Loja360Modal: React.FC<Loja360ModalProps> = ({
 }) => {
   const [lojaSelecionada, setLojaSelecionada] = useState<FichaLoja360 | null>(lojaInicial || null);
   const [termoBusca, setTermoBusca] = useState('');
-  const [abaAtiva, setAbaAtiva] = useState<'geral' | 'contatos' | 'ocorrencias' | 'historico'>('geral');
+  const [abaAtiva, setAbaAtiva] = useState<
+    'geral' | 'produtos' | 'promocoes' | 'fotos' | 'contatos' | 'ocorrencias' | 'historico'
+  >('geral');
   const [filtroStatus, setFiltroStatus] = useState('TODOS');
 
   // Atualiza se mudar por prop
@@ -131,6 +133,15 @@ export const Loja360Modal: React.FC<Loja360ModalProps> = ({
                     <Text style={styles.resumoSegmento}>
                       {lojaSelecionada.tipoUnidade} • {lojaSelecionada.segmentoPrincipal}
                     </Text>
+
+                    {lojaSelecionada.espacosVinculados && lojaSelecionada.espacosVinculados.length > 1 && (
+                      <View style={styles.badgeMultiEspaco}>
+                        <Ionicons name="git-network-outline" size={12} color="#38bdf8" />
+                        <Text style={styles.badgeMultiEspacoText}>
+                          Espaços Atuais: {lojaSelecionada.espacosVinculados.map((b) => `Box ${b}`).join(' • ')}
+                        </Text>
+                      </View>
+                    )}
                   </View>
 
                   <View style={styles.resumoBadges}>
@@ -162,21 +173,28 @@ export const Loja360Modal: React.FC<Loja360ModalProps> = ({
                 <View style={styles.metricasRow}>
                   <View style={styles.metricaItem}>
                     <Text style={styles.metricaValor}>
+                      {lojaSelecionada.produtos?.length || 0}
+                    </Text>
+                    <Text style={styles.metricaRotulo}>Produtos no Catálogo</Text>
+                  </View>
+                  <View style={styles.metricaDivisor} />
+                  <View style={styles.metricaItem}>
+                    <Text style={styles.metricaValor}>
+                      {lojaSelecionada.promocoes?.length || 0}
+                    </Text>
+                    <Text style={styles.metricaRotulo}>Promoções Ativas</Text>
+                  </View>
+                  <View style={styles.metricaDivisor} />
+                  <View style={styles.metricaItem}>
+                    <Text style={styles.metricaValor}>
                       {lojaSelecionada.indicadores.ocorrenciasAbertas}
                     </Text>
                     <Text style={styles.metricaRotulo}>Ocorrências Abertas</Text>
                   </View>
                   <View style={styles.metricaDivisor} />
                   <View style={styles.metricaItem}>
-                    <Text style={styles.metricaValor}>
-                      {lojaSelecionada.indicadores.ocorrenciasTotal}
-                    </Text>
-                    <Text style={styles.metricaRotulo}>Total de Ocorrências</Text>
-                  </View>
-                  <View style={styles.metricaDivisor} />
-                  <View style={styles.metricaItem}>
                     <Text style={styles.metricaValor}>{lojaSelecionada.contatos.length}</Text>
-                    <Text style={styles.metricaRotulo}>Contatos Registrados</Text>
+                    <Text style={styles.metricaRotulo}>Contatos</Text>
                   </View>
                 </View>
 
@@ -205,11 +223,53 @@ export const Loja360Modal: React.FC<Loja360ModalProps> = ({
                 >
                   <Ionicons
                     name="information-circle-outline"
-                    size={18}
+                    size={16}
                     color={abaAtiva === 'geral' ? '#38bdf8' : '#64748b'}
                   />
                   <Text style={[styles.tabBtnText, abaAtiva === 'geral' && styles.tabBtnTextAtivo]}>
                     Ficha Técnica
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[styles.tabBtn, abaAtiva === 'produtos' && styles.tabBtnAtivo]}
+                  onPress={() => setAbaAtiva('produtos')}
+                >
+                  <Ionicons
+                    name="pricetags-outline"
+                    size={16}
+                    color={abaAtiva === 'produtos' ? '#38bdf8' : '#64748b'}
+                  />
+                  <Text style={[styles.tabBtnText, abaAtiva === 'produtos' && styles.tabBtnTextAtivo]}>
+                    Produtos ({lojaSelecionada.produtos?.length || 0})
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[styles.tabBtn, abaAtiva === 'promocoes' && styles.tabBtnAtivo]}
+                  onPress={() => setAbaAtiva('promocoes')}
+                >
+                  <Ionicons
+                    name="megaphone-outline"
+                    size={16}
+                    color={abaAtiva === 'promocoes' ? '#38bdf8' : '#64748b'}
+                  />
+                  <Text style={[styles.tabBtnText, abaAtiva === 'promocoes' && styles.tabBtnTextAtivo]}>
+                    Promoções ({lojaSelecionada.promocoes?.length || 0})
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[styles.tabBtn, abaAtiva === 'fotos' && styles.tabBtnAtivo]}
+                  onPress={() => setAbaAtiva('fotos')}
+                >
+                  <Ionicons
+                    name="camera-outline"
+                    size={16}
+                    color={abaAtiva === 'fotos' ? '#38bdf8' : '#64748b'}
+                  />
+                  <Text style={[styles.tabBtnText, abaAtiva === 'fotos' && styles.tabBtnTextAtivo]}>
+                    Fotos ({lojaSelecionada.fotos?.length || 0})
                   </Text>
                 </TouchableOpacity>
 
@@ -219,7 +279,7 @@ export const Loja360Modal: React.FC<Loja360ModalProps> = ({
                 >
                   <Ionicons
                     name="people-outline"
-                    size={18}
+                    size={16}
                     color={abaAtiva === 'contatos' ? '#38bdf8' : '#64748b'}
                   />
                   <Text
@@ -235,7 +295,7 @@ export const Loja360Modal: React.FC<Loja360ModalProps> = ({
                 >
                   <Ionicons
                     name="warning-outline"
-                    size={18}
+                    size={16}
                     color={abaAtiva === 'ocorrencias' ? '#38bdf8' : '#64748b'}
                   />
                   <Text
@@ -254,7 +314,7 @@ export const Loja360Modal: React.FC<Loja360ModalProps> = ({
                 >
                   <Ionicons
                     name="time-outline"
-                    size={18}
+                    size={16}
                     color={abaAtiva === 'historico' ? '#38bdf8' : '#64748b'}
                   />
                   <Text
@@ -304,6 +364,216 @@ export const Loja360Modal: React.FC<Loja360ModalProps> = ({
                         <Text style={styles.infoValue}>{lojaSelecionada.luc || 'Sem LUC'}</Text>
                       </View>
                     </View>
+                  </View>
+                )}
+
+                {abaAtiva === 'produtos' && (
+                  <View style={styles.produtosWrapper}>
+                    <View style={styles.produtosHeaderInfo}>
+                      <View>
+                        <Text style={styles.produtosHeaderTitulo}>Catálogo & Vitrine da Loja</Text>
+                        <Text style={styles.produtosHeaderSubtitulo}>
+                          {lojaSelecionada.produtos?.length || 0} produto(s) representativo(s) cadastrado(s)
+                        </Text>
+                      </View>
+                    </View>
+
+                    {(!lojaSelecionada.produtos || lojaSelecionada.produtos.length === 0) ? (
+                      <View style={styles.vazioBox}>
+                        <Ionicons name="pricetag-outline" size={44} color="#64748b" />
+                        <Text style={styles.vazioTitulo}>Nenhum produto cadastrado</Text>
+                        <Text style={styles.vazioTexto}>
+                          O mix comercial e os produtos desta unidade ainda não foram enriquecidos no levantamento.
+                        </Text>
+                      </View>
+                    ) : (
+                      <View style={styles.produtosGrid}>
+                        {lojaSelecionada.produtos.map((prod) => (
+                          <View key={prod.id} style={styles.produtoCard}>
+                            <View style={styles.produtoCardTopo}>
+                              <View style={styles.produtoCategorias}>
+                                <View style={styles.badgeCategoria}>
+                                  <Text style={styles.badgeCategoriaText}>{prod.categoria}</Text>
+                                </View>
+                                {prod.subcategoria && (
+                                  <Text style={styles.produtoSubcategoria}>• {prod.subcategoria}</Text>
+                                )}
+                              </View>
+                              {prod.destaque && (
+                                <View style={styles.badgeDestaque}>
+                                  <Ionicons name="star" size={11} color="#f59e0b" />
+                                  <Text style={styles.badgeDestaqueText}>Destaque</Text>
+                                </View>
+                              )}
+                            </View>
+
+                            <Text style={styles.produtoNome}>{prod.nome}</Text>
+                            {prod.descricao && (
+                              <Text style={styles.produtoDescricao}>{prod.descricao}</Text>
+                            )}
+
+                            {/* Seção de Preços */}
+                            <View style={styles.produtoPrecosBloco}>
+                              {prod.emPromocao && prod.precoPromocional ? (
+                                <View>
+                                  <View style={styles.produtoDePorRow}>
+                                    <Text style={styles.precoDeText}>
+                                      De R$ {prod.precoNormal.toFixed(2).replace('.', ',')}
+                                    </Text>
+                                    <View style={styles.badgePromocaoPill}>
+                                      <Ionicons name="flame" size={11} color="#ef4444" />
+                                      <Text style={styles.badgePromocaoPillText}>
+                                        {prod.vigenciaPromocao ? `Promoção até ${prod.vigenciaPromocao}` : 'Em Promoção'}
+                                      </Text>
+                                    </View>
+                                  </View>
+                                  <Text style={styles.precoPorText}>
+                                    Por R$ {prod.precoPromocional.toFixed(2).replace('.', ',')}
+                                  </Text>
+                                </View>
+                              ) : (
+                                <View>
+                                  <Text style={styles.precoUnicoLabel}>Preço Normal</Text>
+                                  <Text style={styles.precoUnicoValor}>
+                                    R$ {prod.precoNormal.toFixed(2).replace('.', ',')}
+                                  </Text>
+                                </View>
+                              )}
+
+                              {/* Preço de Atacado */}
+                              {prod.atacado && prod.precoAtacado && (
+                                <View style={styles.atacadoBadge}>
+                                  <Ionicons name="cube-outline" size={12} color="#38bdf8" />
+                                  <Text style={styles.atacadoBadgeText}>
+                                    Atacado: R$ {prod.precoAtacado.toFixed(2).replace('.', ',')} (Mín. {prod.qtdMinimaAtacado || 6} un.)
+                                  </Text>
+                                </View>
+                              )}
+                            </View>
+                          </View>
+                        ))}
+                      </View>
+                    )}
+                  </View>
+                )}
+
+                {abaAtiva === 'promocoes' && (
+                  <View style={styles.promocoesWrapper}>
+                    <View style={styles.produtosHeaderInfo}>
+                      <View>
+                        <Text style={styles.produtosHeaderTitulo}>Promoções & Campanhas da Loja</Text>
+                        <Text style={styles.produtosHeaderSubtitulo}>
+                          {lojaSelecionada.promocoes?.length || 0} ação(ões) promocional(is) vigentes
+                        </Text>
+                      </View>
+                    </View>
+
+                    {(!lojaSelecionada.promocoes || lojaSelecionada.promocoes.length === 0) ? (
+                      <View style={styles.vazioBox}>
+                        <Ionicons name="megaphone-outline" size={44} color="#64748b" />
+                        <Text style={styles.vazioTitulo}>Nenhuma promoção ativa</Text>
+                        <Text style={styles.vazioTexto}>
+                          Esta unidade não possui ações promocionais cadastradas no momento.
+                        </Text>
+                      </View>
+                    ) : (
+                      <View style={styles.promocoesLista}>
+                        {lojaSelecionada.promocoes.map((promo) => (
+                          <View key={promo.id} style={styles.promoCard}>
+                            <View style={styles.promoCardHeader}>
+                              <View style={styles.promoTituloRow}>
+                                <Ionicons name="pricetag" size={18} color="#f59e0b" />
+                                <Text style={styles.promoTitulo}>{promo.titulo}</Text>
+                              </View>
+                              <View style={styles.badgePromoAtiva}>
+                                <Text style={styles.badgePromoAtivaText}>{promo.status}</Text>
+                              </View>
+                            </View>
+
+                            <View style={styles.promoVigenciaRow}>
+                              <Ionicons name="calendar-outline" size={14} color="#94a3b8" />
+                              <Text style={styles.promoVigenciaText}>
+                                Vigência: {promo.vigenciaInicio} → {promo.vigenciaFim}
+                              </Text>
+                            </View>
+
+                            {promo.descricao && (
+                              <Text style={styles.promoDescricao}>{promo.descricao}</Text>
+                            )}
+
+                            {/* Produtos Vinculados */}
+                            <View style={styles.promoProdutosVinculados}>
+                              <Text style={styles.promoProdutosTitulo}>
+                                Produtos Vinculados à Promoção ({promo.produtosVinculadosIds.length}):
+                              </Text>
+                              <View style={styles.promoProdutosChips}>
+                                {promo.produtosVinculadosIds.map((pId) => {
+                                  const prod = lojaSelecionada.produtos?.find((p) => p.id === pId);
+                                  return (
+                                    <View key={pId} style={styles.promoProdChip}>
+                                      <Ionicons name="checkmark-circle" size={13} color="#10b981" />
+                                      <Text style={styles.promoProdChipText}>
+                                        {prod ? `${prod.nome} (De R$ ${prod.precoNormal.toFixed(2).replace('.', ',')} Por R$ ${prod.precoPromocional?.toFixed(2).replace('.', ',')})` : pId}
+                                      </Text>
+                                    </View>
+                                  );
+                                })}
+                              </View>
+                            </View>
+                          </View>
+                        ))}
+                      </View>
+                    )}
+                  </View>
+                )}
+
+                {abaAtiva === 'fotos' && (
+                  <View style={styles.fotosWrapper}>
+                    <View style={styles.produtosHeaderInfo}>
+                      <View>
+                        <Text style={styles.produtosHeaderTitulo}>Galeria de Fotos do Estabelecimento</Text>
+                        <Text style={styles.produtosHeaderSubtitulo}>
+                          Fachada, vitrine, interior e exposição física de produtos
+                        </Text>
+                      </View>
+                    </View>
+
+                    {/* Categorias de Fotos */}
+                    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.fotosCategoriasRow}>
+                      {['Todas (0)', 'Fachada (0)', 'Vitrine (0)', 'Interior (0)', 'Exposição (0)', 'Equipe (0)'].map((cat, idx) => (
+                        <View key={cat} style={[styles.fotoCategoriaChip, idx === 0 && styles.fotoCategoriaChipAtivo]}>
+                          <Text style={[styles.fotoCategoriaChipText, idx === 0 && styles.fotoCategoriaChipTextAtivo]}>
+                            {cat}
+                          </Text>
+                        </View>
+                      ))}
+                    </ScrollView>
+
+                    {(!lojaSelecionada.fotos || lojaSelecionada.fotos.length === 0) ? (
+                      <View style={styles.vazioFotosBox}>
+                        <View style={styles.vazioIconeCamera}>
+                          <Ionicons name="camera-outline" size={48} color="#94a3b8" />
+                        </View>
+                        <Text style={styles.vazioTitulo}>Nenhuma foto cadastrada ainda</Text>
+                        <Text style={styles.vazioTexto}>
+                          A captura de fotografias reais de alta resolução (Fachada, Vitrine, Interior e Exposição de Produtos) será realizada pelas equipes em campo durante o levantamento de rotas.
+                        </Text>
+                        <View style={styles.diretrizGateBadge}>
+                          <Ionicons name="shield-checkmark-outline" size={14} color="#10b981" />
+                          <Text style={styles.diretrizGateText}>
+                            Diretriz L2.2: Sem links falsos ou placeholders quebrados
+                          </Text>
+                        </View>
+                      </View>
+                    ) : (
+                      <View style={styles.fotosGrid}>
+                        {lojaSelecionada.fotos.map((foto) => (
+                          <View key={foto.id} style={styles.fotoCard}>
+                            <Text style={styles.fotoCardTipo}>{foto.tipo}</Text>
+                          </View>
+                        ))}
+                      </View>
+                    )}
                   </View>
                 )}
 
@@ -1085,5 +1355,362 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '700',
     color: '#fdba74',
+  },
+  badgeMultiEspaco: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: 'rgba(56, 189, 248, 0.15)',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+    marginTop: 6,
+    alignSelf: 'flex-start',
+    borderWidth: 1,
+    borderColor: 'rgba(56, 189, 248, 0.3)',
+  },
+  badgeMultiEspacoText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#38bdf8',
+  },
+  produtosWrapper: {
+    paddingBottom: 24,
+  },
+  produtosHeaderInfo: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  produtosHeaderTitulo: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#f8fafc',
+  },
+  produtosHeaderSubtitulo: {
+    fontSize: 13,
+    color: '#94a3b8',
+    marginTop: 2,
+  },
+  produtosGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  produtoCard: {
+    width: '48%',
+    backgroundColor: '#1e293b',
+    borderRadius: 12,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: '#334155',
+  },
+  produtoCardTopo: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 8,
+  },
+  produtoCategorias: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    flexWrap: 'wrap',
+  },
+  badgeCategoria: {
+    backgroundColor: '#0f172a',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#475569',
+  },
+  badgeCategoriaText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#94a3b8',
+  },
+  produtoSubcategoria: {
+    fontSize: 11,
+    color: '#64748b',
+  },
+  badgeDestaque: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: 'rgba(245, 158, 11, 0.15)',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(245, 158, 11, 0.4)',
+  },
+  badgeDestaqueText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#f59e0b',
+  },
+  produtoNome: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#f8fafc',
+    marginBottom: 4,
+  },
+  produtoDescricao: {
+    fontSize: 12,
+    color: '#94a3b8',
+    lineHeight: 16,
+    marginBottom: 12,
+  },
+  produtoPrecosBloco: {
+    backgroundColor: '#0f172a',
+    borderRadius: 8,
+    padding: 10,
+    marginTop: 8,
+    borderWidth: 1,
+    borderColor: '#334155',
+  },
+  produtoDePorRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 2,
+  },
+  precoDeText: {
+    fontSize: 12,
+    color: '#64748b',
+    textDecorationLine: 'line-through',
+  },
+  badgePromocaoPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: 'rgba(239, 68, 68, 0.15)',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  badgePromocaoPillText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#ef4444',
+  },
+  precoPorText: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#10b981',
+  },
+  precoUnicoLabel: {
+    fontSize: 11,
+    color: '#64748b',
+  },
+  precoUnicoValor: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#f8fafc',
+  },
+  atacadoBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    marginTop: 6,
+    paddingTop: 6,
+    borderTopWidth: 1,
+    borderTopColor: '#1e293b',
+  },
+  atacadoBadgeText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#38bdf8',
+  },
+  promocoesWrapper: {
+    paddingBottom: 24,
+  },
+  promocoesLista: {
+    gap: 12,
+  },
+  promoCard: {
+    backgroundColor: '#1e293b',
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#334155',
+  },
+  promoCardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  promoTituloRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    flex: 1,
+  },
+  promoTitulo: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#f8fafc',
+  },
+  badgePromoAtiva: {
+    backgroundColor: '#065f46',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#10b981',
+  },
+  badgePromoAtivaText: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#34d399',
+  },
+  promoVigenciaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 8,
+  },
+  promoVigenciaText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#94a3b8',
+  },
+  promoDescricao: {
+    fontSize: 13,
+    color: '#cbd5e1',
+    lineHeight: 18,
+    marginBottom: 12,
+  },
+  promoProdutosVinculados: {
+    backgroundColor: '#0f172a',
+    borderRadius: 8,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: '#334155',
+  },
+  promoProdutosTitulo: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#94a3b8',
+    marginBottom: 8,
+  },
+  promoProdutosChips: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  promoProdChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#1e293b',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#334155',
+  },
+  promoProdChipText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#f8fafc',
+  },
+  fotosWrapper: {
+    paddingBottom: 24,
+  },
+  fotosHeader: {
+    marginBottom: 12,
+  },
+  fotosCategoriasRow: {
+    flexDirection: 'row',
+    marginBottom: 16,
+  },
+  fotoCategoriaChip: {
+    backgroundColor: '#1e293b',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    marginRight: 8,
+    borderWidth: 1,
+    borderColor: '#334155',
+  },
+  fotoCategoriaChipAtivo: {
+    backgroundColor: '#0284c7',
+    borderColor: '#38bdf8',
+  },
+  fotoCategoriaChipText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#94a3b8',
+  },
+  fotoCategoriaChipTextAtivo: {
+    color: '#fff',
+    fontWeight: '700',
+  },
+  vazioFotosBox: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 32,
+    backgroundColor: '#1e293b',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#334155',
+    marginVertical: 12,
+  },
+  vazioIconeCamera: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: '#0f172a',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#334155',
+  },
+  diretrizGateBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    marginTop: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(16, 185, 129, 0.3)',
+  },
+  diretrizGateText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#34d399',
+  },
+  fotosGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  fotoCard: {
+    width: '48%',
+    height: 140,
+    backgroundColor: '#1e293b',
+    borderRadius: 12,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: '#334155',
+    justifyContent: 'flex-end',
+  },
+  fotoCardTipo: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#fff',
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
+    alignSelf: 'flex-start',
   },
 });

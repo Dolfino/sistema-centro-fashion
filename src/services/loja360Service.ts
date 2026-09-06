@@ -35,6 +35,41 @@ export interface HistoricoOcupacao {
   atual: boolean;
 }
 
+export interface ProdutoLoja {
+  id: string;
+  nome: string;
+  categoria: string;
+  subcategoria?: string;
+  precoNormal: number;
+  precoPromocional?: number;
+  emPromocao: boolean;
+  vigenciaPromocao?: string;
+  destaque: boolean;
+  atacado: boolean;
+  precoAtacado?: number;
+  qtdMinimaAtacado?: number;
+  fotoUrl?: string;
+  descricao?: string;
+}
+
+export interface PromocaoLoja {
+  id: string;
+  titulo: string;
+  descricao?: string;
+  vigenciaInicio: string;
+  vigenciaFim: string;
+  status: 'ATIVA' | 'ENCERRADA' | 'FUTURA';
+  produtosVinculadosIds: string[];
+}
+
+export interface FotoEstabelecimento {
+  id: string;
+  tipo: 'FACHADA' | 'INTERIOR' | 'VITRINE' | 'EXPOSICAO' | 'PRODUTO' | 'EQUIPE';
+  url: string;
+  descricao?: string;
+  cadastradoEm: string;
+}
+
 export interface FichaLoja360 {
   idLojaMapa: string;
   idLoja?: string;
@@ -51,6 +86,10 @@ export interface FichaLoja360 {
   ladoCorredor: string;
   x: number;
   y: number;
+  espacosVinculados?: string[];
+  produtos?: ProdutoLoja[];
+  promocoes?: PromocaoLoja[];
+  fotos?: FotoEstabelecimento[];
   contatos: ContatoLoja[];
   ocorrencias: OcorrenciaVinculada[];
   historicoOcupacoes: HistoricoOcupacao[];
@@ -332,6 +371,293 @@ const LOJAS_MOCK: FichaLoja360[] = [
       taxaResolucao: 0,
     },
   },
+  {
+    idLojaMapa: 'LMP-AZ-1318',
+    idLoja: 'LOJ-DEMO-1318',
+    numeroLoja: '1318',
+    nomeLoja: 'Bella Jeans',
+    razaoSocial: 'Bella Jeans Fortaleza Confecções Eireli',
+    cnpj: '08.921.442/0001-90',
+    luc: 'LUC-1318',
+    tipoUnidade: 'BOX',
+    segmentoPrincipal: 'Jeanswear & Denim',
+    statusOperacao: 'ATIVA',
+    setor: 'Setor Azul - Piso 1',
+    corredor: 'Rua Governador Sampaio',
+    ladoCorredor: 'DIREITO',
+    x: 0.1380,
+    y: 0.1240,
+    contatos: [
+      {
+        id: 'CONT-BJ-1',
+        nome: 'Mariana Duarte',
+        funcao: 'Gerente Comercial',
+        tipo: 'COMERCIAL',
+        telefone: '(85) 3000-1318',
+        whatsapp: '5585990001318',
+        email: 'mariana@bellajeans.com.br',
+        principal: true,
+      },
+    ],
+    produtos: [
+      {
+        id: 'PROD-BJ-1',
+        nome: 'Camisa Casual',
+        categoria: 'Camisaria',
+        subcategoria: 'Manga Longa',
+        precoNormal: 308.90,
+        emPromocao: false,
+        destaque: false,
+        atacado: true,
+        precoAtacado: 280.00,
+        qtdMinimaAtacado: 6,
+        descricao: 'Camisa casual em algodão egípcio com caimento slim.',
+      },
+      {
+        id: 'PROD-BJ-2',
+        nome: 'Bermuda Sarja',
+        categoria: 'Bermudas',
+        subcategoria: 'Sarja Premium',
+        precoNormal: 349.90,
+        emPromocao: false,
+        destaque: false,
+        atacado: true,
+        precoAtacado: 310.00,
+        qtdMinimaAtacado: 6,
+        descricao: 'Bermuda em sarja com elastano e acabamento resinado.',
+      },
+      {
+        id: 'PROD-BJ-3',
+        nome: 'Calça Masculina',
+        categoria: 'Calças',
+        subcategoria: 'Jeans Tradicional',
+        precoNormal: 40.90,
+        emPromocao: false,
+        destaque: false,
+        atacado: true,
+        precoAtacado: 35.00,
+        qtdMinimaAtacado: 10,
+        descricao: 'Calça jeans tradicional em lavagem stone wash.',
+      },
+      {
+        id: 'PROD-BJ-4',
+        nome: 'Polo Básica',
+        categoria: 'Polos',
+        subcategoria: 'Piquet Tradicional',
+        precoNormal: 81.90,
+        precoPromocional: 63.88,
+        emPromocao: true,
+        vigenciaPromocao: '31/08/2026',
+        destaque: true,
+        atacado: true,
+        precoAtacado: 55.00,
+        qtdMinimaAtacado: 6,
+        descricao: 'Polo básica em malha piquet com gola retilínea encorpada.',
+      },
+    ],
+    promocoes: [
+      {
+        id: 'PROM-BJ-1',
+        titulo: 'Liquidação Especial Polo Básica',
+        descricao: 'Desconto direto de R$ 81,90 por R$ 63,88 até o fim do mês.',
+        vigenciaInicio: '01/08/2026',
+        vigenciaFim: '31/08/2026',
+        status: 'ATIVA',
+        produtosVinculadosIds: ['PROD-BJ-4'],
+      },
+    ],
+    fotos: [], // Vazia conforme o Gate L2.2
+    ocorrencias: [],
+    historicoOcupacoes: [
+      {
+        id: 'OCUP-BJ-1',
+        inicio: '2023-03-01',
+        responsavel: 'Mariana Duarte',
+        atual: true,
+      },
+    ],
+    indicadores: {
+      ocorrenciasAbertas: 0,
+      ocorrenciasTotal: 0,
+      taxaResolucao: 100,
+    },
+  },
+  {
+    idLojaMapa: 'LMP-AZ-1288',
+    idLoja: 'LOJ-DEMO-1288',
+    numeroLoja: '1288',
+    nomeLoja: 'Estilo Fashion',
+    razaoSocial: 'Estilo Fashion Moda & Confecções Ltda',
+    cnpj: '14.512.789/0001-34',
+    luc: 'LUC-1288',
+    tipoUnidade: 'BOX',
+    segmentoPrincipal: 'Moda Infantil',
+    statusOperacao: 'ATIVA',
+    setor: 'Setor Azul - Piso 1',
+    corredor: 'Rua Governador Sampaio',
+    ladoCorredor: 'ESQUERDO',
+    espacosVinculados: ['1288', '1274'],
+    x: 0.1290,
+    y: 0.1180,
+    contatos: [
+      {
+        id: 'CONT-EF-1',
+        nome: 'Ana Cláudia Martins',
+        funcao: 'Proprietária & Gestora',
+        tipo: 'OPERACIONAL',
+        telefone: '(85) 3000-1288',
+        whatsapp: '5585990001288',
+        email: 'estilo@estilofashionkids.com.br',
+        principal: true,
+      },
+    ],
+    produtos: [
+      {
+        id: 'PROD-EF-1',
+        nome: 'Conjunto Infantil',
+        categoria: 'Moda Infantil',
+        subcategoria: 'Verão',
+        precoNormal: 89.90,
+        precoPromocional: 69.90,
+        emPromocao: true,
+        vigenciaPromocao: '31/08/2026',
+        destaque: true,
+        atacado: true,
+        precoAtacado: 59.90,
+        qtdMinimaAtacado: 6,
+        descricao: 'Conjunto infantil com camiseta estampada e bermuda moletom leve.',
+      },
+      {
+        id: 'PROD-EF-2',
+        nome: 'Vestido Infantil',
+        categoria: 'Moda Infantil',
+        subcategoria: 'Festas',
+        precoNormal: 119.90,
+        precoPromocional: 89.90,
+        emPromocao: true,
+        vigenciaPromocao: '31/08/2026',
+        destaque: true,
+        atacado: true,
+        precoAtacado: 79.90,
+        qtdMinimaAtacado: 4,
+        descricao: 'Vestido infantil rodado com forro 100% algodão antialérgico.',
+      },
+    ],
+    promocoes: [
+      {
+        id: 'PROM-EF-0002',
+        titulo: 'Promoção Especial de Verão 0002',
+        descricao: 'Desconto imperdível em vestidos e conjuntos da coleção infantil.',
+        vigenciaInicio: '15/08/2026',
+        vigenciaFim: '31/08/2026',
+        status: 'ATIVA',
+        produtosVinculadosIds: ['PROD-EF-1', 'PROD-EF-2'],
+      },
+    ],
+    fotos: [], // Vazia conforme o Gate L2.2
+    ocorrencias: [],
+    historicoOcupacoes: [
+      {
+        id: 'OCUP-EF-1',
+        inicio: '2024-05-10',
+        responsavel: 'Ana Cláudia Martins',
+        atual: true,
+      },
+    ],
+    indicadores: {
+      ocorrenciasAbertas: 0,
+      ocorrenciasTotal: 0,
+      taxaResolucao: 100,
+    },
+  },
+  {
+    idLojaMapa: 'LMP-AZ-1274',
+    idLoja: 'LOJ-DEMO-1274',
+    numeroLoja: '1274',
+    nomeLoja: 'Estilo Fashion (Espaço 2)',
+    razaoSocial: 'Estilo Fashion Moda & Confecções Ltda',
+    cnpj: '14.512.789/0001-34',
+    luc: 'LUC-1274',
+    tipoUnidade: 'BOX',
+    segmentoPrincipal: 'Moda Infantil',
+    statusOperacao: 'ATIVA',
+    setor: 'Setor Azul - Piso 1',
+    corredor: 'Rua Governador Sampaio',
+    ladoCorredor: 'ESQUERDO',
+    espacosVinculados: ['1288', '1274'],
+    x: 0.1265,
+    y: 0.1170,
+    contatos: [
+      {
+        id: 'CONT-EF-2',
+        nome: 'Ana Cláudia Martins',
+        funcao: 'Proprietária & Gestora',
+        tipo: 'OPERACIONAL',
+        telefone: '(85) 3000-1288',
+        whatsapp: '5585990001288',
+        email: 'estilo@estilofashionkids.com.br',
+        principal: true,
+      },
+    ],
+    produtos: [
+      {
+        id: 'PROD-EF-1',
+        nome: 'Conjunto Infantil',
+        categoria: 'Moda Infantil',
+        subcategoria: 'Verão',
+        precoNormal: 89.90,
+        precoPromocional: 69.90,
+        emPromocao: true,
+        vigenciaPromocao: '31/08/2026',
+        destaque: true,
+        atacado: true,
+        precoAtacado: 59.90,
+        qtdMinimaAtacado: 6,
+        descricao: 'Conjunto infantil com camiseta estampada e bermuda moletom leve.',
+      },
+      {
+        id: 'PROD-EF-2',
+        nome: 'Vestido Infantil',
+        categoria: 'Moda Infantil',
+        subcategoria: 'Festas',
+        precoNormal: 119.90,
+        precoPromocional: 89.90,
+        emPromocao: true,
+        vigenciaPromocao: '31/08/2026',
+        destaque: true,
+        atacado: true,
+        precoAtacado: 79.90,
+        qtdMinimaAtacado: 4,
+        descricao: 'Vestido infantil rodado com forro 100% algodão antialérgico.',
+      },
+    ],
+    promocoes: [
+      {
+        id: 'PROM-EF-0002',
+        titulo: 'Promoção Especial de Verão 0002',
+        descricao: 'Desconto imperdível em vestidos e conjuntos da coleção infantil.',
+        vigenciaInicio: '15/08/2026',
+        vigenciaFim: '31/08/2026',
+        status: 'ATIVA',
+        produtosVinculadosIds: ['PROD-EF-1', 'PROD-EF-2'],
+      },
+    ],
+    fotos: [], // Vazia conforme o Gate L2.2
+    ocorrencias: [],
+    historicoOcupacoes: [
+      {
+        id: 'OCUP-EF-2',
+        inicio: '2024-05-10',
+        responsavel: 'Ana Cláudia Martins',
+        atual: true,
+      },
+    ],
+    indicadores: {
+      ocorrenciasAbertas: 0,
+      ocorrenciasTotal: 0,
+      taxaResolucao: 100,
+    },
+  },
 ];
 
 export const Loja360Service = {
@@ -419,5 +745,29 @@ export const Loja360Service = {
     }
 
     return null;
+  },
+
+  /**
+   * Obtém os produtos cadastrados de uma loja/box
+   */
+  obterProdutos(identificador: string): ProdutoLoja[] {
+    const ficha = this.obterFicha(identificador);
+    return ficha?.produtos || [];
+  },
+
+  /**
+   * Obtém as promoções ativas de uma loja/box
+   */
+  obterPromocoes(identificador: string): PromocaoLoja[] {
+    const ficha = this.obterFicha(identificador);
+    return ficha?.promocoes || [];
+  },
+
+  /**
+   * Obtém a galeria de fotos do estabelecimento
+   */
+  obterFotos(identificador: string): FotoEstabelecimento[] {
+    const ficha = this.obterFicha(identificador);
+    return ficha?.fotos || [];
   },
 };
