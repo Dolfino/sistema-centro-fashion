@@ -24,6 +24,7 @@ import { Loja360Modal } from '../src/components/Loja360Modal';
 import { FichaLoja360, Loja360Service } from '../src/services/loja360Service';
 import { CentralGestaoLojistasModal } from '../src/components/CentralGestaoLojistasModal';
 import { FinanceiroRestritoModal } from '../src/components/FinanceiroRestritoModal';
+import { CentralFinanceiraModal } from '../src/components/CentralFinanceiraModal';
 import { AtivoMallModal } from '../src/components/AtivoMallModal';
 import { AtivoMidiaPonto } from '../src/services/ativoMallService';
 import { CampanhaCentralModal } from '../src/components/CampanhaCentralModal';
@@ -197,9 +198,10 @@ export default function LegacyMainShellScreen() {
   const [lojaSelecionada360, setLojaSelecionada360] = useState<FichaLoja360 | null>(null);
   const [centralGestaoLojistasOpen, setCentralGestaoLojistasOpen] = useState<boolean>(false);
 
-  // Contratos & Financeiro Restrito (Fase L3.4)
+  // Contratos & Financeiro Restrito (Fase L3.4 & L3.5)
   const [financeiroModalOpen, setFinanceiroModalOpen] = useState<boolean>(false);
   const [financeiroPermissionarioId, setFinanceiroPermissionarioId] = useState<string | null>(null);
+  const [centralFinanceiraOpen, setCentralFinanceiraOpen] = useState<boolean>(false);
 
   // Ativos do Mall & Fiscalização de Mídia Física (Paridade Google Apps Script)
   const [ativoMallOpen, setAtivoMallOpen] = useState<boolean>(false);
@@ -332,6 +334,8 @@ export default function LegacyMainShellScreen() {
       setDashboardOpen(true);
     } else if (itemId === 'centralGestaoBtn' || itemId === 'central') {
       setCentralGestaoLojistasOpen(true);
+    } else if (itemId === 'centralFinanceiraBtn' || itemId === 'financeiro') {
+      setCentralFinanceiraOpen(true);
     } else if (itemId === 'loja360Btn' || itemId === 'loja360') {
       setLoja360Open(true);
     } else if (itemId === 'ativoMallBtn' || itemId === 'ativoMall' || itemId === 'midia') {
@@ -992,6 +996,20 @@ export default function LegacyMainShellScreen() {
               {!isMobile && <Text style={{ color: '#fff', fontSize: 12, fontWeight: '700' }}>Levantamento</Text>}
             </TouchableOpacity>
 
+            {/* Botão Central Financeira (L3.5) */}
+            <TouchableOpacity
+              id="btnFinanceiroToolbar"
+              style={[
+                styles.btnCentralizar,
+                { width: 'auto', paddingHorizontal: 10, gap: 4, flexDirection: 'row', backgroundColor: '#7f1d1d', borderColor: '#ef4444' },
+              ]}
+              onPress={() => setCentralFinanceiraOpen(true)}
+              aria-label="Central Financeira"
+            >
+              <Text style={{ fontSize: 13 }}>💳</Text>
+              {!isMobile && <Text style={{ color: '#fca5a5', fontSize: 12, fontWeight: '700' }}>Financeiro</Text>}
+            </TouchableOpacity>
+
             {/* Botão Menu (#appMenuBtnS22513) */}
             <TouchableOpacity
               id="appMenuBtnS22513"
@@ -1412,6 +1430,21 @@ export default function LegacyMainShellScreen() {
         onClose={() => {
           setFinanceiroModalOpen(false);
           setFinanceiroPermissionarioId(null);
+        }}
+      />
+
+      {/* 28. Central Financeira e de Contratos (Fase L3.5) */}
+      <CentralFinanceiraModal
+        visible={centralFinanceiraOpen}
+        onClose={() => setCentralFinanceiraOpen(false)}
+        userRole="ADMIN"
+        onAbrirDetalhesFinanceiros={(idPerm) => {
+          setFinanceiroPermissionarioId(idPerm);
+          setFinanceiroModalOpen(true);
+        }}
+        onAbrirGestaoPermissionario={() => {
+          setCentralFinanceiraOpen(false);
+          setCentralGestaoLojistasOpen(true);
         }}
       />
     </View>

@@ -30,26 +30,28 @@ export const AppMenuModal: React.FC<AppMenuModalProps> = ({
   if (!visible) return null;
 
   const isAdmin = userRole === 'ADMIN';
+  const temAcessoFinanceiro = userRole === 'ADMIN' || userRole === 'FINANCEIRO';
 
   const menuItems = [
-    { id: 'novo', icon: '＋', label: 'Novo registro', primary: true, adminOnly: false },
-    { id: 'camadasBtn', icon: '▱', label: 'Camadas', primary: false, adminOnly: false },
-    { id: 'prepararOffline', icon: '↓', label: 'Atualizar offline', primary: false, adminOnly: false },
-    { id: 'filaBtn', icon: '⇅', label: 'Fila', badge: '0', primary: false, adminOnly: false },
-    { id: 'centralGestaoBtn', icon: '◎', label: 'Central', primary: false, adminOnly: false },
-    { id: 'loja360Btn', icon: '🏬', label: 'Loja 360 / Boxes', primary: false, adminOnly: false },
-    { id: 'ativoMallBtn', icon: '📺', label: 'Ativos do Mall & Mídia', primary: false, adminOnly: false },
-    { id: 'campanhasBtn', icon: '📢', label: 'Campanhas de Marketing', primary: false, adminOnly: false },
-    { id: 'levantamentoBtn', icon: '📝', label: 'Levantamento de Campo', primary: false, adminOnly: false },
-    { id: 'rondaBtn', icon: '📋', label: 'Ronda / Checklist', primary: false, adminOnly: false },
-    { id: 'agendaBtnS19', icon: '□', label: 'Agenda', primary: false, adminOnly: false },
-    { id: 'alertasBtnS21', icon: '!', label: 'Alertas', badge: '0', primary: false, adminOnly: false },
-    { id: 'dashboardBtn', icon: '▦', label: 'Dashboard', primary: false, adminOnly: false },
-    { id: 'relatoriosBtn', icon: '≡', label: 'Relatórios', primary: false, adminOnly: false },
-    { id: 'calibracaoBtnS242', icon: '⌖', label: 'Calibrar níveis', primary: false, adminOnly: true },
-    { id: 'areaVermelhaBtnS244', icon: '▱', label: 'Delimitar estacionamento', primary: false, adminOnly: true },
-    { id: 'areasNivel1BtnS246', icon: '⌗', label: 'Delimitar áreas do Nível 1', primary: false, adminOnly: true },
-    { id: 'adminBtnS14', icon: '⚙', label: 'Administração', primary: false, adminOnly: true },
+    { id: 'novo', icon: '＋', label: 'Novo registro', primary: true, adminOnly: false, financeiroOnly: false },
+    { id: 'camadasBtn', icon: '▱', label: 'Camadas', primary: false, adminOnly: false, financeiroOnly: false },
+    { id: 'prepararOffline', icon: '↓', label: 'Atualizar offline', primary: false, adminOnly: false, financeiroOnly: false },
+    { id: 'filaBtn', icon: '⇅', label: 'Fila', badge: '0', primary: false, adminOnly: false, financeiroOnly: false },
+    { id: 'centralGestaoBtn', icon: '◎', label: 'Central', primary: false, adminOnly: false, financeiroOnly: false },
+    { id: 'centralFinanceiraBtn', icon: '💳', label: 'Central Financeira', primary: false, adminOnly: false, financeiroOnly: true },
+    { id: 'loja360Btn', icon: '🏬', label: 'Loja 360 / Boxes', primary: false, adminOnly: false, financeiroOnly: false },
+    { id: 'ativoMallBtn', icon: '📺', label: 'Ativos do Mall & Mídia', primary: false, adminOnly: false, financeiroOnly: false },
+    { id: 'campanhasBtn', icon: '📢', label: 'Campanhas de Marketing', primary: false, adminOnly: false, financeiroOnly: false },
+    { id: 'levantamentoBtn', icon: '📝', label: 'Levantamento de Campo', primary: false, adminOnly: false, financeiroOnly: false },
+    { id: 'rondaBtn', icon: '📋', label: 'Ronda / Checklist', primary: false, adminOnly: false, financeiroOnly: false },
+    { id: 'agendaBtnS19', icon: '□', label: 'Agenda', primary: false, adminOnly: false, financeiroOnly: false },
+    { id: 'alertasBtnS21', icon: '!', label: 'Alertas', badge: '0', primary: false, adminOnly: false, financeiroOnly: false },
+    { id: 'dashboardBtn', icon: '▦', label: 'Dashboard', primary: false, adminOnly: false, financeiroOnly: false },
+    { id: 'relatoriosBtn', icon: '≡', label: 'Relatórios', primary: false, adminOnly: false, financeiroOnly: false },
+    { id: 'calibracaoBtnS242', icon: '⌖', label: 'Calibrar níveis', primary: false, adminOnly: true, financeiroOnly: false },
+    { id: 'areaVermelhaBtnS244', icon: '▱', label: 'Delimitar estacionamento', primary: false, adminOnly: true, financeiroOnly: false },
+    { id: 'areasNivel1BtnS246', icon: '⌗', label: 'Delimitar áreas do Nível 1', primary: false, adminOnly: true, financeiroOnly: false },
+    { id: 'adminBtnS14', icon: '⚙', label: 'Administração', primary: false, adminOnly: true, financeiroOnly: false },
   ];
 
   return (
@@ -74,6 +76,7 @@ export const AppMenuModal: React.FC<AppMenuModalProps> = ({
         <View style={styles.menuGrid}>
           {menuItems.map((item) => {
             if (item.adminOnly && !isAdmin) return null;
+            if (item.financeiroOnly && !temAcessoFinanceiro) return null;
 
             return (
               <TouchableOpacity
