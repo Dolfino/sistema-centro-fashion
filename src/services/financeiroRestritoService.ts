@@ -9,19 +9,73 @@ export type SituacaoFinanceira =
   | 'INADIMPLENTE'
   | 'SEM_LANCAMENTOS';
 
+export type TipoContratoLocacao =
+  | 'LOCACAO_COMERCIAL'
+  | 'LOCACAO_BOX'
+  | 'QUIOSQUE'
+  | 'TEMPORARIO'
+  | 'CESSAO_DE_USO'
+  | 'EVENTO'
+  | 'LOJA_ANCORA'
+  | 'OUTRO';
+
+export type StatusContratoLocacao =
+  | 'ATIVO'
+  | 'PLANEJADO'
+  | 'SUSPENSO'
+  | 'ENCERRADO'
+  | 'RESCINDIDO'
+  | 'CANCELADO'
+  | 'VENCIDO'
+  | 'EM_RENOVACAO';
+
 export interface ContratoLocacao {
   idContrato: string;
   numeroContrato: string;
-  tipoContrato: 'LOCACAO_BOX' | 'QUIOSQUE' | 'TEMPORARIO' | 'LOJA_ANCORA';
-  status: 'ATIVO' | 'VENCIDO' | 'RESCINDIDO' | 'EM_RENOVACAO';
+  tipoContrato: TipoContratoLocacao;
+  status: StatusContratoLocacao;
   dataInicio: string;
   dataFim: string;
   aluguelMinimoMensal: number;
   percentualFaturamento: number;
   fundoPromocao: number;
   diaVencimento: number;
-  espacosVinculados: string[]; // Números dos boxes
+  espacosVinculados: string[]; // Números dos boxes (relação N:N)
+  documentoUrl?: string; // Link/URL do documento contratual (PDF/DOCX)
+  documentoNome?: string; // Nome original do arquivo
   observacoes?: string;
+  ativo?: boolean;
+}
+
+export interface ContratoEspacoVinculo {
+  idVinculo: string;
+  idContrato: string;
+  idPermissionario: string;
+  boxNumero: string;
+  ativo: boolean;
+  dataInicio: string;
+  dataFim?: string;
+}
+
+export interface ContratoEventoHistorico {
+  idEvento: string;
+  idContrato: string;
+  idPermissionario: string;
+  tipoEvento:
+    | 'CONTRATO_CRIADO'
+    | 'CONTRATO_ATUALIZADO'
+    | 'ESPACO_VINCULADO'
+    | 'ESPACO_DESVINCULADO'
+    | 'DOCUMENTO_ANEXADO'
+    | 'DOCUMENTO_REMOVIDO';
+  dataHora: string;
+  idUsuario: string;
+  emailUsuario: string;
+  clientRequestId?: string;
+  camposAlterados: string[];
+  snapshotAntes?: Partial<ContratoLocacao>;
+  snapshotDepois?: Partial<ContratoLocacao>;
+  observacao?: string;
 }
 
 export interface LancamentoFinanceiro {
@@ -205,9 +259,9 @@ const DADOS_FINANCEIROS_PERMISSIONARIOS: Record<string, ResumoFinanceiroPermissi
   },
   'PERM-001': {
     idPermissionario: 'PERM-001',
-    razaoSocial: 'Aurora Confecções do Ceará Ltda',
+    razaoSocial: 'Comercial Aurora 0024',
     nomeFantasia: 'Moda Aurora',
-    documento: '08.432.190/0001-44',
+    documento: 'TESTE-CNPJ-00000024',
     grupoEconomico: 'Grupo Aurora Fashion',
     situacao: 'ADIMPLENTE',
     saldoTotalAberto: 3500.0,
@@ -219,7 +273,7 @@ const DADOS_FINANCEIROS_PERMISSIONARIOS: Record<string, ResumoFinanceiroPermissi
       {
         idContrato: 'CTR-2024-0014',
         numeroContrato: 'CTR-2024-0014',
-        tipoContrato: 'LOCACAO_BOX',
+        tipoContrato: 'LOCACAO_COMERCIAL',
         status: 'ATIVO',
         dataInicio: '15/01/2024',
         dataFim: '14/01/2027',
@@ -227,8 +281,10 @@ const DADOS_FINANCEIROS_PERMISSIONARIOS: Record<string, ResumoFinanceiroPermissi
         percentualFaturamento: 4.5,
         fundoPromocao: 350.0,
         diaVencimento: 10,
-        espacosVinculados: ['1176', '1177'],
-        observacoes: 'Contrato padrão de box comercial com direito de renovação.',
+        espacosVinculados: ['1106'],
+        documentoNome: 'Contrato_Locacao_Aurora_1106.pdf',
+        documentoUrl: 'https://cfmall.ideiasmkt.com.br/docs/Contrato_Locacao_Aurora_1106.pdf',
+        observacoes: 'Contrato padrão de locação comercial Box 1106.',
       },
     ],
     lancamentosRecentes: [
@@ -552,4 +608,376 @@ export class FinanceiroRestritoService {
       currency: 'BRL',
     }).format(valor);
   }
+
+  /**
+   * Verifica permissões RBAC para criação e edição de contratos (Fase L3.6)
+   */
+  static verificarPermissaoEdicaoContrato(userRole: string = 'ADMIN'): boolean {
+    return userRole === 'ADMIN' || userRole === 'FINANCEIRO';
+  }
+
+  /**
+   * Lista todos os espaços físicos pertencentes ao permissionário para vínculo N:N
+   */
+  static obterEspacosPermissionario(idPermissionario: string): string[] {
+    const permitidos = ESPACOS_POR_PERMISSIONARIO[idPermissionario];
+    if (permitidos && permitidos.length > 0) {
+      return permitidos;
+    }
+    const perm = DADOS_FINANCEIROS_PERMISSIONARIOS[idPermissionario];
+    if (perm) {
+      const dosContratos = perm.contratos.flatMap((c) => c.espacosVinculados);
+      return Array.from(new Set(dosContratos));
+    }
+    return [];
+  }
+
+  /**
+   * Obtém a trilha de auditoria imutável de eventos de um contrato (Fase L3.6)
+   */
+  static obterHistoricoContrato(
+    idContrato: string,
+    userRole: string = 'ADMIN'
+  ): ContratoEventoHistorico[] {
+    if (!this.verificarPermissaoLeitura(userRole)) {
+      throw new Error(
+        'ACESSO_NEGADO_L36: Usuário não possui privilégios para consultar histórico de contratos.'
+      );
+    }
+    return HISTORICO_CONTRATOS.filter((h) => h.idContrato === idContrato);
+  }
+
+  /**
+   * Obtém os vínculos históricos normalizados de espaços de um contrato (Fase L3.6)
+   */
+  static obterVinculosEspacos(idContrato: string): ContratoEspacoVinculo[] {
+    return VINCULOS_ESPACOS_CONTRATOS.filter((v) => v.idContrato === idContrato);
+  }
+
+  /**
+   * Cria ou Atualiza contrato de locação com governança, auditoria e preservação histórica N:N (Fase L3.6)
+   */
+  static salvarContrato(
+    idPermissionario: string,
+    dadosContrato: Partial<ContratoLocacao> & { numeroContrato: string },
+    userRole: string = 'ADMIN',
+    userId: string = 'USER-ADMIN',
+    userEmail: string = 'admin@cfmall.com.br',
+    clientRequestId?: string
+  ): ContratoLocacao {
+    if (!this.verificarPermissaoEdicaoContrato(userRole)) {
+      throw new Error(
+        'ACESSO_NEGADO_L36: Permissão insuficiente. Apenas ADMIN e FINANCEIRO podem criar ou editar contratos.'
+      );
+    }
+
+    const permissionario = DADOS_FINANCEIROS_PERMISSIONARIOS[idPermissionario];
+    if (!permissionario) {
+      throw new Error(`Permissionário ${idPermissionario} não encontrado.`);
+    }
+
+    const agora = new Date();
+    const dataHoraIso = `${agora.toLocaleDateString('pt-BR')} ${agora.toLocaleTimeString('pt-BR')}`;
+    const dataHoje = agora.toLocaleDateString('pt-BR');
+
+    // Se já foi enviado com o mesmo clientRequestId recente, previne duplicação
+    if (clientRequestId) {
+      const eventoExistente = HISTORICO_CONTRATOS.find(
+        (h) => h.clientRequestId === clientRequestId
+      );
+      if (eventoExistente) {
+        const ctrExistente = permissionario.contratos.find(
+          (c) => c.idContrato === eventoExistente.idContrato
+        );
+        if (ctrExistente) return ctrExistente;
+      }
+    }
+
+    const novosEspacos = dadosContrato.espacosVinculados || [];
+
+    // CASO 1: Edição de Contrato Existente
+    if (dadosContrato.idContrato) {
+      const indice = permissionario.contratos.findIndex(
+        (c) => c.idContrato === dadosContrato.idContrato
+      );
+      if (indice === -1) {
+        throw new Error(`Contrato ${dadosContrato.idContrato} não encontrado.`);
+      }
+
+      const contratoAnterior = { ...permissionario.contratos[indice] };
+      const camposAlterados: string[] = [];
+
+      if (dadosContrato.numeroContrato && dadosContrato.numeroContrato !== contratoAnterior.numeroContrato) {
+        camposAlterados.push('NUMERO_CONTRATO');
+      }
+      if (dadosContrato.tipoContrato && dadosContrato.tipoContrato !== contratoAnterior.tipoContrato) {
+        camposAlterados.push('TIPO_CONTRATO');
+      }
+      if (dadosContrato.status && dadosContrato.status !== contratoAnterior.status) {
+        camposAlterados.push('STATUS');
+      }
+      if (dadosContrato.dataInicio && dadosContrato.dataInicio !== contratoAnterior.dataInicio) {
+        camposAlterados.push('DATA_INICIO');
+      }
+      if (dadosContrato.dataFim && dadosContrato.dataFim !== contratoAnterior.dataFim) {
+        camposAlterados.push('DATA_FIM');
+      }
+      if (
+        dadosContrato.aluguelMinimoMensal !== undefined &&
+        dadosContrato.aluguelMinimoMensal !== contratoAnterior.aluguelMinimoMensal
+      ) {
+        camposAlterados.push('VALOR_ALUGUEL_MINIMO');
+      }
+      if (
+        dadosContrato.percentualFaturamento !== undefined &&
+        dadosContrato.percentualFaturamento !== contratoAnterior.percentualFaturamento
+      ) {
+        camposAlterados.push('PERCENTUAL_FATURAMENTO');
+      }
+      if (
+        dadosContrato.fundoPromocao !== undefined &&
+        dadosContrato.fundoPromocao !== contratoAnterior.fundoPromocao
+      ) {
+        camposAlterados.push('FUNDO_PROMOCAO');
+      }
+      if (
+        dadosContrato.diaVencimento !== undefined &&
+        dadosContrato.diaVencimento !== contratoAnterior.diaVencimento
+      ) {
+        camposAlterados.push('DIA_VENCIMENTO');
+      }
+      if (dadosContrato.observacoes !== contratoAnterior.observacoes) {
+        camposAlterados.push('OBSERVACOES');
+      }
+      if (dadosContrato.documentoUrl !== contratoAnterior.documentoUrl) {
+        camposAlterados.push('DOCUMENTO_CONTRATUAL');
+      }
+
+      // Comparação de espaços vinculados (relação N:N)
+      const espacosAnteriores = contratoAnterior.espacosVinculados || [];
+      const espacosRemovidos = espacosAnteriores.filter((e) => !novosEspacos.includes(e));
+      const espacosAdicionados = novosEspacos.filter((e) => !espacosAnteriores.includes(e));
+
+      if (espacosRemovidos.length > 0 || espacosAdicionados.length > 0) {
+        camposAlterados.push('ESPACOS_VINCULADOS');
+      }
+
+      // Preservação histórica dos espaços desvinculados: ATIVO = NAO e DATA_FIM
+      for (const boxRemovido of espacosRemovidos) {
+        const vinculo = VINCULOS_ESPACOS_CONTRATOS.find(
+          (v) =>
+            v.idContrato === contratoAnterior.idContrato &&
+            v.boxNumero === boxRemovido &&
+            v.ativo
+        );
+        if (vinculo) {
+          vinculo.ativo = false;
+          vinculo.dataFim = dataHoje;
+        }
+
+        HISTORICO_CONTRATOS.unshift({
+          idEvento: `EVT-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+          idContrato: contratoAnterior.idContrato,
+          idPermissionario,
+          tipoEvento: 'ESPACO_DESVINCULADO',
+          dataHora: dataHoraIso,
+          idUsuario: userId,
+          emailUsuario: userEmail,
+          camposAlterados: [`DESVINCULO_BOX_${boxRemovido}`],
+          observacao: `Espaço Box ${boxRemovido} desvinculado do contrato ${contratoAnterior.numeroContrato} (histórico preservado).`,
+        });
+      }
+
+      // Adiciona novos vínculos
+      for (const boxAdicionado of espacosAdicionados) {
+        VINCULOS_ESPACOS_CONTRATOS.push({
+          idVinculo: `VINC-${Date.now()}-${boxAdicionado}`,
+          idContrato: contratoAnterior.idContrato,
+          idPermissionario,
+          boxNumero: boxAdicionado,
+          ativo: true,
+          dataInicio: dataHoje,
+        });
+
+        HISTORICO_CONTRATOS.unshift({
+          idEvento: `EVT-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+          idContrato: contratoAnterior.idContrato,
+          idPermissionario,
+          tipoEvento: 'ESPACO_VINCULADO',
+          dataHora: dataHoraIso,
+          idUsuario: userId,
+          emailUsuario: userEmail,
+          camposAlterados: [`VINCULO_BOX_${boxAdicionado}`],
+          observacao: `Espaço Box ${boxAdicionado} vinculado ao contrato ${contratoAnterior.numeroContrato}.`,
+        });
+      }
+
+      // Atualiza o objeto do contrato
+      const contratoAtualizado: ContratoLocacao = {
+        ...contratoAnterior,
+        ...dadosContrato,
+        idContrato: contratoAnterior.idContrato,
+        espacosVinculados: novosEspacos,
+      };
+
+      permissionario.contratos[indice] = contratoAtualizado;
+
+      // Evento de alteração de documento
+      if (dadosContrato.documentoUrl && dadosContrato.documentoUrl !== contratoAnterior.documentoUrl) {
+        HISTORICO_CONTRATOS.unshift({
+          idEvento: `EVT-${Date.now()}-DOC`,
+          idContrato: contratoAtualizado.idContrato,
+          idPermissionario,
+          tipoEvento: 'DOCUMENTO_ANEXADO',
+          dataHora: dataHoraIso,
+          idUsuario: userId,
+          emailUsuario: userEmail,
+          camposAlterados: ['DOCUMENTO_ANEXO'],
+          observacao: `Documento ${dadosContrato.documentoNome || 'contrato.pdf'} anexado com sucesso.`,
+        });
+      }
+
+      // Evento de Auditoria CONTRATO_ATUALIZADO
+      HISTORICO_CONTRATOS.unshift({
+        idEvento: `EVT-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+        idContrato: contratoAtualizado.idContrato,
+        idPermissionario,
+        tipoEvento: 'CONTRATO_ATUALIZADO',
+        dataHora: dataHoraIso,
+        idUsuario: userId,
+        emailUsuario: userEmail,
+        clientRequestId,
+        camposAlterados: camposAlterados.length > 0 ? camposAlterados : ['DADOS_GERAIS'],
+        snapshotAntes: contratoAnterior,
+        snapshotDepois: contratoAtualizado,
+        observacao: dadosContrato.observacoes || 'Atualização de termos e vigência contratual.',
+      });
+
+      return contratoAtualizado;
+    }
+
+    // CASO 2: Criação de Novo Contrato
+    const idContratoNovo = `CTR-${Date.now().toString(36).toUpperCase()}`;
+    const novoContrato: ContratoLocacao = {
+      idContrato: idContratoNovo,
+      numeroContrato: dadosContrato.numeroContrato,
+      tipoContrato: dadosContrato.tipoContrato || 'LOCACAO_COMERCIAL',
+      status: dadosContrato.status || 'ATIVO',
+      dataInicio: dadosContrato.dataInicio || dataHoje,
+      dataFim: dadosContrato.dataFim || '31/12/2027',
+      aluguelMinimoMensal: Number(dadosContrato.aluguelMinimoMensal) || 0,
+      percentualFaturamento: Number(dadosContrato.percentualFaturamento) || 0,
+      fundoPromocao: Number(dadosContrato.fundoPromocao) || 0,
+      diaVencimento: Number(dadosContrato.diaVencimento) || 10,
+      espacosVinculados: novosEspacos,
+      documentoNome: dadosContrato.documentoNome,
+      documentoUrl: dadosContrato.documentoUrl,
+      observacoes: dadosContrato.observacoes || '',
+      ativo: true,
+    };
+
+    permissionario.contratos.unshift(novoContrato);
+
+    // Registra vínculos iniciais normalizados
+    for (const box of novosEspacos) {
+      VINCULOS_ESPACOS_CONTRATOS.push({
+        idVinculo: `VINC-${Date.now()}-${box}`,
+        idContrato: idContratoNovo,
+        idPermissionario,
+        boxNumero: box,
+        ativo: true,
+        dataInicio: novoContrato.dataInicio,
+      });
+    }
+
+    // Evento de auditoria CONTRATO_CRIADO
+    const camposIniciais = ['NOVO_CONTRATO', 'ESPACOS'];
+    if (novoContrato.documentoUrl) {
+      camposIniciais.push('DOCUMENTO_NOVO');
+    }
+
+    HISTORICO_CONTRATOS.unshift({
+      idEvento: `EVT-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      idContrato: idContratoNovo,
+      idPermissionario,
+      tipoEvento: 'CONTRATO_CRIADO',
+      dataHora: dataHoraIso,
+      idUsuario: userId,
+      emailUsuario: userEmail,
+      clientRequestId,
+      camposAlterados: camposIniciais,
+      snapshotDepois: novoContrato,
+      observacao: novoContrato.observacoes || `Contrato ${novoContrato.numeroContrato} cadastrado no sistema.`,
+    });
+
+    return novoContrato;
+  }
 }
+
+// Repositórios em memória para L3.6 (Zero-Cache e Auditabilidade)
+const ESPACOS_POR_PERMISSIONARIO: Record<string, string[]> = {
+  'PERM-001': ['1106', '1158', '1154'],
+  'PERM-002': ['1318'],
+  'PERM-003': ['1288', '1274'],
+  'PERM-004': ['1020', '1021'],
+};
+
+const VINCULOS_ESPACOS_CONTRATOS: ContratoEspacoVinculo[] = [
+  {
+    idVinculo: 'VINC-INIT-001',
+    idContrato: 'CTR-2024-0014',
+    idPermissionario: 'PERM-001',
+    boxNumero: '1106',
+    ativo: true,
+    dataInicio: '15/01/2024',
+  },
+  {
+    idVinculo: 'VINC-INIT-002',
+    idContrato: 'CTR-BELLA-001',
+    idPermissionario: 'PERM-002',
+    boxNumero: '1318',
+    ativo: true,
+    dataInicio: '01/01/2024',
+  },
+  {
+    idVinculo: 'VINC-INIT-003',
+    idContrato: 'CTR-2024-0105',
+    idPermissionario: 'PERM-003',
+    boxNumero: '1288',
+    ativo: true,
+    dataInicio: '10/08/2024',
+  },
+  {
+    idVinculo: 'VINC-INIT-004',
+    idContrato: 'CTR-2024-0105',
+    idPermissionario: 'PERM-003',
+    boxNumero: '1274',
+    ativo: true,
+    dataInicio: '10/08/2024',
+  },
+];
+
+const HISTORICO_CONTRATOS: ContratoEventoHistorico[] = [
+  {
+    idEvento: 'EVT-INIT-001',
+    idContrato: 'CTR-2024-0014',
+    idPermissionario: 'PERM-001',
+    tipoEvento: 'CONTRATO_CRIADO',
+    dataHora: '15/01/2024 10:30:00',
+    idUsuario: 'SISTEMA-LEGADO',
+    emailUsuario: 'contratos@cfmall.com.br',
+    camposAlterados: ['NOVO_CONTRATO', 'ESPACOS', 'DOCUMENTO_NOVO'],
+    observacao: 'Migração de contrato padrão de locação comercial Box 1106.',
+  },
+  {
+    idEvento: 'EVT-INIT-002',
+    idContrato: 'CTR-BELLA-001',
+    idPermissionario: 'PERM-002',
+    tipoEvento: 'CONTRATO_CRIADO',
+    dataHora: '01/01/2024 09:15:00',
+    idUsuario: 'SISTEMA-LEGADO',
+    emailUsuario: 'contratos@cfmall.com.br',
+    camposAlterados: ['NOVO_CONTRATO', 'ESPACOS'],
+    observacao: 'Contrato padrão de locação comercial Box 1318.',
+  },
+];

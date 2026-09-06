@@ -7,11 +7,14 @@ import {
   TouchableOpacity,
   ScrollView,
   Dimensions,
+  Alert,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import {
   FinanceiroRestritoService,
   ResumoFinanceiroPermissionario,
   SituacaoFinanceira,
+  ContratoLocacao,
 } from '../services/financeiroRestritoService';
 
 interface FinanceiroRestritoModalProps {
@@ -19,6 +22,7 @@ interface FinanceiroRestritoModalProps {
   idPermissionario: string | null;
   userRole?: string;
   onClose: () => void;
+  onAbrirEditorContrato?: (idPermissionario: string, contrato?: ContratoLocacao | null) => void;
 }
 
 export const FinanceiroRestritoModal: React.FC<FinanceiroRestritoModalProps> = ({
@@ -26,6 +30,7 @@ export const FinanceiroRestritoModal: React.FC<FinanceiroRestritoModalProps> = (
   idPermissionario,
   userRole = 'ADMIN',
   onClose,
+  onAbrirEditorContrato,
 }) => {
   const [dados, setDados] = useState<ResumoFinanceiroPermissionario | null>(null);
   const [erroAcesso, setErroAcesso] = useState<string | null>(null);
@@ -139,9 +144,23 @@ export const FinanceiroRestritoModal: React.FC<FinanceiroRestritoModalProps> = (
                 </View>
               </View>
 
-              {/* Seção de Contratos de Locação */}
+              {/* Seção de Contratos de Locação (Fase L3.6) */}
               <View style={styles.section}>
-                <Text style={styles.sectionTitle}>📜 Contratos de Locação Vigentes ({dados.contratos.length})</Text>
+                <View style={styles.sectionHeaderBetween}>
+                  <Text style={styles.sectionTitle}>
+                    📜 Contratos de Locação Vigentes ({dados.contratos.length})
+                  </Text>
+                  {FinanceiroRestritoService.verificarPermissaoEdicaoContrato(userRole) && onAbrirEditorContrato && (
+                    <TouchableOpacity
+                      style={styles.btnNovoContrato}
+                      onPress={() => onAbrirEditorContrato(dados.idPermissionario, null)}
+                    >
+                      <Ionicons name="add-circle-outline" size={15} color="#fff" />
+                      <Text style={styles.btnNovoContratoText}>Novo Contrato</Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+
                 {dados.contratos.length === 0 ? (
                   <View style={styles.emptyCard}>
                     <Text style={styles.emptyCardText}>Nenhum contrato ativo registrado.</Text>
@@ -191,6 +210,40 @@ export const FinanceiroRestritoModal: React.FC<FinanceiroRestritoModalProps> = (
                             <Text style={styles.boxTagSmallText}>Box {b}</Text>
                           </View>
                         ))}
+                      </View>
+
+                      {/* Ações do Contrato (Fase L3.6) */}
+                      <View style={styles.contratoAcoesRow}>
+                        {ctr.documentoUrl ? (
+                          <TouchableOpacity
+                            style={styles.btnDocContrato}
+                            onPress={() =>
+                              Alert.alert(
+                                'Documento do Contrato',
+                                `Arquivo: ${ctr.documentoNome || 'contrato.pdf'}\nRepositório seguro corporativo.`
+                              )
+                            }
+                          >
+                            <Ionicons name="document-text-outline" size={14} color="#38bdf8" />
+                            <Text style={styles.btnDocContratoText}>
+                              {ctr.documentoNome ? 'Abrir Documento' : 'Documento Anexo'}
+                            </Text>
+                          </TouchableOpacity>
+                        ) : (
+                          <View style={styles.semDocBadge}>
+                            <Text style={styles.semDocText}>Sem documento anexado</Text>
+                          </View>
+                        )}
+
+                        {FinanceiroRestritoService.verificarPermissaoEdicaoContrato(userRole) && onAbrirEditorContrato && (
+                          <TouchableOpacity
+                            style={styles.btnEditarContrato}
+                            onPress={() => onAbrirEditorContrato(dados.idPermissionario, ctr)}
+                          >
+                            <Ionicons name="create-outline" size={14} color="#f8fafc" />
+                            <Text style={styles.btnEditarContratoText}>Editar Contrato</Text>
+                          </TouchableOpacity>
+                        )}
                       </View>
                     </View>
                   ))
@@ -631,5 +684,74 @@ const styles = StyleSheet.create({
   loadingText: {
     color: '#94a3b8',
     fontSize: 14,
+  },
+  sectionHeaderBetween: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  btnNovoContrato: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#0284c7',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+  },
+  btnNovoContratoText: {
+    color: '#ffffff',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  contratoAcoesRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 12,
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: '#334155',
+  },
+  btnDocContrato: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: 'rgba(56, 189, 248, 0.1)',
+    borderWidth: 1,
+    borderColor: '#38bdf8',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 6,
+  },
+  btnDocContratoText: {
+    color: '#38bdf8',
+    fontSize: 11,
+    fontWeight: '600',
+  },
+  semDocBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
+    backgroundColor: '#0f172a',
+  },
+  semDocText: {
+    fontSize: 10,
+    color: '#64748b',
+  },
+  btnEditarContrato: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#334155',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+  },
+  btnEditarContratoText: {
+    color: '#f8fafc',
+    fontSize: 11,
+    fontWeight: 'bold',
   },
 });

@@ -15,6 +15,7 @@ import {
   KPIsCentralFinanceira,
   FiltrosCarteiraFinanceira,
   SituacaoFinanceira,
+  ContratoLocacao,
 } from '../services/financeiroRestritoService';
 
 interface CentralFinanceiraModalProps {
@@ -23,6 +24,7 @@ interface CentralFinanceiraModalProps {
   userRole?: string;
   onAbrirDetalhesFinanceiros: (idPermissionario: string) => void;
   onAbrirGestaoPermissionario?: (idPermissionario: string) => void;
+  onAbrirEditorContrato?: (idPermissionario: string, contrato?: ContratoLocacao | null) => void;
 }
 
 export const CentralFinanceiraModal: React.FC<CentralFinanceiraModalProps> = ({
@@ -31,6 +33,7 @@ export const CentralFinanceiraModal: React.FC<CentralFinanceiraModalProps> = ({
   userRole = 'ADMIN',
   onAbrirDetalhesFinanceiros,
   onAbrirGestaoPermissionario,
+  onAbrirEditorContrato,
 }) => {
   const [busca, setBusca] = useState('');
   const [filtroSituacao, setFiltroSituacao] = useState<string>('TODOS');
@@ -410,6 +413,16 @@ export const CentralFinanceiraModal: React.FC<CentralFinanceiraModalProps> = ({
                           >
                             <Ionicons name="business-outline" size={14} color="#38bdf8" />
                             <Text style={styles.btnAcaoGestaoText}>Permissionário 360°</Text>
+                          </TouchableOpacity>
+                        )}
+
+                        {FinanceiroRestritoService.verificarPermissaoEdicaoContrato(userRole) && onAbrirEditorContrato && (
+                          <TouchableOpacity
+                            style={styles.btnAcaoNovoContrato}
+                            onPress={() => onAbrirEditorContrato(item.idPermissionario, null)}
+                          >
+                            <Ionicons name="document-text-outline" size={14} color="#38bdf8" />
+                            <Text style={styles.btnAcaoNovoContratoText}>Novo Contrato</Text>
                           </TouchableOpacity>
                         )}
 
@@ -871,6 +884,22 @@ const styles = StyleSheet.create({
     borderColor: '#38bdf8',
   },
   btnAcaoGestaoText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#38bdf8',
+  },
+  btnAcaoNovoContrato: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    backgroundColor: '#0f172a',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#38bdf8',
+  },
+  btnAcaoNovoContratoText: {
     fontSize: 11,
     fontWeight: '700',
     color: '#38bdf8',

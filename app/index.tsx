@@ -25,6 +25,8 @@ import { FichaLoja360, Loja360Service } from '../src/services/loja360Service';
 import { CentralGestaoLojistasModal } from '../src/components/CentralGestaoLojistasModal';
 import { FinanceiroRestritoModal } from '../src/components/FinanceiroRestritoModal';
 import { CentralFinanceiraModal } from '../src/components/CentralFinanceiraModal';
+import { ContratoEditorModal } from '../src/components/ContratoEditorModal';
+import { ContratoLocacao } from '../src/services/financeiroRestritoService';
 import { AtivoMallModal } from '../src/components/AtivoMallModal';
 import { AtivoMidiaPonto } from '../src/services/ativoMallService';
 import { CampanhaCentralModal } from '../src/components/CampanhaCentralModal';
@@ -198,10 +200,13 @@ export default function LegacyMainShellScreen() {
   const [lojaSelecionada360, setLojaSelecionada360] = useState<FichaLoja360 | null>(null);
   const [centralGestaoLojistasOpen, setCentralGestaoLojistasOpen] = useState<boolean>(false);
 
-  // Contratos & Financeiro Restrito (Fase L3.4 & L3.5)
+  // Contratos & Financeiro Restrito (Fase L3.4, L3.5 e L3.6)
   const [financeiroModalOpen, setFinanceiroModalOpen] = useState<boolean>(false);
   const [financeiroPermissionarioId, setFinanceiroPermissionarioId] = useState<string | null>(null);
   const [centralFinanceiraOpen, setCentralFinanceiraOpen] = useState<boolean>(false);
+  const [contratoEditorOpen, setContratoEditorOpen] = useState<boolean>(false);
+  const [contratoEditorPermissionarioId, setContratoEditorPermissionarioId] = useState<string | null>(null);
+  const [contratoParaEditar, setContratoParaEditar] = useState<ContratoLocacao | null>(null);
 
   // Ativos do Mall & Fiscalização de Mídia Física (Paridade Google Apps Script)
   const [ativoMallOpen, setAtivoMallOpen] = useState<boolean>(false);
@@ -1431,6 +1436,11 @@ export default function LegacyMainShellScreen() {
           setFinanceiroModalOpen(false);
           setFinanceiroPermissionarioId(null);
         }}
+        onAbrirEditorContrato={(idPerm, contrato) => {
+          setContratoEditorPermissionarioId(idPerm);
+          setContratoParaEditar(contrato || null);
+          setContratoEditorOpen(true);
+        }}
       />
 
       {/* 28. Central Financeira e de Contratos (Fase L3.5) */}
@@ -1445,6 +1455,29 @@ export default function LegacyMainShellScreen() {
         onAbrirGestaoPermissionario={() => {
           setCentralFinanceiraOpen(false);
           setCentralGestaoLojistasOpen(true);
+        }}
+        onAbrirEditorContrato={(idPerm, contrato) => {
+          setContratoEditorPermissionarioId(idPerm);
+          setContratoParaEditar(contrato || null);
+          setContratoEditorOpen(true);
+        }}
+      />
+
+      {/* 29. Editor de Contratos Multi-Espaço e Auditoria (Fase L3.6) */}
+      <ContratoEditorModal
+        visible={contratoEditorOpen}
+        idPermissionario={contratoEditorPermissionarioId || ''}
+        contratoParaEditar={contratoParaEditar}
+        userRole="ADMIN"
+        onClose={() => {
+          setContratoEditorOpen(false);
+          setContratoEditorPermissionarioId(null);
+          setContratoParaEditar(null);
+        }}
+        onContratoSalvo={(_contratoSalvo) => {
+          setContratoEditorOpen(false);
+          setContratoEditorPermissionarioId(null);
+          setContratoParaEditar(null);
         }}
       />
     </View>
