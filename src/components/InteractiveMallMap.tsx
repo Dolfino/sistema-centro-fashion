@@ -365,8 +365,12 @@ export const InteractiveMallMap: React.FC<InteractiveMallMapProps> = ({
     }
   };
 
-  const pinWidth = isMobile ? 24 : 28;
-  const pinHeight = Math.round(pinWidth * 1.35); // 32 no mobile, 38 no desktop
+  // Tamanho do PIN otimizado: compacto e proporcional na visão 100% (15px desktop / 13px mobile)
+  // Escala suavemente conforme o zoom aumenta, evitando cobrir múltiplos boxes na visão geral
+  const zoomRatio = fitScale > 0 ? scale / fitScale : 1;
+  const basePinWidth = isMobile ? 13 : 15;
+  const pinWidth = Math.min(22, Math.max(12, Math.round(basePinWidth * Math.pow(zoomRatio, 0.3))));
+  const pinHeight = Math.round(pinWidth * 1.35);
   const zoomPercent = Math.round((scale / fitScale) * 100);
 
   return (
