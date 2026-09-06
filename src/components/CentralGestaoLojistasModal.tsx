@@ -23,6 +23,8 @@ interface CentralGestaoLojistasModalProps {
   onClose: () => void;
   onAbrirFicha360: (idLojaMapa: string) => void;
   onVerNoMapa: (idLojaMapa: string, numeroBox: string) => void;
+  onAbrirFinanceiro?: (idPermissionario: string) => void;
+  userRole?: string;
 }
 
 export const CentralGestaoLojistasModal: React.FC<CentralGestaoLojistasModalProps> = ({
@@ -30,6 +32,8 @@ export const CentralGestaoLojistasModal: React.FC<CentralGestaoLojistasModalProp
   onClose,
   onAbrirFicha360,
   onVerNoMapa,
+  onAbrirFinanceiro,
+  userRole = 'ADMIN',
 }) => {
   const [abaAtiva, setAbaAtiva] = useState<'OPERACOES' | 'PERMISSIONARIOS'>('OPERACOES');
   const [metricas, setMetricas] = useState<MetricasGestao | null>(null);
@@ -347,6 +351,17 @@ export const CentralGestaoLojistasModal: React.FC<CentralGestaoLojistasModalProp
                       <Text style={styles.contatoText}>
                         📞 {perm.telefone} • ✉️ {perm.email}
                       </Text>
+
+                      {onAbrirFinanceiro && (userRole === 'ADMIN' || userRole === 'FINANCEIRO') && (
+                        <TouchableOpacity
+                          style={[styles.btnSecondary, { backgroundColor: 'rgba(239, 68, 68, 0.2)', borderWidth: 1, borderColor: '#ef4444' }]}
+                          onPress={() => onAbrirFinanceiro(perm.idPermissionario)}
+                        >
+                          <Text style={[styles.btnSecondaryText, { color: '#f87171', fontWeight: '700' }]}>
+                            🔒 Contratos & Financeiro
+                          </Text>
+                        </TouchableOpacity>
+                      )}
 
                       {perm.whatsapp && (
                         <TouchableOpacity

@@ -23,6 +23,7 @@ import { RelatoriosSlidesModal } from '../src/components/RelatoriosSlidesModal';
 import { Loja360Modal } from '../src/components/Loja360Modal';
 import { FichaLoja360, Loja360Service } from '../src/services/loja360Service';
 import { CentralGestaoLojistasModal } from '../src/components/CentralGestaoLojistasModal';
+import { FinanceiroRestritoModal } from '../src/components/FinanceiroRestritoModal';
 import { AtivoMallModal } from '../src/components/AtivoMallModal';
 import { AtivoMidiaPonto } from '../src/services/ativoMallService';
 import { CampanhaCentralModal } from '../src/components/CampanhaCentralModal';
@@ -195,6 +196,10 @@ export default function LegacyMainShellScreen() {
   const [loja360Open, setLoja360Open] = useState<boolean>(false);
   const [lojaSelecionada360, setLojaSelecionada360] = useState<FichaLoja360 | null>(null);
   const [centralGestaoLojistasOpen, setCentralGestaoLojistasOpen] = useState<boolean>(false);
+
+  // Contratos & Financeiro Restrito (Fase L3.4)
+  const [financeiroModalOpen, setFinanceiroModalOpen] = useState<boolean>(false);
+  const [financeiroPermissionarioId, setFinanceiroPermissionarioId] = useState<string | null>(null);
 
   // Ativos do Mall & Fiscalização de Mídia Física (Paridade Google Apps Script)
   const [ativoMallOpen, setAtivoMallOpen] = useState<boolean>(false);
@@ -1381,6 +1386,22 @@ export default function LegacyMainShellScreen() {
         onClose={() => setCentralGestaoLojistasOpen(false)}
         onAbrirFicha360={handleAbrirFicha360DaCentral}
         onVerNoMapa={handleVerNoMapaDaCentral}
+        onAbrirFinanceiro={(idPerm) => {
+          setFinanceiroPermissionarioId(idPerm);
+          setFinanceiroModalOpen(true);
+        }}
+        userRole="ADMIN"
+      />
+
+      {/* 27. Modal de Contratos & Financeiro Restrito (Fase L3.4) */}
+      <FinanceiroRestritoModal
+        visible={financeiroModalOpen}
+        idPermissionario={financeiroPermissionarioId}
+        userRole="ADMIN"
+        onClose={() => {
+          setFinanceiroModalOpen(false);
+          setFinanceiroPermissionarioId(null);
+        }}
       />
     </View>
   );
