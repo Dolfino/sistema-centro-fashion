@@ -40,6 +40,7 @@ export const AppMenuModal: React.FC<AppMenuModalProps> = ({
     { id: 'centralGestaoBtn', icon: '◎', label: 'Central', primary: false, adminOnly: false, financeiroOnly: false },
     { id: 'centralFinanceiraBtn', icon: '💳', label: 'Central Financeira', primary: false, adminOnly: false, financeiroOnly: true },
     { id: 'auditoriaVendasBtn', icon: '📈', label: 'Auditoria de Vendas', primary: false, adminOnly: false, financeiroOnly: true },
+    { id: 'analiticaBtn', icon: '📊', label: 'Central Analítica', primary: false, adminOnly: false, financeiroOnly: false },
     { id: 'loja360Btn', icon: '🏬', label: 'Loja 360 / Boxes', primary: false, adminOnly: false, financeiroOnly: false },
     { id: 'ativoMallBtn', icon: '📺', label: 'Ativos do Mall & Mídia', primary: false, adminOnly: false, financeiroOnly: false },
     { id: 'campanhasBtn', icon: '📢', label: 'Campanhas de Marketing', primary: false, adminOnly: false, financeiroOnly: false },

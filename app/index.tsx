@@ -38,6 +38,7 @@ import {
 import { AuditoriaVendasCentralModal } from '../src/components/AuditoriaVendasCentralModal';
 import { AuditoriaVendasEditorModal } from '../src/components/AuditoriaVendasEditorModal';
 import { RegistroAuditoriaVenda } from '../src/services/auditoriaVendasService';
+import { CentralAnaliticaModal } from '../src/components/CentralAnaliticaModal';
 import { AtivoMallModal } from '../src/components/AtivoMallModal';
 import { AtivoMidiaPonto } from '../src/services/ativoMallService';
 import { CampanhaCentralModal } from '../src/components/CampanhaCentralModal';
@@ -232,6 +233,9 @@ export default function LegacyMainShellScreen() {
   const [auditoriaParaEditar, setAuditoriaParaEditar] = useState<RegistroAuditoriaVenda | null>(null);
   const [auditoriaUpdateKey, setAuditoriaUpdateKey] = useState<number>(0);
 
+  // Central Analítica Comercial (Fase L3.9)
+  const [centralAnaliticaOpen, setCentralAnaliticaOpen] = useState<boolean>(false);
+
   // Ativos do Mall & Fiscalização de Mídia Física (Paridade Google Apps Script)
   const [ativoMallOpen, setAtivoMallOpen] = useState<boolean>(false);
 
@@ -367,6 +371,8 @@ export default function LegacyMainShellScreen() {
       setCentralFinanceiraOpen(true);
     } else if (itemId === 'auditoriaVendasBtn' || itemId === 'auditoria') {
       setAuditoriaCentralOpen(true);
+    } else if (itemId === 'analiticaBtn' || itemId === 'analitica') {
+      setCentralAnaliticaOpen(true);
     } else if (itemId === 'loja360Btn' || itemId === 'loja360') {
       setLoja360Open(true);
     } else if (itemId === 'ativoMallBtn' || itemId === 'ativoMall' || itemId === 'midia') {
@@ -1055,6 +1061,20 @@ export default function LegacyMainShellScreen() {
               {!isMobile && <Text style={{ color: '#6ee7b7', fontSize: 12, fontWeight: '700' }}>Auditoria</Text>}
             </TouchableOpacity>
 
+            {/* Botão Central Analítica (L3.9) */}
+            <TouchableOpacity
+              id="btnAnaliticaToolbar"
+              style={[
+                styles.btnCentralizar,
+                { width: 'auto', paddingHorizontal: 10, gap: 4, flexDirection: 'row', backgroundColor: '#1e3a8a', borderColor: '#3b82f6' },
+              ]}
+              onPress={() => setCentralAnaliticaOpen(true)}
+              aria-label="Central Analítica"
+            >
+              <Text style={{ fontSize: 13 }}>📊</Text>
+              {!isMobile && <Text style={{ color: '#bfdbfe', fontSize: 12, fontWeight: '700' }}>Analítica</Text>}
+            </TouchableOpacity>
+
             {/* Botão Menu (#appMenuBtnS22513) */}
             <TouchableOpacity
               id="appMenuBtnS22513"
@@ -1632,6 +1652,50 @@ export default function LegacyMainShellScreen() {
           setAuditoriaEditorOpen(false);
           setAuditoriaParaEditar(null);
           setAuditoriaUpdateKey((k) => k + 1);
+        }}
+      />
+
+      {/* 35. Central Analítica Comercial (Fase L3.9) */}
+      <CentralAnaliticaModal
+        visible={centralAnaliticaOpen}
+        onClose={() => setCentralAnaliticaOpen(false)}
+        userRole="ADMIN"
+        onAbrirFichaLoja={(idLoja) => {
+          const ficha = Loja360Service.obterFicha(idLoja);
+          if (ficha) {
+            setLojaSelecionada360(ficha);
+            setLoja360Open(true);
+          }
+        }}
+        onVerNoMapa={(setor, numeroBox, idLoja) => {
+          setCentralAnaliticaOpen(false);
+          // Mapear nome do setor para chave cartográfica
+          let mapKey = 'SETOR_AZUL';
+          const s = (setor || '').toUpperCase();
+          if (s.includes('VERDE')) mapKey = 'SETOR_VERDE';
+          else if (s.includes('AMARELO')) mapKey = 'SETOR_AMARELO';
+          else if (s.includes('ROXO')) mapKey = 'SETOR_ROXO';
+          else if (s.includes('BRANCO')) mapKey = 'SETOR_BRANCO';
+          else if (s.includes('NIVEL') || s.includes('1')) mapKey = 'NIVEL_1';
+          setSelectedMapKey(mapKey);
+
+          // Localizar pin pelo número ou ID
+          const pinEncontrado = pinsList.find(
+            (p) => p.id === idLoja || p.humanLocation?.includes(numeroBox)
+          );
+          if (pinEncontrado) {
+            setSelectedPin(pinEncontrado);
+          }
+        }}
+        onAbrirPermissionario={(_idPerm) => {
+          setCentralGestaoLojistasOpen(true);
+        }}
+        onAbrirFinanceiro={(idPerm) => {
+          setFinanceiroPermissionarioId(idPerm);
+          setFinanceiroModalOpen(true);
+        }}
+        onAbrirAuditoria={(_idLoja) => {
+          setAuditoriaCentralOpen(true);
         }}
       />
     </View>
