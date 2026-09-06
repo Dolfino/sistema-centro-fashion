@@ -98,6 +98,7 @@ const TeardropPin: React.FC<{
         style={{
           display: 'block',
           overflow: 'visible',
+          pointerEvents: 'none',
           filter: isSelected
             ? 'drop-shadow(0 0 8px #F50087) drop-shadow(0 3px 6px rgba(0,0,0,0.4))'
             : isDraft
@@ -272,7 +273,7 @@ export const InteractiveMallMap: React.FC<InteractiveMallMapProps> = ({
 
   const handlePointerDown = (e: any) => {
     // Não inicia pan se clicou em botão ou marcador
-    if (e.target?.closest?.('[data-role="hud"], [data-role="pin"]')) return;
+    if (e.target?.closest?.('[data-role="hud"], [data-role="pin"], [id^="pin-marker-"]')) return;
 
     const clientX = e.clientX ?? e.nativeEvent?.clientX ?? 0;
     const clientY = e.clientY ?? e.nativeEvent?.clientY ?? 0;
@@ -463,10 +464,11 @@ export const InteractiveMallMap: React.FC<InteractiveMallMapProps> = ({
                   key={pin.id}
                   id={`pin-marker-${pin.id}`}
                   {...({ dataSet: { role: 'pin' } } as any)}
-                  activeOpacity={0.85}
+                  activeOpacity={0.7}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                   onPress={(e) => {
                     e.stopPropagation();
-                    if (!pointerState.current.hasMoved && onSelectPin) {
+                    if (onSelectPin) {
                       onSelectPin(pin);
                     }
                   }}
