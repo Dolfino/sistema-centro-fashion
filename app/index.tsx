@@ -35,6 +35,9 @@ import {
   AcordoFinanceiro,
   FinanceiroRestritoService,
 } from '../src/services/financeiroRestritoService';
+import { AuditoriaVendasCentralModal } from '../src/components/AuditoriaVendasCentralModal';
+import { AuditoriaVendasEditorModal } from '../src/components/AuditoriaVendasEditorModal';
+import { RegistroAuditoriaVenda } from '../src/services/auditoriaVendasService';
 import { AtivoMallModal } from '../src/components/AtivoMallModal';
 import { AtivoMidiaPonto } from '../src/services/ativoMallService';
 import { CampanhaCentralModal } from '../src/components/CampanhaCentralModal';
@@ -223,6 +226,12 @@ export default function LegacyMainShellScreen() {
   const [acordoParaEditar, setAcordoParaEditar] = useState<AcordoFinanceiro | null>(null);
   const [financeiroUpdateKey, setFinanceiroUpdateKey] = useState<number>(0);
 
+  // Auditoria de Vendas & Faturamento (Fase L3.8)
+  const [auditoriaCentralOpen, setAuditoriaCentralOpen] = useState<boolean>(false);
+  const [auditoriaEditorOpen, setAuditoriaEditorOpen] = useState<boolean>(false);
+  const [auditoriaParaEditar, setAuditoriaParaEditar] = useState<RegistroAuditoriaVenda | null>(null);
+  const [auditoriaUpdateKey, setAuditoriaUpdateKey] = useState<number>(0);
+
   // Ativos do Mall & Fiscalização de Mídia Física (Paridade Google Apps Script)
   const [ativoMallOpen, setAtivoMallOpen] = useState<boolean>(false);
 
@@ -356,6 +365,8 @@ export default function LegacyMainShellScreen() {
       setCentralGestaoLojistasOpen(true);
     } else if (itemId === 'centralFinanceiraBtn' || itemId === 'financeiro') {
       setCentralFinanceiraOpen(true);
+    } else if (itemId === 'auditoriaVendasBtn' || itemId === 'auditoria') {
+      setAuditoriaCentralOpen(true);
     } else if (itemId === 'loja360Btn' || itemId === 'loja360') {
       setLoja360Open(true);
     } else if (itemId === 'ativoMallBtn' || itemId === 'ativoMall' || itemId === 'midia') {
@@ -1568,6 +1579,45 @@ export default function LegacyMainShellScreen() {
           setAcordoEditorOpen(false);
           setAcordoParaEditar(null);
           setFinanceiroUpdateKey((k) => k + 1);
+        }}
+      />
+
+      {/* 33. Central de Auditoria de Vendas & Faturamento (Fase L3.8) */}
+      <AuditoriaVendasCentralModal
+        key={`auditoria-central-${auditoriaUpdateKey}`}
+        visible={auditoriaCentralOpen}
+        onClose={() => setAuditoriaCentralOpen(false)}
+        userRole="ADMIN"
+        onAbrirEditorAuditoria={(auditoria) => {
+          setAuditoriaParaEditar(auditoria || null);
+          setAuditoriaEditorOpen(true);
+        }}
+        onAbrirFichaLoja={(idLoja) => {
+          const ficha = Loja360Service.obterFicha(idLoja);
+          if (ficha) {
+            setLojaSelecionada360(ficha);
+            setLoja360Open(true);
+          }
+        }}
+        onAbrirFinanceiroPermissionario={(idPerm) => {
+          setFinanceiroPermissionarioId(idPerm);
+          setFinanceiroModalOpen(true);
+        }}
+      />
+
+      {/* 34. Editor de Auditoria de Vendas (Fase L3.8) */}
+      <AuditoriaVendasEditorModal
+        visible={auditoriaEditorOpen}
+        auditoriaParaEditar={auditoriaParaEditar}
+        userRole="ADMIN"
+        onClose={() => {
+          setAuditoriaEditorOpen(false);
+          setAuditoriaParaEditar(null);
+        }}
+        onAuditoriaSalva={(_salva) => {
+          setAuditoriaEditorOpen(false);
+          setAuditoriaParaEditar(null);
+          setAuditoriaUpdateKey((k) => k + 1);
         }}
       />
     </View>

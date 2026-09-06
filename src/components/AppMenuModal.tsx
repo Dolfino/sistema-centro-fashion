@@ -30,7 +30,7 @@ export const AppMenuModal: React.FC<AppMenuModalProps> = ({
   if (!visible) return null;
 
   const isAdmin = userRole === 'ADMIN';
-  const temAcessoFinanceiro = userRole === 'ADMIN' || userRole === 'FINANCEIRO';
+  const temAcessoFinanceiro = userRole === 'ADMIN' || userRole === 'FINANCEIRO' || userRole === 'AUDITORIA';
 
   const menuItems = [
     { id: 'novo', icon: '＋', label: 'Novo registro', primary: true, adminOnly: false, financeiroOnly: false },
@@ -39,6 +39,7 @@ export const AppMenuModal: React.FC<AppMenuModalProps> = ({
     { id: 'filaBtn', icon: '⇅', label: 'Fila', badge: '0', primary: false, adminOnly: false, financeiroOnly: false },
     { id: 'centralGestaoBtn', icon: '◎', label: 'Central', primary: false, adminOnly: false, financeiroOnly: false },
     { id: 'centralFinanceiraBtn', icon: '💳', label: 'Central Financeira', primary: false, adminOnly: false, financeiroOnly: true },
+    { id: 'auditoriaVendasBtn', icon: '📈', label: 'Auditoria de Vendas', primary: false, adminOnly: false, financeiroOnly: true },
     { id: 'loja360Btn', icon: '🏬', label: 'Loja 360 / Boxes', primary: false, adminOnly: false, financeiroOnly: false },
     { id: 'ativoMallBtn', icon: '📺', label: 'Ativos do Mall & Mídia', primary: false, adminOnly: false, financeiroOnly: false },
     { id: 'campanhasBtn', icon: '📢', label: 'Campanhas de Marketing', primary: false, adminOnly: false, financeiroOnly: false },
