@@ -989,68 +989,146 @@ export default function LegacyMainShellScreen() {
       <View style={[styles.mainLayout, isMobile && styles.mainLayoutMobile]}>
         {/* Toolbar Card (.toolbar / .map-selector-row-s22513) */}
         <View style={[styles.toolbarCard, isMobile && styles.toolbarCardMobile]}>
-          <View style={styles.selectWrapper}>
-            <Text style={styles.selectLabel}>Mapa / visualização</Text>
-
-            {Platform.OS === 'web' ? (
-              <select
-                id="mapaSelect"
-                value={selectedMapKey}
-                onChange={(e) => {
-                  setSelectedMapKey(e.target.value);
-                  setSelectedPin(null);
-                }}
-                style={{
-                  width: '100%',
-                  paddingLeft: 12,
-                  paddingRight: 12,
-                  paddingTop: 9,
-                  paddingBottom: 9,
-                  borderWidth: 1,
-                  borderColor: '#DFE3ED',
-                  borderRadius: 10,
-                  backgroundColor: '#FFFFFF',
-                  fontSize: 13,
-                  fontWeight: '600',
-                  color: '#20233A',
-                  marginTop: 4,
-                  height: 42,
-                }}
-              >
-                {mapsList.map((m) => (
-                  <option key={m.key} value={m.key}>
-                    {m.label}
-                  </option>
-                ))}
-              </select>
-            ) : (
-              <View style={styles.mobileSelectFallback}>
-                <Text style={styles.mobileSelectText} numberOfLines={1}>
-                  {mapsList.find((m) => m.key === selectedMapKey)?.label}
-                </Text>
+          {isMobile ? (
+            /* Visão Mobile: Linha Superior com Dropdown + Botão Centralizar + Botão Hambúrguer */
+            <View style={styles.mobileToolbarTopRow}>
+              {/* Dropdown Setor Azul • Piso 1 */}
+              <View style={styles.mobileSelectContainer}>
+                {Platform.OS === 'web' ? (
+                  <select
+                    id="mapaSelect"
+                    value={selectedMapKey}
+                    onChange={(e) => {
+                      setSelectedMapKey(e.target.value);
+                      setSelectedPin(null);
+                    }}
+                    style={{
+                      width: '100%',
+                      paddingLeft: 10,
+                      paddingRight: 10,
+                      paddingTop: 8,
+                      paddingBottom: 8,
+                      borderWidth: 1,
+                      borderColor: '#DFE3ED',
+                      borderRadius: 10,
+                      backgroundColor: '#FFFFFF',
+                      fontSize: 13,
+                      fontWeight: '600',
+                      color: '#20233A',
+                      height: 42,
+                    }}
+                  >
+                    {mapsList.map((m) => (
+                      <option key={m.key} value={m.key}>
+                        {m.label}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <View style={[styles.mobileSelectFallback, { marginTop: 0, height: 42, justifyContent: 'center' }]}>
+                    <Text style={styles.mobileSelectText} numberOfLines={1}>
+                      {mapsList.find((m) => m.key === selectedMapKey)?.label}
+                    </Text>
+                  </View>
+                )}
               </View>
-            )}
-          </View>
 
-          {/* Botões da Toolbar com Scroll Horizontal no Mobile */}
+              {/* Botão Centralizar Mapa ENTRE o dropdown e o menu (#centralizar) */}
+              <TouchableOpacity
+                id="centralizar"
+                style={styles.btnCentralizarMobile}
+                onPress={handleResetView}
+                aria-label="Centralizar mapa"
+              >
+                <Text style={styles.btnCentralizarIcon}>⌖</Text>
+              </TouchableOpacity>
+
+              {/* Botão Menu vira botão Hambúrguer à direita (#appMenuBtnS22513) */}
+              <TouchableOpacity
+                id="appMenuBtnS22513"
+                style={styles.btnHamburgerMobile}
+                onPress={() => setMenuOpen(!menuOpen)}
+                aria-label="Abrir Menu"
+              >
+                <Text style={styles.btnHamburgerIcon}>☰</Text>
+                {pendingQueueCount > 0 ? (
+                  <View style={styles.menuBadgeFloating}>
+                    <Text id="filaCount" style={styles.menuBadgeText}>
+                      {pendingQueueCount}
+                    </Text>
+                  </View>
+                ) : (
+                  <Text id="filaCount" style={{ display: 'none' }}>0</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          ) : (
+            /* Visão Desktop: Select Tradicional */
+            <View style={styles.selectWrapper}>
+              <Text style={styles.selectLabel}>Mapa / visualização</Text>
+
+              {Platform.OS === 'web' ? (
+                <select
+                  id="mapaSelect"
+                  value={selectedMapKey}
+                  onChange={(e) => {
+                    setSelectedMapKey(e.target.value);
+                    setSelectedPin(null);
+                  }}
+                  style={{
+                    width: '100%',
+                    paddingLeft: 12,
+                    paddingRight: 12,
+                    paddingTop: 9,
+                    paddingBottom: 9,
+                    borderWidth: 1,
+                    borderColor: '#DFE3ED',
+                    borderRadius: 10,
+                    backgroundColor: '#FFFFFF',
+                    fontSize: 13,
+                    fontWeight: '600',
+                    color: '#20233A',
+                    marginTop: 4,
+                    height: 42,
+                  }}
+                >
+                  {mapsList.map((m) => (
+                    <option key={m.key} value={m.key}>
+                      {m.label}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <View style={styles.mobileSelectFallback}>
+                  <Text style={styles.mobileSelectText} numberOfLines={1}>
+                    {mapsList.find((m) => m.key === selectedMapKey)?.label}
+                  </Text>
+                </View>
+              )}
+            </View>
+          )}
+
+          {/* Botões da Toolbar: módulos restantes */}
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
-            style={isMobile ? { width: '100%', marginTop: 8 } : undefined}
+            style={isMobile ? { width: '100%', marginTop: 4 } : undefined}
             contentContainerStyle={[
               styles.toolbarButtonGroup,
               isMobile && styles.toolbarButtonGroupMobile,
             ]}
           >
-            {/* Botão Centralizar (#centralizar) */}
-            <TouchableOpacity
-              id="centralizar"
-              style={styles.btnCentralizar}
-              onPress={handleResetView}
-              aria-label="Centralizar mapa"
-            >
-              <Text style={styles.btnCentralizarIcon}>⌖</Text>
-            </TouchableOpacity>
+            {/* No Desktop, inclui o botão Centralizar */}
+            {!isMobile && (
+              <TouchableOpacity
+                id="centralizar"
+                style={styles.btnCentralizar}
+                onPress={handleResetView}
+                aria-label="Centralizar mapa"
+              >
+                <Text style={styles.btnCentralizarIcon}>⌖</Text>
+              </TouchableOpacity>
+            )}
 
             {/* Botão Levantamento de Campo (L2.6) */}
             <TouchableOpacity
@@ -1122,19 +1200,21 @@ export default function LegacyMainShellScreen() {
               {!isMobile && <Text style={{ color: '#c7d2fe', fontSize: 12, fontWeight: '700' }}>BI Mall</Text>}
             </TouchableOpacity>
 
-            {/* Botão Menu (#appMenuBtnS22513) */}
-            <TouchableOpacity
-              id="appMenuBtnS22513"
-              style={styles.btnMenu}
-              onPress={() => setMenuOpen(!menuOpen)}
-            >
-              <Text style={styles.btnMenuText}>Menu</Text>
-              <View style={styles.menuBadge}>
-                <Text id="filaCount" style={styles.menuBadgeText}>
-                  {pendingQueueCount}
-                </Text>
-              </View>
-            </TouchableOpacity>
+            {/* No Desktop, inclui o botão Menu com texto "Menu" */}
+            {!isMobile && (
+              <TouchableOpacity
+                id="appMenuBtnS22513"
+                style={styles.btnMenu}
+                onPress={() => setMenuOpen(!menuOpen)}
+              >
+                <Text style={styles.btnMenuText}>Menu</Text>
+                <View style={styles.menuBadge}>
+                  <Text id="filaCount" style={styles.menuBadgeText}>
+                    {pendingQueueCount}
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            )}
           </ScrollView>
         </View>
 
@@ -1181,7 +1261,7 @@ export default function LegacyMainShellScreen() {
           <View style={styles.rondaFiltersGroup}>
             {[
               { key: 'TODOS', label: 'Todos' },
-              { key: 'ATENCAO', label: '⚠️ Atenção / Danificada' },
+              { key: 'ATENCAO', label: '⚠️ Atenção' },
               { key: 'MANUTENCAO', label: '🔧 Manutenção' },
               { key: 'ATIVAS', label: '✓ Ativas' },
             ].map((f) => (
@@ -2073,6 +2153,58 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 10,
     fontWeight: 'bold',
+  },
+  mobileToolbarTopRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    width: '100%',
+  },
+  mobileSelectContainer: {
+    flex: 1,
+  },
+  btnCentralizarMobile: {
+    width: 42,
+    height: 42,
+    minWidth: 42,
+    borderWidth: 1,
+    borderColor: LegacyTheme.colors.border,
+    borderRadius: 10,
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  btnHamburgerMobile: {
+    width: 42,
+    height: 42,
+    minWidth: 42,
+    borderWidth: 1,
+    borderColor: LegacyTheme.colors.border,
+    borderRadius: 10,
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+  },
+  btnHamburgerIcon: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#171B68',
+    lineHeight: 24,
+  },
+  menuBadgeFloating: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    backgroundColor: LegacyTheme.colors.pink,
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 4,
+    borderWidth: 1.5,
+    borderColor: '#FFFFFF',
   },
 
   /* Viewport Cartográfico (.map-card / .viewport) */
