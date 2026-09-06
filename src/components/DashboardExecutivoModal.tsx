@@ -11,6 +11,7 @@ import {
 import {
   DashboardExecutivoService,
   DadosDashboardExecutivo,
+  FiltrosDashboardExecutivo,
 } from '../services/dashboardExecutivoService';
 
 interface DashboardExecutivoModalProps {
@@ -29,9 +30,15 @@ export const DashboardExecutivoModal: React.FC<DashboardExecutivoModalProps> = (
   onVerNoMapa,
 }) => {
   const [dados, setDados] = useState<DadosDashboardExecutivo | null>(null);
+  const [filtroSetor, setFiltroSetor] = useState<string>('TODOS');
+  const [filtroSegmento, setFiltroSegmento] = useState<string>('TODOS');
 
   const carregarDados = () => {
-    const d = DashboardExecutivoService.obterDadosDashboard(userRole);
+    const filtros: FiltrosDashboardExecutivo = {
+      setor: filtroSetor,
+      segmento: filtroSegmento,
+    };
+    const d = DashboardExecutivoService.obterDadosDashboard(userRole, filtros);
     setDados(d);
   };
 
@@ -39,9 +46,16 @@ export const DashboardExecutivoModal: React.FC<DashboardExecutivoModalProps> = (
     if (visible) {
       carregarDados();
     }
-  }, [visible, userRole]);
+  }, [visible, userRole, filtroSetor, filtroSegmento]);
 
   if (!visible || !dados) return null;
+
+  const temFiltroAtivo = filtroSetor !== 'TODOS' || filtroSegmento !== 'TODOS';
+
+  const handleLimparFiltros = () => {
+    setFiltroSetor('TODOS');
+    setFiltroSegmento('TODOS');
+  };
 
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
@@ -52,18 +66,88 @@ export const DashboardExecutivoModal: React.FC<DashboardExecutivoModalProps> = (
             <View style={styles.headerTitleGroup}>
               <View style={styles.badgeRow}>
                 <View style={styles.headerBadge}>
-                  <Text style={styles.headerBadgeText}>FASE L4.0 • INTELIGÊNCIA EXECUTIVA</Text>
+                  <Text style={styles.headerBadgeText}>FASE L4.1 • RECORTE ANALÍTICO INTERATIVO</Text>
                 </View>
-                <Text style={styles.dataGeracaoText}>Atualizado em {dados.dataGeracao}</Text>
+                <Text style={styles.dataGeracaoText}>Apuração: {dados.dataGeracao}</Text>
               </View>
               <Text style={styles.headerTitle}>Dashboard Executivo & Inteligência Comercial</Text>
               <Text style={styles.headerSubtitle}>
-                Painel analítico consolidado do Centro Fashion Fortaleza
+                Painel analítico e exploração dinâmica do Centro Fashion Fortaleza
               </Text>
             </View>
             <TouchableOpacity style={styles.closeBtn} onPress={onClose}>
               <Text style={styles.closeBtnText}>✕</Text>
             </TouchableOpacity>
+          </View>
+
+          {/* Barra de Filtros Globais Dinâmicos (L4.1) */}
+          <View style={styles.filtrosBar}>
+            <View style={styles.filtrosRow}>
+              <Text style={styles.filtrosLabel}>Filtrar Setor:</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.pillsScroll}>
+                {['TODOS', 'Setor Azul', 'Setor Verde', 'Setor Amarelo', 'Setor Branco', 'Setor Roxo'].map(
+                  (setor) => {
+                    const ativo = filtroSetor === setor;
+                    return (
+                      <TouchableOpacity
+                        key={setor}
+                        style={[styles.filtroPill, ativo && styles.filtroPillAtivo]}
+                        onPress={() => setFiltroSetor(setor)}
+                      >
+                        <Text style={[styles.filtroPillText, ativo && styles.filtroPillTextAtivo]}>
+                          {setor === 'TODOS' ? 'Todos os Setores' : setor}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  }
+                )}
+              </ScrollView>
+            </View>
+
+            <View style={[styles.filtrosRow, { marginTop: 8 }]}>
+              <Text style={styles.filtrosLabel}>Segmento:</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.pillsScroll}>
+                {[
+                  'TODOS',
+                  'Moda Feminina',
+                  'Jeanswear & Denim',
+                  'Moda Masculina',
+                  'Moda Infantil',
+                  'Bijuterias & Acessórios',
+                  'Moda Praia & Fitness',
+                  'Calçados & Bolsas',
+                ].map((seg) => {
+                  const ativo = filtroSegmento === seg;
+                  return (
+                    <TouchableOpacity
+                      key={seg}
+                      style={[styles.filtroPill, ativo && styles.filtroPillAtivo]}
+                      onPress={() => setFiltroSegmento(seg)}
+                    >
+                      <Text style={[styles.filtroPillText, ativo && styles.filtroPillTextAtivo]}>
+                        {seg === 'TODOS' ? 'Todos os Segmentos' : seg}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </ScrollView>
+
+              {temFiltroAtivo && (
+                <TouchableOpacity style={styles.btnLimparFiltros} onPress={handleLimparFiltros}>
+                  <Text style={styles.btnLimparFiltrosText}>✕ Limpar</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+
+            {temFiltroAtivo && (
+              <View style={styles.recorteAtivoBar}>
+                <Text style={styles.recorteAtivoText}>
+                  🎯 <Text style={{ fontWeight: 'bold' }}>Recorte Ativo:</Text>{' '}
+                  {filtroSetor !== 'TODOS' ? filtroSetor : 'Todos os Setores'} •{' '}
+                  {filtroSegmento !== 'TODOS' ? filtroSegmento : 'Todos os Segmentos'}
+                </Text>
+              </View>
+            )}
           </View>
 
           <ScrollView style={styles.scrollArea} showsVerticalScrollIndicator={false}>
@@ -73,7 +157,7 @@ export const DashboardExecutivoModal: React.FC<DashboardExecutivoModalProps> = (
                 <Text style={[styles.kpiValor, { color: '#38bdf8' }]}>
                   {dados.resumoKPIs.totalOperacoes.toLocaleString('pt-BR')}
                 </Text>
-                <Text style={styles.kpiRotulo}>Operações Ativas</Text>
+                <Text style={styles.kpiRotulo}>Operações no Recorte</Text>
                 <Text style={styles.kpiSub}>Em {dados.resumoKPIs.espacosAtuais.toLocaleString('pt-BR')} boxes</Text>
               </View>
 
@@ -272,7 +356,7 @@ export const DashboardExecutivoModal: React.FC<DashboardExecutivoModalProps> = (
               <View style={styles.prioridadesHeader}>
                 <Text style={styles.sectionTitle}>🚨 Prioridades Executivas • Gestão por Exceção</Text>
                 <Text style={styles.prioridadesSub}>
-                  Operações com maior concentração de alertas objetivos que demandam atuação imediata
+                  Operações com maior concentração de alertas objetivos no recorte selecionado
                 </Text>
               </View>
 
@@ -408,6 +492,71 @@ const styles = StyleSheet.create({
     color: '#cbd5e1',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  filtrosBar: {
+    backgroundColor: '#131d36',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#334155',
+  },
+  filtrosRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  filtrosLabel: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#94a3b8',
+    minWidth: 80,
+  },
+  pillsScroll: {
+    flexDirection: 'row',
+  },
+  filtroPill: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    backgroundColor: '#1e293b',
+    marginRight: 8,
+    borderWidth: 1,
+    borderColor: '#334155',
+  },
+  filtroPillAtivo: {
+    backgroundColor: '#0284c7',
+    borderColor: '#38bdf8',
+  },
+  filtroPillText: {
+    color: '#94a3b8',
+    fontSize: 11,
+    fontWeight: '600',
+  },
+  filtroPillTextAtivo: {
+    color: '#ffffff',
+    fontWeight: '800',
+  },
+  btnLimparFiltros: {
+    backgroundColor: '#334155',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 12,
+    marginLeft: 6,
+  },
+  btnLimparFiltrosText: {
+    color: '#cbd5e1',
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  recorteAtivoBar: {
+    marginTop: 8,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(51, 65, 85, 0.5)',
+  },
+  recorteAtivoText: {
+    fontSize: 11,
+    color: '#38bdf8',
   },
   scrollArea: {
     padding: 20,

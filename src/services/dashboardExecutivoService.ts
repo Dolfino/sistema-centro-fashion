@@ -1,6 +1,6 @@
 /**
- * Serviço de Inteligência Executiva e Dashboard (Fase L4.0) - Centro Fashion Fortaleza
- * Paridade com L40_DashboardExecutivoService.gs
+ * Serviço de Inteligência Executiva e Dashboard (Fases L4.0 e L4.1) - Centro Fashion Fortaleza
+ * Paridade com L40_DashboardExecutivoService.gs e L41_FiltrosDashboardService.gs
  */
 
 export interface ResumoExecutivoKPIs {
@@ -65,8 +65,16 @@ export interface PrioridadeExecutivaItem {
   sinais: string[];
 }
 
+export interface FiltrosDashboardExecutivo {
+  setor?: string;
+  piso?: string;
+  segmento?: string;
+  periodo?: 'ULTIMOS_30_DIAS' | 'ULTIMOS_90_DIAS' | 'ANO_ATUAL';
+}
+
 export interface DadosDashboardExecutivo {
   dataGeracao: string;
+  filtrosAplicados: FiltrosDashboardExecutivo;
   resumoKPIs: ResumoExecutivoKPIs;
   mixSegmentos: MixSegmentoItem[];
   coberturaSetores: CoberturaSetorItem[];
@@ -78,39 +86,76 @@ export interface DadosDashboardExecutivo {
 
 export class DashboardExecutivoService {
   /**
-   * Consolida e retorna todos os indicadores da L4.0 respeitando o perfil RBAC
+   * Consolida e retorna todos os indicadores da L4.0/L4.1 com filtros dinâmicos
    */
-  static obterDadosDashboard(userRole: string = 'ADMIN'): DadosDashboardExecutivo {
+  static obterDadosDashboard(
+    userRole: string = 'ADMIN',
+    filtros: FiltrosDashboardExecutivo = {}
+  ): DadosDashboardExecutivo {
     const isAdminOuFinanceiro = userRole === 'ADMIN' || userRole === 'FINANCEIRO';
 
     const agora = new Date();
     const dataGeracao = `${String(agora.getDate()).padStart(2, '0')}/${String(agora.getMonth() + 1).padStart(2, '0')}/${agora.getFullYear()} ${String(agora.getHours()).padStart(2, '0')}:${String(agora.getMinutes()).padStart(2, '0')}`;
 
-    // 1. Resumo Executivo
+    // Fator de escala dinâmico dependendo do filtro selecionado
+    let fatorEscala = 1.0;
+    let completudeBase = 78.5;
+
+    if (filtros.setor && filtros.setor !== 'TODOS') {
+      if (filtros.setor.includes('Azul')) {
+        fatorEscala = 0.28;
+        completudeBase = 88.2;
+      } else if (filtros.setor.includes('Verde')) {
+        fatorEscala = 0.25;
+        completudeBase = 81.4;
+      } else if (filtros.setor.includes('Amarelo')) {
+        fatorEscala = 0.21;
+        completudeBase = 74.0;
+      } else if (filtros.setor.includes('Branco')) {
+        fatorEscala = 0.14;
+        completudeBase = 68.5;
+      } else if (filtros.setor.includes('Roxo')) {
+        fatorEscala = 0.09;
+        completudeBase = 62.1;
+      }
+    }
+
+    if (filtros.segmento && filtros.segmento !== 'TODOS') {
+      fatorEscala *= 0.35;
+    }
+
+    const totalOps = Math.round(4954 * fatorEscala);
+    const totalEsp = Math.round(5120 * fatorEscala);
+
+    // 1. Resumo Executivo Dinâmico
     const resumoKPIs: ResumoExecutivoKPIs = {
-      totalOperacoes: 4954,
-      espacosAtuais: 5120,
-      completudeMedia: 78.5,
-      operacoesConcluidas: 3410,
-      operacoesComContato: 4280,
-      operacoesComMixProduto: 3890,
-      operacoesComCampanha: 2150,
-      visitadasUltimos30Dias: 3120,
+      totalOperacoes: totalOps,
+      espacosAtuais: totalEsp,
+      completudeMedia: completudeBase,
+      operacoesConcluidas: Math.round(totalOps * (completudeBase / 100)),
+      operacoesComContato: Math.round(totalOps * 0.86),
+      operacoesComMixProduto: Math.round(totalOps * 0.78),
+      operacoesComCampanha: Math.round(totalOps * 0.43),
+      visitadasUltimos30Dias: Math.round(totalOps * 0.63),
     };
 
-    // 2. Mix Comercial por Segmento (Barras Visuais)
-    const mixSegmentos: MixSegmentoItem[] = [
-      { segmento: 'Moda Feminina', quantidadeLojas: 1420, percentual: 28.7, corHex: '#ec4899' },
-      { segmento: 'Jeanswear & Denim', quantidadeLojas: 1150, percentual: 23.2, corHex: '#3b82f6' },
-      { segmento: 'Moda Masculina', quantidadeLojas: 780, percentual: 15.7, corHex: '#06b6d4' },
-      { segmento: 'Moda Infantil', quantidadeLojas: 540, percentual: 10.9, corHex: '#f59e0b' },
-      { segmento: 'Bijuterias & Acessórios', quantidadeLojas: 410, percentual: 8.3, corHex: '#a855f7' },
-      { segmento: 'Moda Praia & Fitness', quantidadeLojas: 360, percentual: 7.3, corHex: '#10b981' },
-      { segmento: 'Calçados & Bolsas', quantidadeLojas: 294, percentual: 5.9, corHex: '#f97316' },
+    // 2. Mix Comercial por Segmento
+    let mixSegmentos: MixSegmentoItem[] = [
+      { segmento: 'Moda Feminina', quantidadeLojas: Math.round(1420 * fatorEscala), percentual: 28.7, corHex: '#ec4899' },
+      { segmento: 'Jeanswear & Denim', quantidadeLojas: Math.round(1150 * fatorEscala), percentual: 23.2, corHex: '#3b82f6' },
+      { segmento: 'Moda Masculina', quantidadeLojas: Math.round(780 * fatorEscala), percentual: 15.7, corHex: '#06b6d4' },
+      { segmento: 'Moda Infantil', quantidadeLojas: Math.round(540 * fatorEscala), percentual: 10.9, corHex: '#f59e0b' },
+      { segmento: 'Bijuterias & Acessórios', quantidadeLojas: Math.round(410 * fatorEscala), percentual: 8.3, corHex: '#a855f7' },
+      { segmento: 'Moda Praia & Fitness', quantidadeLojas: Math.round(360 * fatorEscala), percentual: 7.3, corHex: '#10b981' },
+      { segmento: 'Calçados & Bolsas', quantidadeLojas: Math.round(294 * fatorEscala), percentual: 5.9, corHex: '#f97316' },
     ];
 
+    if (filtros.segmento && filtros.segmento !== 'TODOS') {
+      mixSegmentos = mixSegmentos.filter((m) => m.segmento === filtros.segmento);
+    }
+
     // 3. Cobertura por Setor / Piso
-    const coberturaSetores: CoberturaSetorItem[] = [
+    let coberturaSetores: CoberturaSetorItem[] = [
       {
         setorNome: 'Setor Azul',
         piso: 'Piso 1',
@@ -153,33 +198,37 @@ export class DashboardExecutivoService {
       },
     ];
 
+    if (filtros.setor && filtros.setor !== 'TODOS') {
+      coberturaSetores = coberturaSetores.filter((s) => s.setorNome === filtros.setor);
+    }
+
     // 4. Recência das Visitas
     const recenciaVisitas: RecenciaVisitas = {
-      ate7Dias: 1250,
-      de8A30Dias: 1870,
-      de31A90Dias: 980,
-      maisDe90Dias: 520,
-      semVisitaRegistrada: 334,
+      ate7Dias: Math.round(1250 * fatorEscala),
+      de8A30Dias: Math.round(1870 * fatorEscala),
+      de31A90Dias: Math.round(980 * fatorEscala),
+      maisDe90Dias: Math.round(520 * fatorEscala),
+      semVisitaRegistrada: Math.round(334 * fatorEscala),
     };
 
     // 5. Qualidade da Base & Governança
     const qualidadeGovernanca: QualidadeBaseGovernanca = {
-      semContato: 674,
-      semProdutoMix: 1064,
-      semCampanhaAtiva: 2804,
-      semVisitaRecente: 1834,
-      cadastroPendente: 1544,
+      semContato: Math.round(674 * fatorEscala),
+      semProdutoMix: Math.round(1064 * fatorEscala),
+      semCampanhaAtiva: Math.round(2804 * fatorEscala),
+      semVisitaRecente: Math.round(1834 * fatorEscala),
+      cadastroPendente: Math.round(1544 * fatorEscala),
     };
 
     // 6. Prioridades Executivas (Gestão por Exceção)
-    const prioridadesExecutivas: PrioridadeExecutivaItem[] = [
+    let prioridadesExecutivas: PrioridadeExecutivaItem[] = [
       {
         idOperacao: 'OP-003',
         idLojaMapa: '3',
         nomeFantasia: 'Bella Jeans Fortaleza',
         razaoSocial: 'Comercial Bella Jeans Ltda',
         numeroBox: '1178',
-        setor: 'Setor Azul • Piso 1',
+        setor: 'Setor Azul',
         segmento: 'Jeanswear & Denim',
         totalSinaisAtencao: 3,
         sinais: ['Inadimplente (45 dias)', 'Sem visita há +30d', 'Renegociação pendente'],
@@ -190,7 +239,7 @@ export class DashboardExecutivoService {
         nomeFantasia: 'Estilo Fashion Kids',
         razaoSocial: 'Kids & Cia Moda Infantil ME',
         numeroBox: '1179',
-        setor: 'Setor Azul • Piso 1',
+        setor: 'Setor Azul',
         segmento: 'Moda Infantil',
         totalSinaisAtencao: 2,
         sinais: ['Completude cadastral 70%', 'Sem produtos no catálogo'],
@@ -201,26 +250,35 @@ export class DashboardExecutivoService {
         nomeFantasia: 'Acessórios & Brilho',
         razaoSocial: 'Brilho Tropical Acessórios Eireli',
         numeroBox: '1180',
-        setor: 'Setor Azul • Piso 1',
+        setor: 'Setor Azul',
         segmento: 'Bijuterias e Bolsas',
         totalSinaisAtencao: 2,
         sinais: ['Não aderiu a nenhuma campanha', 'Completude 60%'],
       },
     ];
 
-    // 7. Bloco Restrito (Apenas para Administrador ou Diretor Financeiro)
+    if (filtros.setor && filtros.setor !== 'TODOS') {
+      prioridadesExecutivas = prioridadesExecutivas.filter((p) => p.setor.includes(filtros.setor!));
+    }
+
+    if (filtros.segmento && filtros.segmento !== 'TODOS') {
+      prioridadesExecutivas = prioridadesExecutivas.filter((p) => p.segmento === filtros.segmento);
+    }
+
+    // 7. Bloco Restrito
     let blocoRestrito: BlocoRestritoFinanceiro | undefined = undefined;
     if (isAdminOuFinanceiro) {
       blocoRestrito = {
-        contratosAtivos: 4720,
-        permissionariosInadimplentes: 142,
-        saldoTotalVencido: 348500.0,
-        auditoriasComDivergencia: 28,
+        contratosAtivos: Math.round(4720 * fatorEscala),
+        permissionariosInadimplentes: Math.max(1, Math.round(142 * fatorEscala)),
+        saldoTotalVencido: Math.round(348500.0 * fatorEscala),
+        auditoriasComDivergencia: Math.max(1, Math.round(28 * fatorEscala)),
       };
     }
 
     return {
       dataGeracao,
+      filtrosAplicados: filtros,
       resumoKPIs,
       mixSegmentos,
       coberturaSetores,
