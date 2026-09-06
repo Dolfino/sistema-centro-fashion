@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, useWindowDimensions, Platform, TextInput } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, useWindowDimensions, Platform, TextInput, ScrollView } from 'react-native';
 import { InteractiveMallMap, SignagePin } from '../src/components/InteractiveMallMap';
 import { AppMenuModal } from '../src/components/AppMenuModal';
 import { CamadasModal } from '../src/components/CamadasModal';
@@ -1032,8 +1032,16 @@ export default function LegacyMainShellScreen() {
             )}
           </View>
 
-          {/* Botões Compactos da Toolbar */}
-          <View style={styles.toolbarButtonGroup}>
+          {/* Botões da Toolbar com Scroll Horizontal no Mobile */}
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={isMobile ? { width: '100%', marginTop: 8 } : undefined}
+            contentContainerStyle={[
+              styles.toolbarButtonGroup,
+              isMobile && styles.toolbarButtonGroupMobile,
+            ]}
+          >
             {/* Botão Centralizar (#centralizar) */}
             <TouchableOpacity
               id="centralizar"
@@ -1127,7 +1135,7 @@ export default function LegacyMainShellScreen() {
                 </Text>
               </View>
             </TouchableOpacity>
-          </View>
+          </ScrollView>
         </View>
 
         {/* Barra de Filtros de Ronda e Busca Rápida (UI-6) */}
@@ -1854,8 +1862,10 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   toolbarCardMobile: {
+    flexDirection: 'column',
+    alignItems: 'stretch',
     borderRadius: 12,
-    padding: 8,
+    padding: 10,
     gap: 8,
   },
   /* Barra de Filtros de Ronda e Busca Rápida (UI-6) */
@@ -1984,6 +1994,8 @@ const styles = StyleSheet.create({
   },
   selectWrapper: {
     flex: 1,
+    width: '100%',
+    minWidth: 180,
   },
   selectLabel: {
     fontSize: 13,
@@ -2008,6 +2020,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
+  },
+  toolbarButtonGroupMobile: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical: 2,
+    width: '100%',
   },
   btnCentralizar: {
     width: 48,

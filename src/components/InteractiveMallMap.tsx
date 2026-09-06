@@ -379,6 +379,7 @@ export const InteractiveMallMap: React.FC<InteractiveMallMapProps> = ({
       ref={viewportRef}
       style={[
         styles.viewport,
+        isMobile && ({ minHeight: 520, height: Math.max(520, windowHeight - 260) } as any),
         positioningMode
           ? ({ cursor: 'crosshair' } as any)
           : isPanning
