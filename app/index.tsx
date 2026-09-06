@@ -14,7 +14,7 @@ import { HistoricoModal } from '../src/components/HistoricoModal';
 import { PendenciasModal } from '../src/components/PendenciasModal';
 import { CicloVidaModal } from '../src/components/CicloVidaModal';
 import { AntesDepoisModal } from '../src/components/AntesDepoisModal';
-import { DashboardModal } from '../src/components/DashboardModal';
+import { DashboardExecutivoModal } from '../src/components/DashboardExecutivoModal';
 import { CentralGestaoModal } from '../src/components/CentralGestaoModal';
 import { RondaExecucaoModal } from '../src/components/RondaExecucaoModal';
 import { AlertasModal } from '../src/components/AlertasModal';
@@ -1261,14 +1261,25 @@ export default function LegacyMainShellScreen() {
         onClose={() => setAntesDepoisOpen(false)}
       />
 
-      {/* 15. Modal Dashboard de Indicadores & SLA (Etapa 1) */}
-      <DashboardModal
+      {/* 15. Modal Dashboard Executivo & Inteligência Comercial (Fase L4.0) */}
+      <DashboardExecutivoModal
         visible={dashboardOpen}
-        pins={pinsList}
+        userRole="ADMIN"
         onClose={() => setDashboardOpen(false)}
-        onSelectPin={(pin) => {
-          setSelectedPin(pin);
+        onAbrirFicha360={(idLojaMapa) => {
           setDashboardOpen(false);
+          const loja = Loja360Service.obterFicha(idLojaMapa);
+          if (loja) {
+            setLojaSelecionada360(loja);
+            setLoja360Open(true);
+          }
+        }}
+        onVerNoMapa={(idLojaMapa, numeroBox) => {
+          setDashboardOpen(false);
+          const foundPin = pinsList.find((pin) => pin.id === idLojaMapa || pin.humanLocation?.includes(numeroBox));
+          if (foundPin) {
+            setSelectedPin(foundPin);
+          }
         }}
       />
 
