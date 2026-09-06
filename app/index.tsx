@@ -256,6 +256,7 @@ export default function LegacyMainShellScreen() {
   const [levantamentoModalOpen, setLevantamentoModalOpen] = useState<boolean>(false);
   const [levantamentoRegistroOpen, setLevantamentoRegistroOpen] = useState<boolean>(false);
   const [pontoLevantamentoSelecionado, setPontoLevantamentoSelecionado] = useState<PontoLevantamento | null>(null);
+  const [mapResetTrigger, setMapResetTrigger] = useState<number>(0);
 
   const campanhaAdesoesMap = campanhaAtivaId ? CampanhaService.obterMapaCoresAdesao(campanhaAtivaId) : {};
   const campanhaAtivaInfo = campanhaAtivaId ? CampanhaService.obterCampanha(campanhaAtivaId) : null;
@@ -356,6 +357,7 @@ export default function LegacyMainShellScreen() {
     setPositioningMode(false);
     setDraftPin(null);
     setLocalCardVisible(false);
+    setMapResetTrigger((prev) => prev + 1);
   };
 
   const handleSelectMenuOption = (itemId: string) => {
@@ -1266,6 +1268,7 @@ export default function LegacyMainShellScreen() {
             draftPin={draftPin}
             campanhaAtivaId={campanhaAtivaId}
             campanhaAdesoesMap={campanhaAdesoesMap}
+            resetTrigger={mapResetTrigger}
             onMapClick={handleMapClick}
           />
 
