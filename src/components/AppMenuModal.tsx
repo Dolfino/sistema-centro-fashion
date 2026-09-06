@@ -37,6 +37,7 @@ export const AppMenuModal: React.FC<AppMenuModalProps> = ({
     { id: 'prepararOffline', icon: '↓', label: 'Atualizar offline', primary: false, adminOnly: false },
     { id: 'filaBtn', icon: '⇅', label: 'Fila', badge: '0', primary: false, adminOnly: false },
     { id: 'centralGestaoBtn', icon: '◎', label: 'Central', primary: false, adminOnly: false },
+    { id: 'loja360Btn', icon: '🏬', label: 'Loja 360 / Boxes', primary: false, adminOnly: false },
     { id: 'rondaBtn', icon: '📋', label: 'Ronda / Checklist', primary: false, adminOnly: false },
     { id: 'agendaBtnS19', icon: '□', label: 'Agenda', primary: false, adminOnly: false },
     { id: 'alertasBtnS21', icon: '!', label: 'Alertas', badge: '0', primary: false, adminOnly: false },

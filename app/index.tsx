@@ -20,6 +20,8 @@ import { RondaExecucaoModal } from '../src/components/RondaExecucaoModal';
 import { AlertasModal } from '../src/components/AlertasModal';
 import { AgendaModal } from '../src/components/AgendaModal';
 import { RelatoriosSlidesModal } from '../src/components/RelatoriosSlidesModal';
+import { Loja360Modal } from '../src/components/Loja360Modal';
+import { FichaLoja360 } from '../src/services/loja360Service';
 import { CapturedPhoto, mediaService } from '../src/services/mediaService';
 import { LegacyTheme } from '../src/theme/legacy-theme';
 
@@ -177,6 +179,10 @@ export default function LegacyMainShellScreen() {
   // Relatórios Executivos & Apresentações em Slides (Etapa 3)
   const [relatoriosOpen, setRelatoriosOpen] = useState<boolean>(false);
 
+  // Loja 360 & Gestão de Boxes (Paridade Google Apps Script)
+  const [loja360Open, setLoja360Open] = useState<boolean>(false);
+  const [lojaSelecionada360, setLojaSelecionada360] = useState<FichaLoja360 | null>(null);
+
   const { width: windowWidth } = useWindowDimensions();
   const isMobile = windowWidth < 700;
 
@@ -292,6 +298,8 @@ export default function LegacyMainShellScreen() {
       setDashboardOpen(true);
     } else if (itemId === 'centralGestaoBtn' || itemId === 'central') {
       setCentralGestaoOpen(true);
+    } else if (itemId === 'loja360Btn' || itemId === 'loja360') {
+      setLoja360Open(true);
     } else if (itemId === 'rondaBtn' || itemId === 'ronda') {
       setRondaExecucaoOpen(true);
     } else if (itemId === 'alertasBtnS21' || itemId === 'alertas') {
@@ -301,6 +309,15 @@ export default function LegacyMainShellScreen() {
     } else if (itemId === 'relatoriosBtn' || itemId === 'relatorios') {
       setRelatoriosOpen(true);
     }
+  };
+
+  const handleAbrirOcorrenciaDaLoja = (loja: FichaLoja360) => {
+    setSelectedPin(null);
+    setEditingPin(null);
+    setPositioningMode(false);
+    setDraftPin({ normalizedX: loja.x || 0.35, normalizedY: loja.y || 0.45 });
+    setFormMode('NOVO');
+    setFormPanelVisible(true);
   };
 
   const handleCriarOcorrenciaDaRonda = (ocorrenciaData: Partial<SignagePin>) => {
@@ -1116,6 +1133,14 @@ export default function LegacyMainShellScreen() {
           setSelectedPin(pin);
           setRelatoriosOpen(false);
         }}
+      />
+
+      {/* 21. Modal Loja 360 & Boxes (Paridade Google Apps Script) */}
+      <Loja360Modal
+        visible={loja360Open}
+        onClose={() => setLoja360Open(false)}
+        lojaInicial={lojaSelecionada360}
+        onAbrirOcorrenciaParaLoja={handleAbrirOcorrenciaDaLoja}
       />
     </View>
   );
