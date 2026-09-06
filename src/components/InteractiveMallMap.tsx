@@ -73,6 +73,8 @@ interface InteractiveMallMapProps {
   filterConservation?: string;
   positioningMode?: boolean;
   draftPin?: { normalizedX: number; normalizedY: number } | null;
+  campanhaAtivaId?: string | null;
+  campanhaAdesoesMap?: Record<string, { status: string; cor: string; label: string }>;
   onMapClick?: (coords: { normalizedX: number; normalizedY: number; pointerX: number; pointerY: number; renderedWidth: number; renderedHeight: number; offsetX: number; offsetY: number }) => void;
 }
 
@@ -85,6 +87,8 @@ export const InteractiveMallMap: React.FC<InteractiveMallMapProps> = ({
   filterConservation = 'TODOS',
   positioningMode = false,
   draftPin = null,
+  campanhaAtivaId = null,
+  campanhaAdesoesMap = {},
   onMapClick,
 }) => {
   const { width: windowWidth, height: windowHeight } = useWindowDimensions();
@@ -232,7 +236,8 @@ export const InteractiveMallMap: React.FC<InteractiveMallMapProps> = ({
             })
             .map((pin) => {
             const isSelected = pin.id === selectedPinId;
-            const color = getPinColor(pin);
+            const infoCampanha = campanhaAtivaId && campanhaAdesoesMap ? campanhaAdesoesMap[pin.id] : null;
+            const color = infoCampanha ? infoCampanha.cor : getPinColor(pin);
             const pinX = transform.offsetX + pin.normalizedX * transform.renderedWidth;
             const pinY = transform.offsetY + pin.normalizedY * transform.renderedHeight;
 

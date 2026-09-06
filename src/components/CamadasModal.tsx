@@ -8,6 +8,8 @@ interface CamadasModalProps {
   onToggleSinalizacoes: (enabled: boolean) => void;
   totalPinsCount: number;
   initialShowCentral?: boolean;
+  campanhaAtivaId?: string | null;
+  onSelectCampanha?: (campanhaId: string | null) => void;
 }
 
 export const CamadasModal: React.FC<CamadasModalProps> = ({
@@ -17,6 +19,8 @@ export const CamadasModal: React.FC<CamadasModalProps> = ({
   onToggleSinalizacoes,
   totalPinsCount,
   initialShowCentral = false,
+  campanhaAtivaId = null,
+  onSelectCampanha,
 }) => {
   const [showCentralCamadas, setShowCentralCamadas] = useState<boolean>(initialShowCentral);
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -228,21 +232,102 @@ export const CamadasModal: React.FC<CamadasModalProps> = ({
 
             {/* Seção 4: Simbologia e Cores */}
             <View style={styles.sectionCard}>
-              <Text style={styles.sectionTitle}>Aparência e Simbologia</Text>
+              <Text style={styles.sectionTitle}>Aparência e Simbologia (Coloração do Mapa)</Text>
               <Text style={styles.sectionDesc}>
-                Personalize as cores dos marcadores no mapa localmente.
+                Alterne entre o mapa operacional e as camadas temáticas de campanhas comerciais.
               </Text>
-              <View style={styles.symbolGrid}>
-                <View style={styles.symbolBadgeGreen}>
-                  <Text style={styles.symbolText}>Ativa (#12823B)</Text>
-                </View>
-                <View style={styles.symbolBadgeOrange}>
-                  <Text style={styles.symbolText}>Manutenção (#E08B00)</Text>
-                </View>
-                <View style={styles.symbolBadgeRed}>
-                  <Text style={styles.symbolText}>Substituir (#D94841)</Text>
-                </View>
+
+              {/* Botões de Modo */}
+              <View style={{ flexDirection: 'row', gap: 10, marginVertical: 10 }}>
+                <TouchableOpacity
+                  style={[
+                    styles.btnSecondary,
+                    !campanhaAtivaId && { backgroundColor: '#0284c7', borderColor: '#38bdf8' },
+                  ]}
+                  onPress={() => onSelectCampanha && onSelectCampanha(null)}
+                >
+                  <Text style={[styles.btnSecondaryText, !campanhaAtivaId && { color: '#fff', fontWeight: '800' }]}>
+                    Padrão Operacional
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[
+                    styles.btnSecondary,
+                    campanhaAtivaId && { backgroundColor: '#0284c7', borderColor: '#38bdf8' },
+                  ]}
+                  onPress={() => onSelectCampanha && onSelectCampanha('CAMP-001')}
+                >
+                  <Text style={[styles.btnSecondaryText, campanhaAtivaId && { color: '#fff', fontWeight: '800' }]}>
+                    📢 Camada de Campanha
+                  </Text>
+                </TouchableOpacity>
               </View>
+
+              {campanhaAtivaId ? (
+                <View style={{ marginTop: 8, padding: 10, backgroundColor: '#0f172a', borderRadius: 8, borderWidth: 1, borderColor: '#334155' }}>
+                  <Text style={{ fontSize: 12, color: '#38bdf8', fontWeight: '700', marginBottom: 8 }}>
+                    Selecione a Campanha para Colorir o Mapa:
+                  </Text>
+                  <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 10 }}>
+                    {[
+                      { id: 'CAMP-001', label: 'Bazar Centro Fashion' },
+                      { id: 'CAMP-002', label: 'Black Friday 2026' },
+                      { id: 'CAMP-003', label: 'Liquida Jeans' },
+                      { id: 'CAMP-004', label: 'Festival Moda Praia' },
+                    ].map((c) => (
+                      <TouchableOpacity
+                        key={c.id}
+                        style={{
+                          paddingHorizontal: 10,
+                          paddingVertical: 5,
+                          borderRadius: 6,
+                          backgroundColor: campanhaAtivaId === c.id ? '#0284c7' : '#1e293b',
+                          borderWidth: 1,
+                          borderColor: campanhaAtivaId === c.id ? '#38bdf8' : '#334155',
+                        }}
+                        onPress={() => onSelectCampanha && onSelectCampanha(c.id)}
+                      >
+                        <Text style={{ fontSize: 11, color: campanhaAtivaId === c.id ? '#fff' : '#94a3b8', fontWeight: '600' }}>
+                          {c.label}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+
+                  <Text style={{ fontSize: 11, color: '#64748b', marginBottom: 6 }}>Legenda de Cores no Mapa:</Text>
+                  <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                      <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: '#10b981' }} />
+                      <Text style={{ fontSize: 11, color: '#94a3b8' }}>Confirmada</Text>
+                    </View>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                      <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: '#f59e0b' }} />
+                      <Text style={{ fontSize: 11, color: '#94a3b8' }}>Interessada</Text>
+                    </View>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                      <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: '#3b82f6' }} />
+                      <Text style={{ fontSize: 11, color: '#94a3b8' }}>Contatada</Text>
+                    </View>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                      <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: '#ef4444' }} />
+                      <Text style={{ fontSize: 11, color: '#94a3b8' }}>Recusada</Text>
+                    </View>
+                  </View>
+                </View>
+              ) : (
+                <View style={styles.symbolGrid}>
+                  <View style={styles.symbolBadgeGreen}>
+                    <Text style={styles.symbolText}>Ativa (#12823B)</Text>
+                  </View>
+                  <View style={styles.symbolBadgeOrange}>
+                    <Text style={styles.symbolText}>Manutenção (#E08B00)</Text>
+                  </View>
+                  <View style={styles.symbolBadgeRed}>
+                    <Text style={styles.symbolText}>Substituir (#D94841)</Text>
+                  </View>
+                </View>
+              )}
             </View>
 
             {/* Seção 5: Visualizações Corporativas & Presets Pessoais */}

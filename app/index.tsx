@@ -24,6 +24,8 @@ import { Loja360Modal } from '../src/components/Loja360Modal';
 import { FichaLoja360 } from '../src/services/loja360Service';
 import { AtivoMallModal } from '../src/components/AtivoMallModal';
 import { AtivoMidiaPonto } from '../src/services/ativoMallService';
+import { CampanhaCentralModal } from '../src/components/CampanhaCentralModal';
+import { CampanhaService, ParticipacaoLojaCampanha } from '../src/services/campanhaService';
 import { CapturedPhoto, mediaService } from '../src/services/mediaService';
 import { LegacyTheme } from '../src/theme/legacy-theme';
 
@@ -188,6 +190,14 @@ export default function LegacyMainShellScreen() {
   // Ativos do Mall & Fiscalização de Mídia Física (Paridade Google Apps Script)
   const [ativoMallOpen, setAtivoMallOpen] = useState<boolean>(false);
 
+  // Camadas Temáticas de Campanhas no Mapa (L2.3, L2.4, L2.5)
+  const [campanhaAtivaId, setCampanhaAtivaId] = useState<string | null>(null);
+  const [campanhasCentralOpen, setCampanhasCentralOpen] = useState<boolean>(false);
+
+  const campanhaAdesoesMap = campanhaAtivaId ? CampanhaService.obterMapaCoresAdesao(campanhaAtivaId) : {};
+  const campanhaAtivaInfo = campanhaAtivaId ? CampanhaService.obterCampanha(campanhaAtivaId) : null;
+  const metricasCampanhaAtiva = campanhaAtivaId ? CampanhaService.obterMetricasCampanha(campanhaAtivaId) : null;
+
   const { width: windowWidth } = useWindowDimensions();
   const isMobile = windowWidth < 700;
 
@@ -307,6 +317,8 @@ export default function LegacyMainShellScreen() {
       setLoja360Open(true);
     } else if (itemId === 'ativoMallBtn' || itemId === 'ativoMall' || itemId === 'midia') {
       setAtivoMallOpen(true);
+    } else if (itemId === 'campanhasBtn' || itemId === 'campanhas') {
+      setCampanhasCentralOpen(true);
     } else if (itemId === 'rondaBtn' || itemId === 'ronda') {
       setRondaExecucaoOpen(true);
     } else if (itemId === 'alertasBtnS21' || itemId === 'alertas') {
@@ -315,6 +327,14 @@ export default function LegacyMainShellScreen() {
       setAgendaOpen(true);
     } else if (itemId === 'relatoriosBtn' || itemId === 'relatorios') {
       setRelatoriosOpen(true);
+    }
+  };
+
+  const handleVerCampanhaNoMapa = (p: ParticipacaoLojaCampanha) => {
+    setCampanhaAtivaId(p.idCampanha);
+    const foundPin = pinsList.find((pin) => pin.id === p.idLojaMapa || pin.humanLocation?.includes(p.numeroBox));
+    if (foundPin) {
+      setSelectedPin(foundPin);
     }
   };
 
@@ -952,6 +972,60 @@ export default function LegacyMainShellScreen() {
 
         {/* 3. Viewport Principal Cartográfico (.map-card / .viewport) */}
         <View style={styles.mapCard}>
+          {/* Banner Flutuante da Camada Temática de Campanha */}
+          {campanhaAtivaId && campanhaAtivaInfo && (
+            <View style={styles.bannerCampanhaMapa}>
+              <View style={styles.bannerCampanhaInfo}>
+                <View style={styles.bannerCampanhaTituloRow}>
+                  <Text style={styles.bannerCampanhaIcon}>📢</Text>
+                  <Text style={styles.bannerCampanhaNome}>{campanhaAtivaInfo.nome}</Text>
+                  <View style={styles.badgeCampanhaAtiva}>
+                    <Text style={styles.badgeCampanhaAtivaText}>Camada Ativa</Text>
+                  </View>
+                </View>
+
+                {metricasCampanhaAtiva && (
+                  <View style={styles.bannerCampanhaMetricas}>
+                    <View style={styles.bannerMetricaItem}>
+                      <View style={[styles.bannerDot, { backgroundColor: '#10b981' }]} />
+                      <Text style={styles.bannerMetricaText}>
+                        {metricasCampanhaAtiva.confirmadas} Confirmadas
+                      </Text>
+                    </View>
+                    <View style={styles.bannerMetricaItem}>
+                      <View style={[styles.bannerDot, { backgroundColor: '#f59e0b' }]} />
+                      <Text style={styles.bannerMetricaText}>
+                        {metricasCampanhaAtiva.interessadas} Interessadas
+                      </Text>
+                    </View>
+                    <View style={styles.bannerMetricaItem}>
+                      <View style={[styles.bannerDot, { backgroundColor: '#3b82f6' }]} />
+                      <Text style={styles.bannerMetricaText}>
+                        {metricasCampanhaAtiva.contatadas} Contatadas
+                      </Text>
+                    </View>
+                  </View>
+                )}
+              </View>
+
+              <View style={styles.bannerCampanhaAcoes}>
+                <TouchableOpacity
+                  style={styles.btnBannerCarteira}
+                  onPress={() => setCampanhasCentralOpen(true)}
+                >
+                  <Text style={styles.btnBannerCarteiraText}>Carteira</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.btnBannerDesativar}
+                  onPress={() => setCampanhaAtivaId(null)}
+                >
+                  <Text style={styles.btnBannerDesativarText}>✕ Desativar</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          )}
+
           <InteractiveMallMap
             selectedMapKey={selectedMapKey}
             pins={pinsList}
@@ -963,6 +1037,8 @@ export default function LegacyMainShellScreen() {
             showSinalizacoes={showSinalizacoes}
             positioningMode={positioningMode}
             draftPin={draftPin}
+            campanhaAtivaId={campanhaAtivaId}
+            campanhaAdesoesMap={campanhaAdesoesMap}
             onMapClick={handleMapClick}
           />
 
@@ -1001,6 +1077,8 @@ export default function LegacyMainShellScreen() {
         onToggleSinalizacoes={(enabled) => setShowSinalizacoes(enabled)}
         totalPinsCount={pinsList.length}
         initialShowCentral={showCentralCamadas}
+        campanhaAtivaId={campanhaAtivaId}
+        onSelectCampanha={(id) => setCampanhaAtivaId(id)}
       />
 
       <FormPanelModal
@@ -1164,6 +1242,15 @@ export default function LegacyMainShellScreen() {
         visible={ativoMallOpen}
         onClose={() => setAtivoMallOpen(false)}
         onAbrirOcorrenciaParaMidia={handleAbrirOcorrenciaDaMidia}
+      />
+
+      {/* 23. Modal Central de Campanhas de Marketing (L2.3, L2.4, L2.5) */}
+      <CampanhaCentralModal
+        visible={campanhasCentralOpen}
+        onClose={() => setCampanhasCentralOpen(false)}
+        campanhaAtivaId={campanhaAtivaId}
+        onAplicarNoMapa={(campId) => setCampanhaAtivaId(campId)}
+        onVerNoMapa={handleVerCampanhaNoMapa}
       />
     </View>
   );
@@ -1478,5 +1565,109 @@ const styles = StyleSheet.create({
     padding: 10,
     overflow: 'hidden',
     position: 'relative',
+  },
+
+  /* Banner Flutuante de Campanha Ativa sobre o Mapa */
+  bannerCampanhaMapa: {
+    position: 'absolute',
+    top: 18,
+    left: 18,
+    right: 18,
+    zIndex: 100,
+    backgroundColor: '#0f172a',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#38bdf8',
+    padding: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
+    flexWrap: 'wrap',
+    gap: 10,
+  },
+  bannerCampanhaInfo: {
+    flex: 1,
+    minWidth: 260,
+  },
+  bannerCampanhaTituloRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  bannerCampanhaIcon: {
+    fontSize: 16,
+  },
+  bannerCampanhaNome: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#f8fafc',
+  },
+  badgeCampanhaAtiva: {
+    backgroundColor: 'rgba(56, 189, 248, 0.15)',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: '#38bdf8',
+  },
+  badgeCampanhaAtivaText: {
+    fontSize: 10,
+    color: '#38bdf8',
+    fontWeight: '700',
+  },
+  bannerCampanhaMetricas: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginTop: 4,
+  },
+  bannerMetricaItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  bannerDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+  },
+  bannerMetricaText: {
+    fontSize: 11,
+    color: '#94a3b8',
+    fontWeight: '600',
+  },
+  bannerCampanhaAcoes: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  btnBannerCarteira: {
+    backgroundColor: '#0284c7',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+  },
+  btnBannerCarteiraText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  btnBannerDesativar: {
+    backgroundColor: '#1e293b',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#475569',
+  },
+  btnBannerDesativarText: {
+    color: '#94a3b8',
+    fontSize: 12,
+    fontWeight: '600',
   },
 });
