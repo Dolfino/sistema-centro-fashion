@@ -1041,6 +1041,20 @@ export default function LegacyMainShellScreen() {
               {!isMobile && <Text style={{ color: '#fca5a5', fontSize: 12, fontWeight: '700' }}>Financeiro</Text>}
             </TouchableOpacity>
 
+            {/* Botão Auditoria de Vendas (L3.8) */}
+            <TouchableOpacity
+              id="btnAuditoriaToolbar"
+              style={[
+                styles.btnCentralizar,
+                { width: 'auto', paddingHorizontal: 10, gap: 4, flexDirection: 'row', backgroundColor: '#064e3b', borderColor: '#10b981' },
+              ]}
+              onPress={() => setAuditoriaCentralOpen(true)}
+              aria-label="Auditoria de Vendas"
+            >
+              <Text style={{ fontSize: 13 }}>📈</Text>
+              {!isMobile && <Text style={{ color: '#6ee7b7', fontSize: 12, fontWeight: '700' }}>Auditoria</Text>}
+            </TouchableOpacity>
+
             {/* Botão Menu (#appMenuBtnS22513) */}
             <TouchableOpacity
               id="appMenuBtnS22513"
