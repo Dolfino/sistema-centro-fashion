@@ -94,16 +94,25 @@ def build():
         numero_box = lm.get("NUMERO_LOJA", "")
         setor_id = lm.get("ID_MAPA_SETOR", "")
         
-        # Mapeia setor legível
-        setor_nome = "Azul"
-        if "AMARELO" in setor_id:
-            setor_nome = "Amarelo"
-        elif "VERDE" in setor_id:
+        # Mapeia setor legível rigorosamente pelo ID_MAPA_SETOR ou prefixo do ID_LOJA_MAPA
+        if "BRANCO" in setor_id or "LMP-BR-" in id_loja_mapa:
+            setor_nome = "Branco"
+            setor_id = "MAP-CFF-N2-BRANCO"
+        elif "VERDE" in setor_id or "LMP-VD-" in id_loja_mapa:
             setor_nome = "Verde"
-        elif "VERMELHO" in setor_id:
-            setor_nome = "Vermelho"
-        elif "ROXO" in setor_id:
+            setor_id = "MAP-CFF-N1-VERDE"
+        elif "AMARELO" in setor_id or "LMP-AM-" in id_loja_mapa:
+            setor_nome = "Amarelo"
+            setor_id = "MAP-CFF-N2-AMARELO"
+        elif "ROXO" in setor_id or "LMP-RX-" in id_loja_mapa:
             setor_nome = "Roxo"
+            setor_id = "MAP-CFF-N3-ROXO"
+        elif "AZUL" in setor_id or "LMP-AZ-" in id_loja_mapa:
+            setor_nome = "Azul"
+            setor_id = "MAP-CFF-N1-AZUL"
+        else:
+            setor_nome = "Azul"
+            setor_id = "MAP-CFF-N1-AZUL"
 
         # Coordenadas
         x_norm = parse_float(lm.get("X_NORMALIZADO"))

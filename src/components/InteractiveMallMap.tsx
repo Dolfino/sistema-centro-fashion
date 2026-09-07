@@ -145,11 +145,8 @@ const BoxDotMarker: React.FC<{
   color: string;
   size: number;
   isSelected?: boolean;
-  numeroBox?: string;
-  zoomRatio?: number;
-}> = ({ color, size, isSelected = false, numeroBox = '', zoomRatio = 1 }) => {
+}> = ({ color, size, isSelected = false }) => {
   const isWhite = color.toLowerCase() === '#ffffff' || color.toLowerCase() === '#f8fafc';
-  const showText = zoomRatio > 2.0 && size >= 15 && Boolean(numeroBox);
 
   return (
     <View
@@ -158,36 +155,22 @@ const BoxDotMarker: React.FC<{
         height: size,
         borderRadius: size / 2,
         backgroundColor: color,
-        borderWidth: Math.max(1.5, Math.round(size * 0.12)),
+        borderWidth: Math.max(1.5, Math.round(size * 0.14)),
         borderColor: isSelected
           ? '#38bdf8'
           : isWhite
-          ? '#94a3b8'
-          : 'rgba(15, 23, 42, 0.9)',
+          ? '#64748b'
+          : 'rgba(15, 23, 42, 0.95)',
         alignItems: 'center',
         justifyContent: 'center',
         shadowColor: isSelected ? '#38bdf8' : color,
         shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: isSelected ? 0.9 : 0.65,
-        shadowRadius: isSelected ? 5 : 2.5,
-        elevation: isSelected ? 7 : 3,
-        transform: isSelected ? [{ scale: 1.35 }] : undefined,
+        shadowOpacity: isSelected ? 0.95 : 0.7,
+        shadowRadius: isSelected ? 6 : 2.5,
+        elevation: isSelected ? 8 : 3,
+        transform: isSelected ? [{ scale: 1.4 }] : undefined,
       }}
-    >
-      {showText && (
-        <Text
-          style={{
-            fontSize: Math.max(6.5, Math.round(size * 0.38)),
-            fontWeight: '900',
-            color: isWhite ? '#0f172a' : '#ffffff',
-            textAlign: 'center',
-          }}
-          numberOfLines={1}
-        >
-          {numeroBox}
-        </Text>
-      )}
-    </View>
+    />
   );
 };
 
@@ -747,7 +730,10 @@ export const InteractiveMallMap: React.FC<InteractiveMallMapProps> = ({
               <TouchableOpacity
                 key={`box-loja-${loja.idLojaMapa}`}
                 id={`box-marker-${loja.numeroBox}`}
-                {...({ dataSet: { role: 'pin' } } as any)}
+                {...({
+                  dataSet: { role: 'pin' },
+                  title: `Box ${loja.numeroBox} • ${loja.nomeFantasia} (${loja.descricaoStatus || loja.statusOcupacao})`,
+                } as any)}
                 activeOpacity={0.7}
                 hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
                 onPress={(e) => {
@@ -768,8 +754,6 @@ export const InteractiveMallMap: React.FC<InteractiveMallMapProps> = ({
                 <BoxDotMarker
                   color={loja.corStatus || '#10b981'}
                   size={dotSize}
-                  numeroBox={loja.numeroBox}
-                  zoomRatio={zoomRatio}
                 />
               </TouchableOpacity>
             );

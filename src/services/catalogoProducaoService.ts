@@ -87,8 +87,12 @@ export const CatalogoProducaoService = {
    * Filtra lojas por setor
    */
   buscarPorSetor(setor: string): LojaProducaoItem[] {
-    const s = setor.toLowerCase();
-    return lojas.filter((l) => l.setor.toLowerCase() === s || l.idMapaSetor.toLowerCase().includes(s));
+    const s = setor.toUpperCase().trim();
+    return lojas.filter((l) => {
+      const idSetor = (l.idMapaSetor || '').toUpperCase();
+      const nomeSetor = (l.setor || '').toUpperCase();
+      return idSetor.includes(s) || nomeSetor === s;
+    });
   },
 
   /**
