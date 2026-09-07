@@ -155,6 +155,29 @@ export const CamadasModal: React.FC<CamadasModalProps> = ({
   }, [showReferencias, showCruzamentos, showLojas]);
 
   useEffect(() => {
+    if (onFilterChange) {
+      onFilterChange({
+        query: searchQuery,
+        tipo: filtroTipo,
+        finalidade: filtroFinalidade,
+        responsavel: filtroResponsavel,
+        status: filtroStatus,
+        conservacao: filtroConservacao,
+        condicao: filtroCondicao,
+      });
+    }
+  }, [
+    searchQuery,
+    filtroTipo,
+    filtroFinalidade,
+    filtroResponsavel,
+    filtroStatus,
+    filtroConservacao,
+    filtroCondicao,
+    onFilterChange,
+  ]);
+
+  useEffect(() => {
     if (!visible || Platform.OS !== 'web') return;
 
     const handleKeyDown = (e: KeyboardEvent) => {

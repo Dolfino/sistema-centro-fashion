@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, useWindowDimensions, Platform, TextInput, ScrollView } from 'react-native';
 import { InteractiveMallMap, SignagePin } from '../src/components/InteractiveMallMap';
 import { AppMenuModal } from '../src/components/AppMenuModal';
@@ -165,6 +165,43 @@ export default function LegacyMainShellScreen() {
   const [showReferencias, setShowReferencias] = useState<boolean>(true);
   const [showCruzamentos, setShowCruzamentos] = useState<boolean>(true);
   const [showLojas, setShowLojas] = useState<boolean>(false);
+  const [camadasFilters, setCamadasFilters] = useState<{
+    query?: string;
+    tipo?: string;
+    finalidade?: string;
+    responsavel?: string;
+    status?: string;
+    conservacao?: string;
+    condicao?: string;
+  }>({});
+
+  // Pins filtrados pelas regras da Central de Camadas e busca
+  const displayedPins = useMemo(() => {
+    return pinsList.filter((p) => {
+      if (camadasFilters.query && camadasFilters.query.trim()) {
+        const q = camadasFilters.query.toLowerCase().trim();
+        const match =
+          p.assetCode?.toLowerCase().includes(q) ||
+          (p.notes && p.notes.toLowerCase().includes(q)) ||
+          (p.humanLocation && p.humanLocation.toLowerCase().includes(q)) ||
+          p.category?.toLowerCase().includes(q);
+        if (!match) return false;
+      }
+      if (camadasFilters.tipo && camadasFilters.tipo !== 'Todos') {
+        if (p.category !== camadasFilters.tipo) return false;
+      }
+      if (camadasFilters.responsavel && camadasFilters.responsavel !== 'Todos') {
+        if (p.responsible !== camadasFilters.responsavel) return false;
+      }
+      if (camadasFilters.status && camadasFilters.status !== 'Todos') {
+        if (p.status !== camadasFilters.status) return false;
+      }
+      if (camadasFilters.conservacao && camadasFilters.conservacao !== 'Todos') {
+        if (p.conservationState !== camadasFilters.conservacao) return false;
+      }
+      return true;
+    });
+  }, [pinsList, camadasFilters]);
 
   // Estados do Fluxo de Posicionamento e Cadastro (UI-3)
   const [positioningMode, setPositioningMode] = useState<boolean>(false);
@@ -1408,7 +1445,7 @@ export default function LegacyMainShellScreen() {
 
           <InteractiveMallMap
             selectedMapKey={selectedMapKey}
-            pins={pinsList}
+            pins={displayedPins}
             selectedPinId={selectedPin?.id}
             onSelectPin={(pin) => {
               if (!positioningMode) setSelectedPin(pin);
@@ -1461,7 +1498,7 @@ export default function LegacyMainShellScreen() {
         onClose={() => setCamadasOpen(false)}
         showSinalizacoes={showSinalizacoes}
         onToggleSinalizacoes={(enabled) => setShowSinalizacoes(enabled)}
-        totalPinsCount={pinsList.filter((p) => !p.sector || p.sector === selectedMapKey).length || pinsList.length}
+        totalPinsCount={displayedPins.filter((p) => !p.sector || p.sector === selectedMapKey).length || displayedPins.length}
         showReferencias={showReferencias}
         onToggleReferencias={(enabled) => setShowReferencias(enabled)}
         totalReferenciasCount={CartografiaService.obterReferenciasOficiais(selectedMapKey).length}
@@ -1481,6 +1518,7 @@ export default function LegacyMainShellScreen() {
         initialShowCentral={showCentralCamadas}
         campanhaAtivaId={campanhaAtivaId}
         onSelectCampanha={(id) => setCampanhaAtivaId(id)}
+        onFilterChange={(filters) => setCamadasFilters(filters)}
       />
 
       <FormPanelModal
