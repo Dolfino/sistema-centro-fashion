@@ -42,7 +42,7 @@ import { RegistroAuditoriaVenda } from '../src/services/auditoriaVendasService';
 import { CentralAnaliticaModal } from '../src/components/CentralAnaliticaModal';
 import { AdminModal } from '../src/components/AdminModal';
 import { CentralCartograficaModal } from '../src/components/CentralCartograficaModal';
-import { CartografiaService } from '../src/services/cartografiaService';
+import { CartografiaService, CORES_PADRAO_TIPOS_REFERENCIA } from '../src/services/cartografiaService';
 import { AtivoMallModal } from '../src/components/AtivoMallModal';
 import { AtivoMidiaPonto } from '../src/services/ativoMallService';
 import { CampanhaCentralModal } from '../src/components/CampanhaCentralModal';
@@ -231,6 +231,25 @@ export default function LegacyMainShellScreen() {
     setCorReferencia(novaCor);
     if (Platform.OS === 'web' && typeof window !== 'undefined' && window.localStorage) {
       window.localStorage.setItem('sinalizacao_mall_cor_referencia', novaCor);
+    }
+  }, []);
+
+  const [coresReferencias, setCoresReferencias] = useState<Record<string, string>>(() => {
+    if (Platform.OS === 'web' && typeof window !== 'undefined' && window.localStorage) {
+      const saved = window.localStorage.getItem('sinalizacao_mall_cores_tipos_referencia');
+      if (saved) {
+        try {
+          return JSON.parse(saved);
+        } catch {}
+      }
+    }
+    return CORES_PADRAO_TIPOS_REFERENCIA;
+  });
+
+  const handleUpdateCoresReferencias = useCallback((novasCores: Record<string, string>) => {
+    setCoresReferencias(novasCores);
+    if (Platform.OS === 'web' && typeof window !== 'undefined' && window.localStorage) {
+      window.localStorage.setItem('sinalizacao_mall_cores_tipos_referencia', JSON.stringify(novasCores));
     }
   }, []);
 
@@ -1492,6 +1511,7 @@ export default function LegacyMainShellScreen() {
             resetTrigger={mapResetTrigger}
             showLojasBoxes={showLojas || filterConservation === 'LOJAS_BOXES'}
             corReferencia={corReferencia}
+            coresReferencias={coresReferencias}
             onSelectLoja={handleSelectLojaRealSearchResult}
             onMapClick={handleMapClick}
           />
@@ -1553,6 +1573,9 @@ export default function LegacyMainShellScreen() {
         onFilterChange={handleCamadasFilterChange}
         corReferencia={corReferencia}
         onUpdateCorReferencia={handleUpdateCorReferencia}
+        selectedMapKey={selectedMapKey}
+        coresReferencias={coresReferencias}
+        onUpdateCoresReferencias={handleUpdateCoresReferencias}
       />
 
       <FormPanelModal

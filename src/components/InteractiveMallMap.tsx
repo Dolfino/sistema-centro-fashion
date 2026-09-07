@@ -18,6 +18,8 @@ import {
   CartografiaService,
   PontoReferenciaOficial,
   CruzamentoOficial,
+  CORES_PADRAO_TIPOS_REFERENCIA,
+  NOMES_PADRAO_TIPOS_REFERENCIA,
 } from '../services/cartografiaService';
 
 const MAP_IMAGES: Record<string, ImageSourcePropType> = {
@@ -78,6 +80,7 @@ interface InteractiveMallMapProps {
   resetTrigger?: number;
   showLojasBoxes?: boolean;
   corReferencia?: string;
+  coresReferencias?: Record<string, string>;
   onSelectLoja?: (loja: LojaProducaoItem) => void;
   onMapClick?: (coords: {
     normalizedX: number;
@@ -187,8 +190,18 @@ const CartographicReferenceMarker: React.FC<{
   refItem: PontoReferenciaOficial;
   size?: number;
   centerColor?: string;
-}> = ({ refItem, size = 18, centerColor = '#38bdf8' }) => {
+  coresReferencias?: Record<string, string>;
+}> = ({ refItem, size = 18, centerColor = '#38bdf8', coresReferencias }) => {
   const [isHovered, setIsHovered] = useState<boolean>(false);
+
+  const effectiveCenterColor = useMemo(() => {
+    return CartografiaService.obterCorTipoReferencia(refItem.tipo, coresReferencias) || centerColor;
+  }, [refItem.tipo, coresReferencias, centerColor]);
+
+  const tipoNome = useMemo(() => {
+    const t = (refItem.tipo || 'OUTRO').toUpperCase();
+    return NOMES_PADRAO_TIPOS_REFERENCIA[t] || refItem.tipo || '';
+  }, [refItem.tipo]);
 
   return (
     <View
@@ -220,7 +233,7 @@ const CartographicReferenceMarker: React.FC<{
             width: Math.max(4, Math.round(size * 0.36)),
             height: Math.max(4, Math.round(size * 0.36)),
             borderRadius: Math.max(2, Math.round(size * 0.18)),
-            backgroundColor: centerColor,
+            backgroundColor: effectiveCenterColor,
           }}
         />
       </View>
@@ -232,11 +245,11 @@ const CartographicReferenceMarker: React.FC<{
             top: size + 3,
             alignSelf: 'center',
             backgroundColor: '#111827',
-            paddingVertical: 2.5,
-            paddingHorizontal: 6,
-            borderRadius: 4,
+            paddingVertical: 3,
+            paddingHorizontal: 7,
+            borderRadius: 5,
             borderWidth: 1,
-            borderColor: 'rgba(255, 255, 255, 0.25)',
+            borderColor: 'rgba(255, 255, 255, 0.22)',
             shadowColor: '#000',
             shadowOffset: { width: 0, height: 2 },
             shadowOpacity: 0.5,
@@ -245,12 +258,13 @@ const CartographicReferenceMarker: React.FC<{
             whiteSpace: 'nowrap',
             pointerEvents: 'none',
             zIndex: 100,
+            alignItems: 'center',
           } as any}
         >
           <Text
             style={{
               color: '#ffffff',
-              fontSize: 10,
+              fontSize: 10.5,
               fontWeight: '700',
               letterSpacing: 0.2,
             }}
@@ -258,6 +272,29 @@ const CartographicReferenceMarker: React.FC<{
           >
             {refItem.nome}
           </Text>
+          {tipoNome ? (
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 1.5 }}>
+              <View
+                style={{
+                  width: 5,
+                  height: 5,
+                  borderRadius: 2.5,
+                  backgroundColor: effectiveCenterColor,
+                  marginRight: 4,
+                }}
+              />
+              <Text
+                style={{
+                  color: effectiveCenterColor,
+                  fontSize: 8.5,
+                  fontWeight: '600',
+                  letterSpacing: 0.2,
+                }}
+              >
+                {tipoNome}
+              </Text>
+            </View>
+          ) : null}
         </View>
       )}
     </View>
@@ -303,6 +340,7 @@ export const InteractiveMallMap: React.FC<InteractiveMallMapProps> = ({
   resetTrigger = 0,
   showLojasBoxes = false,
   corReferencia = '#38bdf8',
+  coresReferencias,
   onSelectLoja,
   onMapClick,
 }) => {
@@ -901,7 +939,12 @@ export const InteractiveMallMap: React.FC<InteractiveMallMapProps> = ({
                   },
                 ]}
               >
-                <CartographicReferenceMarker refItem={refItem} size={refSize} centerColor={corReferencia} />
+                <CartographicReferenceMarker
+                  refItem={refItem}
+                  size={refSize}
+                  centerColor={corReferencia}
+                  coresReferencias={coresReferencias}
+                />
               </TouchableOpacity>
             );
           })}

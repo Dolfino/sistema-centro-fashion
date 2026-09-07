@@ -32,6 +32,26 @@ export interface PontoReferenciaOficial {
   ativo: boolean;
 }
 
+export const CORES_PADRAO_TIPOS_REFERENCIA: Record<string, string> = {
+  CIRCULACAO: '#38bdf8',    // Azul celeste (esteiras, escadas, elevadores)
+  SERVICO: '#10b981',       // Verde esmeralda (saúde, lotérica, bancos, sanitários)
+  ALIMENTACAO: '#f59e0b',   // Âmbar dourado (restaurante, lanchonetes)
+  AREA_ESPECIAL: '#ec4899', // Rosa vibrante (área de eventos)
+  ADMINISTRATIVO: '#8b5cf6',// Roxo (gerência comercial, adm)
+  APOIO: '#64748b',         // Ardósia / Cinza azulado (depósitos, baús)
+  OUTRO: '#06b6d4',         // Ciano (geral)
+};
+
+export const NOMES_PADRAO_TIPOS_REFERENCIA: Record<string, string> = {
+  CIRCULACAO: 'Circulação',
+  SERVICO: 'Serviços',
+  ALIMENTACAO: 'Alimentação',
+  AREA_ESPECIAL: 'Área Especial',
+  ADMINISTRATIVO: 'Administrativo',
+  APOIO: 'Apoio Operacional',
+  OUTRO: 'Outros',
+};
+
 export interface CruzamentoOficial {
   id: string;
   idMapaSetor: string;
@@ -243,6 +263,63 @@ export class CartografiaService {
     }
     const targetId = CartografiaService.normalizarIdMapaSetor(setorKey);
     return rawList.filter((r) => r.idMapaSetor === targetId && r.ativo !== false && r.x > 0 && r.y > 0);
+  }
+
+  /**
+   * Obtém a cor associada a um tipo de referência, respeitando customizações
+   */
+  static obterCorTipoReferencia(tipo?: string, customCores?: Record<string, string>): string {
+    const key = (tipo || 'OUTRO').toUpperCase();
+    if (customCores && customCores[key]) {
+      return customCores[key];
+    }
+    return CORES_PADRAO_TIPOS_REFERENCIA[key] || '#38bdf8';
+  }
+
+  /**
+   * Agrupa e retorna a contagem de referências por tipo para um determinado setor ou global
+   */
+  static obterTiposReferenciasComContagem(
+    setorKey?: string,
+    customCores?: Record<string, string>
+  ): { tipo: string; nome: string; cor: string; count: number }[] {
+    const refs = CartografiaService.obterReferenciasOficiais(setorKey);
+    const contagemPorTipo: Record<string, number> = {};
+
+    refs.forEach((r) => {
+      const t = (r.tipo || 'OUTRO').toUpperCase();
+      contagemPorTipo[t] = (contagemPorTipo[t] || 0) + 1;
+    });
+
+    // Ordem de apresentação consistente
+    const tiposChaves = Object.keys(CORES_PADRAO_TIPOS_REFERENCIA);
+    const resultado: { tipo: string; nome: string; cor: string; count: number }[] = [];
+
+    tiposChaves.forEach((tipoKey) => {
+      const count = contagemPorTipo[tipoKey] || 0;
+      if (count > 0 || !setorKey || setorKey === 'TODOS') {
+        resultado.push({
+          tipo: tipoKey,
+          nome: NOMES_PADRAO_TIPOS_REFERENCIA[tipoKey] || tipoKey,
+          cor: CartografiaService.obterCorTipoReferencia(tipoKey, customCores),
+          count,
+        });
+      }
+    });
+
+    // Tipos extras não cadastrados no padrão
+    Object.keys(contagemPorTipo).forEach((tipoKey) => {
+      if (!tiposChaves.includes(tipoKey)) {
+        resultado.push({
+          tipo: tipoKey,
+          nome: NOMES_PADRAO_TIPOS_REFERENCIA[tipoKey] || tipoKey,
+          cor: CartografiaService.obterCorTipoReferencia(tipoKey, customCores),
+          count: contagemPorTipo[tipoKey],
+        });
+      }
+    });
+
+    return resultado;
   }
 
   /**

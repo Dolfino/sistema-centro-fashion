@@ -11,6 +11,11 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import { ChromeColorPicker } from './ChromeColorPicker';
+import {
+  CartografiaService,
+  CORES_PADRAO_TIPOS_REFERENCIA,
+  NOMES_PADRAO_TIPOS_REFERENCIA,
+} from '../services/cartografiaService';
 
 export interface PresetCorporativoItem {
   id: string;
@@ -71,6 +76,9 @@ interface CamadasModalProps {
   }) => void;
   corReferencia?: string;
   onUpdateCorReferencia?: (cor: string) => void;
+  selectedMapKey?: string;
+  coresReferencias?: Record<string, string>;
+  onUpdateCoresReferencias?: (cores: Record<string, string>) => void;
 }
 
 const PRESETS_CORPORATIVOS_INICIAIS: PresetCorporativoItem[] = [
@@ -130,6 +138,9 @@ export const CamadasModal: React.FC<CamadasModalProps> = ({
   onFilterChange,
   corReferencia = '#38bdf8',
   onUpdateCorReferencia,
+  selectedMapKey,
+  coresReferencias,
+  onUpdateCoresReferencias,
 }) => {
   const { width: windowWidth } = useWindowDimensions();
   const isMobile = windowWidth < 700;
@@ -148,7 +159,7 @@ export const CamadasModal: React.FC<CamadasModalProps> = ({
   const [filtroResponsavel, setFiltroResponsavel] = useState<string>('Todos');
   const [filtroStatus, setFiltroStatus] = useState<string>('Todos');
   const [filtroConservacao, setFiltroConservacao] = useState<string>('Todos');
-  const [filtroCondicao, setFiltroCondicao] = useState<string>('Todas');
+  const [filtroCondicao, setFiltroCondicao] = useState<string>('Todos');
 
   // Aparência e Cores
   const [colorirPor, setColorirPor] = useState<string>('Tipo');
@@ -190,6 +201,48 @@ export const CamadasModal: React.FC<CamadasModalProps> = ({
       window.localStorage.setItem('sinalizacao_mall_cor_referencia', corReferenciaLocal);
     }
   }, [corReferenciaLocal]);
+
+  // Cores personalizadas por Tipo de Referência Cartográfica Oficial
+  const [coresReferenciasLocal, setCoresReferenciasLocal] = useState<Record<string, string>>(() => {
+    if (coresReferencias && Object.keys(coresReferencias).length > 0) return coresReferencias;
+    if (Platform.OS === 'web' && typeof window !== 'undefined' && window.localStorage) {
+      const saved = window.localStorage.getItem('sinalizacao_mall_cores_tipos_referencia');
+      if (saved) {
+        try {
+          return JSON.parse(saved);
+        } catch {}
+      }
+    }
+    return CORES_PADRAO_TIPOS_REFERENCIA;
+  });
+
+  const [mostrarTodosTiposRef, setMostrarTodosTiposRef] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (coresReferencias && Object.keys(coresReferencias).length > 0) {
+      setCoresReferenciasLocal(coresReferencias);
+    }
+  }, [coresReferencias]);
+
+  useEffect(() => {
+    if (Platform.OS === 'web' && typeof window !== 'undefined' && window.localStorage) {
+      window.localStorage.setItem(
+        'sinalizacao_mall_cores_tipos_referencia',
+        JSON.stringify(coresReferenciasLocal)
+      );
+    }
+  }, [coresReferenciasLocal]);
+
+  const handleMudarCorTipoReferencia = (tipo: string, novaCor: string) => {
+    const atualizado = {
+      ...coresReferenciasLocal,
+      [tipo]: novaCor,
+    };
+    setCoresReferenciasLocal(atualizado);
+    if (onUpdateCoresReferencias) {
+      onUpdateCoresReferencias(atualizado);
+    }
+  };
 
   // Presets Corporativos e Pessoais
   const [presetsCorp, setPresetsCorp] = useState<PresetCorporativoItem[]>(() => {
@@ -939,81 +992,122 @@ export const CamadasModal: React.FC<CamadasModalProps> = ({
                     setColorPickerTargetId(null);
                     setLegendaCores(LEGENDA_SINALIZACOES_PADRAO);
                     setCorReferenciaLocal('#38bdf8');
+                    setCoresReferenciasLocal(CORES_PADRAO_TIPOS_REFERENCIA);
                     if (onUpdateCorReferencia) onUpdateCorReferencia('#38bdf8');
+                    if (onUpdateCoresReferencias) onUpdateCoresReferencias(CORES_PADRAO_TIPOS_REFERENCIA);
                   }}
                 >
                   <Text style={styles.btnRestaurarCoresText}>Restaurar cores</Text>
                 </TouchableOpacity>
               </View>
 
-              {/* Lista com as categorias das fotos + Referências */}
+              {/* Lista com as categorias das fotos + Tipos de Referências */}
               <View style={styles.legendaLista}>
-                {/* Item para Referências (Ponto Central / Miolo) */}
+                {/* Tipos de Referências Cartográficas Oficiais com Cores Customizáveis */}
                 {(() => {
-                  const isPickerRefOpen = colorPickerTargetId === 'cat-ref-central';
-                  return (
-                    <View
-                      key="cat-ref-central"
-                      style={[styles.legendaRow, isPickerRefOpen && styles.legendaRowActive]}
-                    >
-                      <TouchableOpacity
-                        id="cor-btn-cat-ref-central"
-                        style={[
-                          styles.legendaColorSquare,
-                          { backgroundColor: corReferenciaLocal, cursor: 'pointer' as any },
-                        ]}
-                        onPress={() => setColorPickerTargetId(isPickerRefOpen ? null : 'cat-ref-central')}
-                        activeOpacity={0.8}
-                      />
-                      <View
-                        style={{
-                          width: 14,
-                          height: 14,
-                          borderRadius: 7,
-                          backgroundColor: '#10144d',
-                          borderColor: '#ffffff',
-                          borderWidth: 1.5,
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                        }}
-                      >
-                        <View
-                          style={{
-                            width: 5,
-                            height: 5,
-                            borderRadius: 2.5,
-                            backgroundColor: corReferenciaLocal,
-                          }}
-                        />
-                      </View>
-                      <Text style={styles.legendaCatNome}>Referências (Ponto Central)</Text>
-                      <View style={styles.compactBadgePill}>
-                        <Text style={styles.compactBadgeText}>{totalReferenciasCount}</Text>
-                      </View>
+                  const todosTiposRef = CartografiaService.obterTiposReferenciasComContagem(
+                    selectedMapKey,
+                    coresReferenciasLocal
+                  );
+                  const tiposAtivos = todosTiposRef.filter((t) => t.count > 0);
+                  const tiposInativos = todosTiposRef.filter((t) => t.count === 0);
+                  const listaExibicao = mostrarTodosTiposRef || tiposAtivos.length === 0
+                    ? todosTiposRef
+                    : tiposAtivos;
 
-                      {/* Popover do Seletor de Cores para o Miolo da Referência */}
-                      {isPickerRefOpen && (
-                        <>
-                          {Platform.OS === 'web' && (
+                  return (
+                    <>
+                      {listaExibicao.map((refTipoItem) => {
+                        const targetId = `cat-ref-${refTipoItem.tipo.toLowerCase()}`;
+                        const isPickerRefOpen = colorPickerTargetId === targetId;
+
+                        return (
+                          <View
+                            key={targetId}
+                            style={[styles.legendaRow, isPickerRefOpen && styles.legendaRowActive]}
+                          >
                             <TouchableOpacity
-                              style={styles.colorPickerBackdrop}
-                              onPress={() => setColorPickerTargetId(null)}
-                              activeOpacity={1}
+                              id={`cor-btn-${targetId}`}
+                              style={[
+                                styles.legendaColorSquare,
+                                { backgroundColor: refTipoItem.cor, cursor: 'pointer' as any },
+                              ]}
+                              onPress={() => setColorPickerTargetId(isPickerRefOpen ? null : targetId)}
+                              activeOpacity={0.8}
                             />
-                          )}
-                          <View style={styles.colorPickerPopover}>
-                            <ChromeColorPicker
-                              color={corReferenciaLocal}
-                              onChange={(newHex) => {
-                                setCorReferenciaLocal(newHex);
-                                if (onUpdateCorReferencia) onUpdateCorReferencia(newHex);
+                            {/* Miniatura do anel oficial com o miolo na cor do tipo */}
+                            <View
+                              style={{
+                                width: 14,
+                                height: 14,
+                                borderRadius: 7,
+                                backgroundColor: '#10144d',
+                                borderColor: '#ffffff',
+                                borderWidth: 1.5,
+                                alignItems: 'center',
+                                justifyContent: 'center',
                               }}
-                              onClose={() => setColorPickerTargetId(null)}
-                            />
+                            >
+                              <View
+                                style={{
+                                  width: 5,
+                                  height: 5,
+                                  borderRadius: 2.5,
+                                  backgroundColor: refTipoItem.cor,
+                                }}
+                              />
+                            </View>
+                            <Text style={styles.legendaCatNome}>Ref: {refTipoItem.nome}</Text>
+                            <View style={styles.compactBadgePill}>
+                              <Text style={styles.compactBadgeText}>{refTipoItem.count}</Text>
+                            </View>
+
+                            {/* Popover do Seletor de Cores para o Tipo de Referência */}
+                            {isPickerRefOpen && (
+                              <>
+                                {Platform.OS === 'web' && (
+                                  <TouchableOpacity
+                                    style={styles.colorPickerBackdrop}
+                                    onPress={() => setColorPickerTargetId(null)}
+                                    activeOpacity={1}
+                                  />
+                                )}
+                                <View style={styles.colorPickerPopover}>
+                                  <ChromeColorPicker
+                                    color={refTipoItem.cor}
+                                    onChange={(newHex) => {
+                                      handleMudarCorTipoReferencia(refTipoItem.tipo, newHex);
+                                    }}
+                                    onClose={() => setColorPickerTargetId(null)}
+                                  />
+                                </View>
+                              </>
+                            )}
                           </View>
-                        </>
+                        );
+                      })}
+
+                      {/* Botão de expansão sutil caso existam tipos sem referências na visão corrente */}
+                      {tiposInativos.length > 0 && tiposAtivos.length > 0 && (
+                        <TouchableOpacity
+                          style={{
+                            paddingVertical: 3,
+                            paddingHorizontal: 6,
+                            marginTop: 1,
+                            marginBottom: 6,
+                            alignSelf: 'flex-start',
+                          }}
+                          onPress={() => setMostrarTodosTiposRef(!mostrarTodosTiposRef)}
+                          activeOpacity={0.7}
+                        >
+                          <Text style={{ fontSize: 11, color: '#0284c7', fontWeight: '600' }}>
+                            {mostrarTodosTiposRef
+                              ? '▴ Ocultar tipos de referências sem itens nesta visão'
+                              : `▾ +${tiposInativos.length} outros tipos de referências`}
+                          </Text>
+                        </TouchableOpacity>
                       )}
-                    </View>
+                    </>
                   );
                 })()}
 
