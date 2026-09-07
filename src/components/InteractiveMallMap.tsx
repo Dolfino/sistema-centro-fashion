@@ -181,37 +181,75 @@ const BoxDotMarker: React.FC<{
   );
 };
 
-// Marcador circular de Referência Cartográfica Oficial (#10144d com anel branco e dot celeste)
+// Marcador circular de Referência Cartográfica Oficial (#10144d com anel branco e balão escuro)
 const CartographicReferenceMarker: React.FC<{
   refItem: PontoReferenciaOficial;
   size?: number;
 }> = ({ refItem, size = 18 }) => {
   return (
-    <View
-      style={{
-        width: size,
-        height: size,
-        borderRadius: size / 2,
-        backgroundColor: '#10144d',
-        borderColor: '#ffffff',
-        borderWidth: Math.max(1.5, Math.round(size * 0.12)),
-        alignItems: 'center',
-        justifyContent: 'center',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.45,
-        shadowRadius: 4,
-        elevation: 5,
-      }}
-    >
+    <View style={{ alignItems: 'center', justifyContent: 'center', overflow: 'visible' }}>
       <View
         style={{
-          width: Math.max(4, Math.round(size * 0.36)),
-          height: Math.max(4, Math.round(size * 0.36)),
-          borderRadius: Math.max(2, Math.round(size * 0.18)),
-          backgroundColor: '#38bdf8',
+          width: size,
+          height: size,
+          borderRadius: size / 2,
+          backgroundColor: '#10144d',
+          borderColor: '#ffffff',
+          borderWidth: Math.max(1.5, Math.round(size * 0.12)),
+          alignItems: 'center',
+          justifyContent: 'center',
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.45,
+          shadowRadius: 4,
+          elevation: 5,
         }}
-      />
+      >
+        <View
+          style={{
+            width: Math.max(4, Math.round(size * 0.36)),
+            height: Math.max(4, Math.round(size * 0.36)),
+            borderRadius: Math.max(2, Math.round(size * 0.18)),
+            backgroundColor: '#38bdf8',
+          }}
+        />
+      </View>
+      {/* Balão de tooltip oficial Centro Fashion (idêntico ao legado) */}
+      {refItem.nome && (
+        <View
+          style={{
+            position: 'absolute',
+            top: size + 3,
+            alignSelf: 'center',
+            backgroundColor: '#111827',
+            paddingVertical: 2.5,
+            paddingHorizontal: 6,
+            borderRadius: 4,
+            borderWidth: 1,
+            borderColor: 'rgba(255, 255, 255, 0.25)',
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.5,
+            shadowRadius: 4,
+            elevation: 6,
+            whiteSpace: 'nowrap',
+            pointerEvents: 'none',
+            zIndex: 60,
+          } as any}
+        >
+          <Text
+            style={{
+              color: '#ffffff',
+              fontSize: 10,
+              fontWeight: '700',
+              letterSpacing: 0.2,
+            }}
+            numberOfLines={1}
+          >
+            {refItem.nome}
+          </Text>
+        </View>
+      )}
     </View>
   );
 };
@@ -848,6 +886,7 @@ export const InteractiveMallMap: React.FC<InteractiveMallMapProps> = ({
                     width: refSize,
                     height: refSize,
                     zIndex: 35,
+                    overflow: 'visible',
                   },
                 ]}
               >

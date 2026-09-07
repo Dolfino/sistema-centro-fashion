@@ -164,7 +164,7 @@ export default function LegacyMainShellScreen() {
   const [showSinalizacoes, setShowSinalizacoes] = useState<boolean>(true);
   const [showReferencias, setShowReferencias] = useState<boolean>(true);
   const [showCruzamentos, setShowCruzamentos] = useState<boolean>(true);
-  const [showLojas, setShowLojas] = useState<boolean>(true);
+  const [showLojas, setShowLojas] = useState<boolean>(false);
 
   // Estados do Fluxo de Posicionamento e Cadastro (UI-3)
   const [positioningMode, setPositioningMode] = useState<boolean>(false);
@@ -1422,7 +1422,7 @@ export default function LegacyMainShellScreen() {
             campanhaAtivaId={campanhaAtivaId}
             campanhaAdesoesMap={campanhaAdesoesMap}
             resetTrigger={mapResetTrigger}
-            showLojasBoxes={showLojas && (filterConservation === 'LOJAS_BOXES' || filterConservation === 'TODOS')}
+            showLojasBoxes={showLojas || filterConservation === 'LOJAS_BOXES'}
             onSelectLoja={handleSelectLojaRealSearchResult}
             onMapClick={handleMapClick}
           />
