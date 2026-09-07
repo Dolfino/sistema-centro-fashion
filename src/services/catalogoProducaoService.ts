@@ -24,6 +24,11 @@ export interface LojaProducaoItem {
   subsegmento: string;
   modeloComercial: string;
   statusOperacao: string;
+  statusOcupacao?: string;
+  corStatus?: string;
+  descricaoStatus?: string;
+  parcelasAtraso?: number;
+  valorPendente?: number;
   permissionario: {
     id: string;
     razaoSocial: string;

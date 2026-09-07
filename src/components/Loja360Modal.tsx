@@ -145,6 +145,60 @@ export const Loja360Modal: React.FC<Loja360ModalProps> = ({
                   </View>
 
                   <View style={styles.resumoBadges}>
+                    {lojaSelecionada.statusOcupacao && (
+                      <View
+                        style={[
+                          styles.badgeStatus,
+                          {
+                            backgroundColor: `${lojaSelecionada.corStatus || '#10b981'}22`,
+                            borderColor: lojaSelecionada.corStatus || '#10b981',
+                            borderWidth: 1,
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            gap: 6,
+                          },
+                        ]}
+                      >
+                        <View
+                          style={{
+                            width: 8,
+                            height: 8,
+                            borderRadius: 4,
+                            backgroundColor: lojaSelecionada.corStatus || '#10b981',
+                            borderWidth: lojaSelecionada.corStatus === '#ffffff' ? 1 : 0,
+                            borderColor: '#94a3b8',
+                          }}
+                        />
+                        <Text
+                          style={[
+                            styles.badgeStatusText,
+                            {
+                              color:
+                                lojaSelecionada.corStatus === '#ffffff'
+                                  ? '#cbd5e1'
+                                  : lojaSelecionada.corStatus || '#10b981',
+                              fontWeight: '700',
+                            },
+                          ]}
+                        >
+                          {lojaSelecionada.descricaoStatus || lojaSelecionada.statusOcupacao}
+                        </Text>
+                      </View>
+                    )}
+
+                    {Boolean(lojaSelecionada.valorPendente && lojaSelecionada.valorPendente > 0) && (
+                      <View
+                        style={[
+                          styles.badgeLuc,
+                          { backgroundColor: 'rgba(239, 68, 68, 0.15)', borderColor: '#ef4444' },
+                        ]}
+                      >
+                        <Text style={[styles.badgeLucText, { color: '#ef4444', fontWeight: '800' }]}>
+                          Pendente: R$ {lojaSelecionada.valorPendente?.toLocaleString('pt-BR')} ({lojaSelecionada.parcelasAtraso} parc.)
+                        </Text>
+                      </View>
+                    )}
+
                     <View
                       style={[
                         styles.badgeStatus,

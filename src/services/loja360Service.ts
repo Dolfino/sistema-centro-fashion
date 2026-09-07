@@ -83,6 +83,11 @@ export interface FichaLoja360 {
   tipoUnidade: 'LOJA' | 'BOX' | 'QUIOSQUE' | 'DEPOSITO' | 'ALIMENTACAO';
   segmentoPrincipal: string;
   statusOperacao: 'ATIVA' | 'FECHADA' | 'REFORMA' | 'DESOCUPADA';
+  statusOcupacao?: string;
+  corStatus?: string;
+  descricaoStatus?: string;
+  parcelasAtraso?: number;
+  valorPendente?: number;
   setor: string;
   corredor: string;
   ladoCorredor: string;
@@ -711,6 +716,11 @@ export const Loja360Service = {
         tipoUnidade: 'LOJA',
         segmentoPrincipal: realItem.segmento,
         statusOperacao: (realItem.statusOperacao as any) || 'ATIVA',
+        statusOcupacao: realItem.statusOcupacao,
+        corStatus: realItem.corStatus,
+        descricaoStatus: realItem.descricaoStatus,
+        parcelasAtraso: realItem.parcelasAtraso,
+        valorPendente: realItem.valorPendente,
         setor: `Setor ${realItem.setor} • Piso 1`,
         corredor: realItem.corredor,
         ladoCorredor: realItem.lado || 'PADRAO',

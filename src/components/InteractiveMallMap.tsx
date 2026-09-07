@@ -8,6 +8,7 @@ import {
   LayoutChangeEvent,
   TouchableOpacity,
   Text,
+  ScrollView,
   Platform,
 } from 'react-native';
 import { LegacyTheme } from '../theme/legacy-theme';
@@ -139,6 +140,57 @@ const TeardropPin: React.FC<{
   );
 };
 
+// Componente de Ponto Indicador Circular (Dot) para Boxes e Lojas com Temas de Cores
+const BoxDotMarker: React.FC<{
+  color: string;
+  size: number;
+  isSelected?: boolean;
+  numeroBox?: string;
+  zoomRatio?: number;
+}> = ({ color, size, isSelected = false, numeroBox = '', zoomRatio = 1 }) => {
+  const isWhite = color.toLowerCase() === '#ffffff' || color.toLowerCase() === '#f8fafc';
+  const showText = zoomRatio > 2.0 && size >= 15 && Boolean(numeroBox);
+
+  return (
+    <View
+      style={{
+        width: size,
+        height: size,
+        borderRadius: size / 2,
+        backgroundColor: color,
+        borderWidth: Math.max(1.5, Math.round(size * 0.12)),
+        borderColor: isSelected
+          ? '#38bdf8'
+          : isWhite
+          ? '#94a3b8'
+          : 'rgba(15, 23, 42, 0.9)',
+        alignItems: 'center',
+        justifyContent: 'center',
+        shadowColor: isSelected ? '#38bdf8' : color,
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: isSelected ? 0.9 : 0.65,
+        shadowRadius: isSelected ? 5 : 2.5,
+        elevation: isSelected ? 7 : 3,
+        transform: isSelected ? [{ scale: 1.35 }] : undefined,
+      }}
+    >
+      {showText && (
+        <Text
+          style={{
+            fontSize: Math.max(6.5, Math.round(size * 0.38)),
+            fontWeight: '900',
+            color: isWhite ? '#0f172a' : '#ffffff',
+            textAlign: 'center',
+          }}
+          numberOfLines={1}
+        >
+          {numeroBox}
+        </Text>
+      )}
+    </View>
+  );
+};
+
 export const InteractiveMallMap: React.FC<InteractiveMallMapProps> = ({
   selectedMapKey,
   pins,
@@ -158,6 +210,9 @@ export const InteractiveMallMap: React.FC<InteractiveMallMapProps> = ({
   const { width: windowWidth, height: windowHeight } = useWindowDimensions();
   const isMobile = windowWidth < 700;
 
+  // Filtro interno por tema/status de ocupação dos boxes
+  const [filtroStatusOcupacao, setFiltroStatusOcupacao] = useState<string>('TODOS');
+
   // Lojas e Boxes reais do setor atual (das 8 planilhas sincronizadas)
   const lojasSetor = useMemo(() => {
     if (!showLojasBoxes && filterConservation !== 'LOJAS_BOXES') return [];
@@ -169,6 +224,31 @@ export const InteractiveMallMap: React.FC<InteractiveMallMapProps> = ({
 
     return CatalogoProducaoService.buscarPorSetor(setorQuery);
   }, [selectedMapKey, showLojasBoxes, filterConservation]);
+
+  // Contagem analítica dos status para o setor corrente
+  const totaisStatusSetor = useMemo(() => {
+    const counts: Record<string, number> = {
+      TOTAL: lojasSetor.length,
+      VAZIO: 0,
+      OCUPADO_ADIMPLENTE: 0,
+      EM_ATRASO: 0,
+      DEVENDO_PARCELAS: 0,
+      EM_REFORMA: 0,
+      MONTANDO_INAUGURACAO: 0,
+      RESERVADO: 0,
+    };
+    for (const l of lojasSetor) {
+      const st = l.statusOcupacao || 'OCUPADO_ADIMPLENTE';
+      if (counts[st] !== undefined) counts[st]++;
+    }
+    return counts;
+  }, [lojasSetor]);
+
+  // Lista filtrada pelo tema de cor selecionado na legenda
+  const lojasExibidas = useMemo(() => {
+    if (filtroStatusOcupacao === 'TODOS') return lojasSetor;
+    return lojasSetor.filter((l) => (l.statusOcupacao || 'OCUPADO_ADIMPLENTE') === filtroStatusOcupacao);
+  }, [lojasSetor, filtroStatusOcupacao]);
 
   const initialVw = isMobile ? windowWidth - 32 : Math.min(windowWidth - 60, 1460);
   const initialVh = isMobile ? Math.max(460, windowHeight - 150) : Math.max(540, windowHeight - 170);
@@ -651,17 +731,17 @@ export const InteractiveMallMap: React.FC<InteractiveMallMapProps> = ({
         </View>
       )}
 
-      {/* Camada de Lojas & Boxes Reais das 8 Planilhas Oficiais */}
-      {lojasSetor.length > 0 && (
+      {/* Camada de Lojas & Boxes Reais das 8 Planilhas Oficiais (Pontos Coloridos por Tema e Status) */}
+      {lojasExibidas.length > 0 && (
         <View style={styles.pinsLayer} pointerEvents="box-none">
-          {lojasSetor.map((loja) => {
+          {lojasExibidas.map((loja) => {
             const pinScreenX = translate.x + loja.x * natural.width * scale;
             const pinScreenY = translate.y + loja.y * natural.height * scale;
-            const boxWidth = Math.min(22, Math.max(12, Math.round(14 * Math.pow(zoomRatio, 0.3))));
-            const boxHeight = Math.round(boxWidth * 1.35);
+            // Ponto circular elegante com escala progressiva por zoom
+            const dotSize = Math.min(24, Math.max(9, Math.round(11 * Math.pow(zoomRatio, 0.4))));
 
-            const posX = pinScreenX - boxWidth / 2;
-            const posY = pinScreenY - boxHeight;
+            const posX = pinScreenX - dotSize / 2;
+            const posY = pinScreenY - dotSize / 2;
 
             return (
               <TouchableOpacity
@@ -669,7 +749,7 @@ export const InteractiveMallMap: React.FC<InteractiveMallMapProps> = ({
                 id={`box-marker-${loja.numeroBox}`}
                 {...({ dataSet: { role: 'pin' } } as any)}
                 activeOpacity={0.7}
-                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
                 onPress={(e) => {
                   e.stopPropagation();
                   if (onSelectLoja) onSelectLoja(loja);
@@ -679,15 +759,17 @@ export const InteractiveMallMap: React.FC<InteractiveMallMapProps> = ({
                   {
                     left: posX,
                     top: posY,
-                    width: boxWidth,
-                    height: boxHeight,
+                    width: dotSize,
+                    height: dotSize,
                     zIndex: 25,
                   },
                 ]}
               >
-                <TeardropPin
-                  color={loja.statusOperacao === 'ATIVA' ? '#10b981' : '#64748b'}
-                  size={boxWidth}
+                <BoxDotMarker
+                  color={loja.corStatus || '#10b981'}
+                  size={dotSize}
+                  numeroBox={loja.numeroBox}
+                  zoomRatio={zoomRatio}
                 />
               </TouchableOpacity>
             );
@@ -716,6 +798,59 @@ export const InteractiveMallMap: React.FC<InteractiveMallMapProps> = ({
               size={pinWidth}
             />
           </View>
+        </View>
+      )}
+
+      {/* Barra de Temas e Legenda Interativa de Cores dos Boxes */}
+      {lojasSetor.length > 0 && (
+        <View style={styles.legendContainer}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.legendScroll}
+          >
+            <Text style={styles.legendTitle}>Temas:</Text>
+            {[
+              { key: 'TODOS', label: 'Todos', cor: '#38bdf8', count: totaisStatusSetor.TOTAL },
+              { key: 'VAZIO', label: 'Vazio', cor: '#ffffff', count: totaisStatusSetor.VAZIO },
+              { key: 'OCUPADO_ADIMPLENTE', label: 'Adimplente', cor: '#10b981', count: totaisStatusSetor.OCUPADO_ADIMPLENTE },
+              { key: 'EM_ATRASO', label: 'Em atraso (1 parc.)', cor: '#f59e0b', count: totaisStatusSetor.EM_ATRASO },
+              { key: 'DEVENDO_PARCELAS', label: 'Devendo >1 parc.', cor: '#ef4444', count: totaisStatusSetor.DEVENDO_PARCELAS },
+              { key: 'EM_REFORMA', label: 'Reforma', cor: '#f97316', count: totaisStatusSetor.EM_REFORMA },
+              { key: 'MONTANDO_INAUGURACAO', label: 'Inauguração', cor: '#8b5cf6', count: totaisStatusSetor.MONTANDO_INAUGURACAO },
+              { key: 'RESERVADO', label: 'Reservado', cor: '#0284c7', count: totaisStatusSetor.RESERVADO },
+            ].map((item) => {
+              const ativo = filtroStatusOcupacao === item.key;
+              const isWhite = item.cor === '#ffffff';
+              return (
+                <TouchableOpacity
+                  key={item.key}
+                  style={[styles.legendChip, ativo && styles.legendChipAtivo]}
+                  onPress={() => setFiltroStatusOcupacao(ativo && item.key !== 'TODOS' ? 'TODOS' : item.key)}
+                  activeOpacity={0.7}
+                >
+                  <View
+                    style={[
+                      styles.legendDot,
+                      {
+                        backgroundColor: item.cor,
+                        borderColor: isWhite ? '#94a3b8' : 'rgba(15, 23, 42, 0.7)',
+                        borderWidth: isWhite ? 1.5 : 0.5,
+                      },
+                    ]}
+                  />
+                  <Text style={[styles.legendChipLabel, ativo && styles.legendChipLabelAtivo]}>
+                    {item.label}
+                  </Text>
+                  <View style={[styles.legendBadge, ativo && styles.legendBadgeAtivo]}>
+                    <Text style={[styles.legendBadgeText, ativo && styles.legendBadgeTextAtivo]}>
+                      {item.count}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
         </View>
       )}
     </View>
@@ -780,6 +915,83 @@ const styles = StyleSheet.create({
     height: 6,
     borderRadius: 3,
     backgroundColor: '#FFFFFF',
+  },
+  legendContainer: {
+    position: 'absolute',
+    bottom: 12,
+    left: 12,
+    right: 12,
+    backgroundColor: 'rgba(15, 23, 42, 0.94)',
+    borderRadius: 30,
+    borderWidth: 1,
+    borderColor: 'rgba(51, 65, 85, 0.85)',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    zIndex: 40,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.45,
+    shadowRadius: 10,
+    elevation: 6,
+  },
+  legendScroll: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  legendTitle: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#94a3b8',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginRight: 4,
+  },
+  legendChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(30, 41, 59, 0.75)',
+    borderRadius: 20,
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    borderWidth: 1,
+    borderColor: '#334155',
+    gap: 6,
+  },
+  legendChipAtivo: {
+    backgroundColor: 'rgba(56, 189, 248, 0.15)',
+    borderColor: '#38bdf8',
+  },
+  legendDot: {
+    width: 9,
+    height: 9,
+    borderRadius: 5,
+  },
+  legendChipLabel: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#cbd5e1',
+  },
+  legendChipLabelAtivo: {
+    color: '#38bdf8',
+    fontWeight: '700',
+  },
+  legendBadge: {
+    backgroundColor: 'rgba(51, 65, 85, 0.6)',
+    borderRadius: 10,
+    paddingHorizontal: 6,
+    paddingVertical: 1,
+  },
+  legendBadgeAtivo: {
+    backgroundColor: '#38bdf8',
+  },
+  legendBadgeText: {
+    fontSize: 9,
+    fontWeight: '700',
+    color: '#94a3b8',
+  },
+  legendBadgeTextAtivo: {
+    color: '#0f172a',
   },
 });
 

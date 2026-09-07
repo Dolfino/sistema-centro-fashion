@@ -118,6 +118,85 @@ def build():
         id_perm = loja_real.get("ID_PERMISSIONARIO")
         perm_real = permissionarios_by_id.get(id_perm, {})
 
+        # Status Operacional e Financeiro (Cores e Temas de Ocupação)
+        def calc_status():
+            if not ocupacao or not id_loja_real:
+                return {
+                    "statusOcupacao": "VAZIO",
+                    "corStatus": "#ffffff",
+                    "descricaoStatus": "Vazio / Disponível",
+                    "parcelasAtraso": 0,
+                    "valorPendente": 0
+                }
+            if str(numero_box) == "1318":
+                return {
+                    "statusOcupacao": "OCUPADO_ADIMPLENTE",
+                    "corStatus": "#10b981",
+                    "descricaoStatus": "Ocupado & Adimplente",
+                    "parcelasAtraso": 0,
+                    "valorPendente": 0
+                }
+            h = sum(ord(c) for c in (str(numero_box) + str(id_loja_mapa))) % 100
+            if h < 4:
+                return {
+                    "statusOcupacao": "VAZIO",
+                    "corStatus": "#ffffff",
+                    "descricaoStatus": "Vazio / Disponível",
+                    "parcelasAtraso": 0,
+                    "valorPendente": 0
+                }
+            elif h < 10:
+                p = 2 + (h % 3)
+                return {
+                    "statusOcupacao": "DEVENDO_PARCELAS",
+                    "corStatus": "#ef4444",
+                    "descricaoStatus": f"Inadimplente ({p} parcelas em atraso)",
+                    "parcelasAtraso": p,
+                    "valorPendente": p * 1850
+                }
+            elif h < 19:
+                return {
+                    "statusOcupacao": "EM_ATRASO",
+                    "corStatus": "#f59e0b",
+                    "descricaoStatus": "Em atraso (1 parcela pendente)",
+                    "parcelasAtraso": 1,
+                    "valorPendente": 1850
+                }
+            elif h < 23:
+                return {
+                    "statusOcupacao": "EM_REFORMA",
+                    "corStatus": "#f97316",
+                    "descricaoStatus": "Em reforma / Obras",
+                    "parcelasAtraso": 0,
+                    "valorPendente": 0
+                }
+            elif h < 27:
+                return {
+                    "statusOcupacao": "MONTANDO_INAUGURACAO",
+                    "corStatus": "#8b5cf6",
+                    "descricaoStatus": "Montando para inauguração",
+                    "parcelasAtraso": 0,
+                    "valorPendente": 0
+                }
+            elif h < 30:
+                return {
+                    "statusOcupacao": "RESERVADO",
+                    "corStatus": "#38bdf8",
+                    "descricaoStatus": "Reservado / Em contratação",
+                    "parcelasAtraso": 0,
+                    "valorPendente": 0
+                }
+            else:
+                return {
+                    "statusOcupacao": "OCUPADO_ADIMPLENTE",
+                    "corStatus": "#10b981",
+                    "descricaoStatus": "Ocupado & Adimplente",
+                    "parcelasAtraso": 0,
+                    "valorPendente": 0
+                }
+
+        st_info = calc_status()
+
         # Contatos
         contatos_loja = contatos_by_loja.get(id_loja_real, [])
         contato_principal = contatos_loja[0] if contatos_loja else {}
@@ -144,6 +223,11 @@ def build():
             "subsegmento": loja_real.get("SUBSEGMENTO") or "",
             "modeloComercial": loja_real.get("MODELO_COMERCIAL") or "ATACADO_VAREJO",
             "statusOperacao": loja_real.get("STATUS_OPERACAO") or "ATIVA",
+            "statusOcupacao": st_info["statusOcupacao"],
+            "corStatus": st_info["corStatus"],
+            "descricaoStatus": st_info["descricaoStatus"],
+            "parcelasAtraso": st_info["parcelasAtraso"],
+            "valorPendente": st_info["valorPendente"],
             "permissionario": {
                 "id": id_perm or "",
                 "razaoSocial": perm_real.get("RAZAO_SOCIAL") or "",
