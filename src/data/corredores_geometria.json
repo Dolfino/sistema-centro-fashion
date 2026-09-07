@@ -1,0 +1,1238 @@
+[
+  {
+    "id": "COR-AZ-RGVSM",
+    "nome": "Rua Governador Sampaio",
+    "codigo": "RGVSM",
+    "idMapaSetor": "MAP-CFF-N1-AZUL",
+    "pontos": [
+      {
+        "x": 0.345832,
+        "y": 0.08
+      },
+      {
+        "x": 0.3457885367,
+        "y": 0.9104702629
+      }
+    ]
+  },
+  {
+    "id": "COR-AZ-RCNDD",
+    "nome": "Rua Conde D'Eu",
+    "codigo": "RCNDD",
+    "idMapaSetor": "MAP-CFF-N1-AZUL",
+    "pontos": [
+      {
+        "x": 0.400209,
+        "y": 0.08
+      },
+      {
+        "x": 0.400209,
+        "y": 0.9
+      }
+    ]
+  },
+  {
+    "id": "COR-AZ-RGNBZ",
+    "nome": "Rua General Bezerril",
+    "codigo": "RGNBZ",
+    "idMapaSetor": "MAP-CFF-N1-AZUL",
+    "pontos": [
+      {
+        "x": 0.452588,
+        "y": 0.08
+      },
+      {
+        "x": 0.452588,
+        "y": 0.9
+      }
+    ]
+  },
+  {
+    "id": "COR-AZ-RFLPX",
+    "nome": "Rua Floriano Peixoto",
+    "codigo": "RFLPX",
+    "idMapaSetor": "MAP-CFF-N1-AZUL",
+    "pontos": [
+      {
+        "x": 0.504753,
+        "y": 0.08
+      },
+      {
+        "x": 0.504753,
+        "y": 0.9
+      }
+    ]
+  },
+  {
+    "id": "COR-AZ-RMJFC",
+    "nome": "Rua Major Facundo",
+    "codigo": "RMJFC",
+    "idMapaSetor": "MAP-CFF-N1-AZUL",
+    "pontos": [
+      {
+        "x": 0.558629,
+        "y": 0.08
+      },
+      {
+        "x": 0.558629,
+        "y": 0.9
+      }
+    ]
+  },
+  {
+    "id": "COR-AZ-RBDRB",
+    "nome": "Rua Barão do Rio Branco",
+    "codigo": "RBDRB",
+    "idMapaSetor": "MAP-CFF-N1-AZUL",
+    "pontos": [
+      {
+        "x": 0.613577,
+        "y": 0.08
+      },
+      {
+        "x": 0.613577,
+        "y": 0.9
+      }
+    ]
+  },
+  {
+    "id": "COR-AZ-RSNPM",
+    "nome": "Rua Senador Pompeu",
+    "codigo": "RSNPM",
+    "idMapaSetor": "MAP-CFF-N1-AZUL",
+    "pontos": [
+      {
+        "x": 0.669518,
+        "y": 0.08
+      },
+      {
+        "x": 0.669518,
+        "y": 0.9
+      }
+    ]
+  },
+  {
+    "id": "COR-AZ-RGNSM",
+    "nome": "Rua General Sampaio",
+    "codigo": "RGNSM",
+    "idMapaSetor": "MAP-CFF-N1-AZUL",
+    "pontos": [
+      {
+        "x": 0.723469,
+        "y": 0.08
+      },
+      {
+        "x": 0.723469,
+        "y": 0.9
+      }
+    ]
+  },
+  {
+    "id": "COR-AZ-R24DM",
+    "nome": "Rua 24 de Maio",
+    "codigo": "R24DM",
+    "idMapaSetor": "MAP-CFF-N1-AZUL",
+    "pontos": [
+      {
+        "x": 0.777345,
+        "y": 0.08
+      },
+      {
+        "x": 0.777345,
+        "y": 0.9
+      }
+    ]
+  },
+  {
+    "id": "COR-AZ-RTRGN",
+    "nome": "Rua Tristão Gonçalves",
+    "codigo": "RTRGN",
+    "idMapaSetor": "MAP-CFF-N1-AZUL",
+    "pontos": [
+      {
+        "x": 0.83122,
+        "y": 0.08
+      },
+      {
+        "x": 0.83122,
+        "y": 0.9
+      }
+    ]
+  },
+  {
+    "id": "COR-AZ-AVIMP",
+    "nome": "Avenida do Imperador",
+    "codigo": "AVIMP",
+    "idMapaSetor": "MAP-CFF-N1-AZUL",
+    "pontos": [
+      {
+        "x": 0.885096,
+        "y": 0.08
+      },
+      {
+        "x": 0.885096,
+        "y": 0.9
+      }
+    ]
+  },
+  {
+    "id": "COR-AZ-ADMMN",
+    "nome": "Avenida Dom Manuel",
+    "codigo": "ADMMN",
+    "idMapaSetor": "MAP-CFF-N1-AZUL",
+    "pontos": [
+      {
+        "x": 0.145148,
+        "y": 0.08
+      },
+      {
+        "x": 0.145148,
+        "y": 0.9
+      }
+    ]
+  },
+  {
+    "id": "COR-AZ-RCRFR",
+    "nome": "Rua Coronel Ferraz",
+    "codigo": "RCRFR",
+    "idMapaSetor": "MAP-CFF-N1-AZUL",
+    "pontos": [
+      {
+        "x": 0.238149,
+        "y": 0.08
+      },
+      {
+        "x": 0.238149,
+        "y": 0.9
+      }
+    ]
+  },
+  {
+    "id": "COR-AZ-RSJS",
+    "nome": "Rua São José",
+    "codigo": "RSJS",
+    "idMapaSetor": "MAP-CFF-N1-AZUL",
+    "pontos": [
+      {
+        "x": 0.293381,
+        "y": 0.08
+      },
+      {
+        "x": 0.293381,
+        "y": 0.9
+      }
+    ]
+  },
+  {
+    "id": "COR-AZ-RPRIS",
+    "nome": "Rua Princesa Isabel",
+    "codigo": "RPRIS",
+    "idMapaSetor": "MAP-CFF-N1-AZUL",
+    "pontos": [
+      {
+        "x": 0.938974,
+        "y": 0.08
+      },
+      {
+        "x": 0.938974,
+        "y": 0.9
+      }
+    ]
+  },
+  {
+    "id": "COR-AZ-AVALN",
+    "nome": "Avenida Alberto Nepomuceno",
+    "codigo": "AVALN",
+    "idMapaSetor": "MAP-CFF-N1-AZUL",
+    "pontos": [
+      {
+        "x": 0.1696254623,
+        "y": 0.9184808947
+      },
+      {
+        "x": 0.9391988606,
+        "y": 0.9175941576
+      }
+    ]
+  },
+  {
+    "id": "COR-AZ-R2DMR",
+    "nome": "Rua 25 de Março",
+    "codigo": "R2DMR",
+    "idMapaSetor": "MAP-CFF-N1-AZUL",
+    "pontos": [
+      {
+        "x": 0.170592,
+        "y": 0.22
+      },
+      {
+        "x": 0.1712458199,
+        "y": 0.6951559831
+      },
+      {
+        "x": 0.170592,
+        "y": 0.9
+      }
+    ]
+  },
+  {
+    "id": "COR-VD-RANPM",
+    "nome": "Rua Antônio Pompeu",
+    "codigo": "RANPM",
+    "idMapaSetor": "MAP-CFF-N1-VERDE",
+    "pontos": [
+      {
+        "x": 0.150965,
+        "y": 0.08
+      },
+      {
+        "x": 0.150965,
+        "y": 0.9
+      }
+    ]
+  },
+  {
+    "id": "COR-VD-RMDAL",
+    "nome": "Rua Meton de Alencar",
+    "codigo": "RMDAL",
+    "idMapaSetor": "MAP-CFF-N1-VERDE",
+    "pontos": [
+      {
+        "x": 0.189878,
+        "y": 0.08
+      },
+      {
+        "x": 0.189878,
+        "y": 0.9
+      }
+    ]
+  },
+  {
+    "id": "COR-VD-RCDQR",
+    "nome": "Rua Clarindo de Queiroz",
+    "codigo": "RCDQR",
+    "idMapaSetor": "MAP-CFF-N1-VERDE",
+    "pontos": [
+      {
+        "x": 0.248458,
+        "y": 0.08
+      },
+      {
+        "x": 0.248458,
+        "y": 0.9
+      }
+    ]
+  },
+  {
+    "id": "COR-VD-ADDCX",
+    "nome": "Avenida Duque de Caxias",
+    "codigo": "ADDCX",
+    "idMapaSetor": "MAP-CFF-N1-VERDE",
+    "pontos": [
+      {
+        "x": 0.309032,
+        "y": 0.08
+      },
+      {
+        "x": 0.309032,
+        "y": 0.9
+      }
+    ]
+  },
+  {
+    "id": "COR-VD-RDPDI",
+    "nome": "Rua Dom Pedro I",
+    "codigo": "RDPDI",
+    "idMapaSetor": "MAP-CFF-N1-VERDE",
+    "pontos": [
+      {
+        "x": 0.364766,
+        "y": 0.08
+      },
+      {
+        "x": 0.364766,
+        "y": 0.9
+      }
+    ]
+  },
+  {
+    "id": "COR-VD-RPDPR",
+    "nome": "Rua Pedro Pereira",
+    "codigo": "RPDPR",
+    "idMapaSetor": "MAP-CFF-N1-VERDE",
+    "pontos": [
+      {
+        "x": 0.430185,
+        "y": 0.08
+      },
+      {
+        "x": 0.430185,
+        "y": 0.9
+      }
+    ]
+  },
+  {
+    "id": "COR-VD-RLBBR",
+    "nome": "Rua Liberato Barroso",
+    "codigo": "RLBBR",
+    "idMapaSetor": "MAP-CFF-N1-VERDE",
+    "pontos": [
+      {
+        "x": 0.490334,
+        "y": 0.08
+      },
+      {
+        "x": 0.490334,
+        "y": 0.9
+      }
+    ]
+  },
+  {
+    "id": "COR-VD-RGLRC",
+    "nome": "Rua Guilherme Rocha",
+    "codigo": "RGLRC",
+    "idMapaSetor": "MAP-CFF-N1-VERDE",
+    "pontos": [
+      {
+        "x": 0.554191,
+        "y": 0.08
+      },
+      {
+        "x": 0.554191,
+        "y": 0.9
+      }
+    ]
+  },
+  {
+    "id": "COR-VD-RSPL",
+    "nome": "Rua São Paulo",
+    "codigo": "RSPL",
+    "idMapaSetor": "MAP-CFF-N1-VERDE",
+    "pontos": [
+      {
+        "x": 0.61106,
+        "y": 0.08
+      },
+      {
+        "x": 0.61106,
+        "y": 0.9
+      }
+    ]
+  },
+  {
+    "id": "COR-VD-RSNAL",
+    "nome": "Rua Senador Alencar",
+    "codigo": "RSNAL",
+    "idMapaSetor": "MAP-CFF-N1-VERDE",
+    "pontos": [
+      {
+        "x": 0.672778,
+        "y": 0.08
+      },
+      {
+        "x": 0.672778,
+        "y": 0.9
+      }
+    ]
+  },
+  {
+    "id": "COR-VD-RCESL",
+    "nome": "Rua Castro e Silva",
+    "codigo": "RCESL",
+    "idMapaSetor": "MAP-CFF-N1-VERDE",
+    "pontos": [
+      {
+        "x": 0.733494,
+        "y": 0.08
+      },
+      {
+        "x": 0.733494,
+        "y": 0.9
+      }
+    ]
+  },
+  {
+    "id": "COR-VD-RDRJM",
+    "nome": "Rua Doutor João Moreira",
+    "codigo": "RDRJM",
+    "idMapaSetor": "MAP-CFF-N1-VERDE",
+    "pontos": [
+      {
+        "x": 0.794074,
+        "y": 0.08
+      },
+      {
+        "x": 0.794074,
+        "y": 0.9
+      }
+    ]
+  },
+  {
+    "id": "COR-VD-RSNJG",
+    "nome": "Rua Senador Jaguaribe",
+    "codigo": "RSNJG",
+    "idMapaSetor": "MAP-CFF-N1-VERDE",
+    "pontos": [
+      {
+        "x": 0.860352,
+        "y": 0.08
+      },
+      {
+        "x": 0.860352,
+        "y": 0.9
+      }
+    ]
+  },
+  {
+    "id": "COR-VD-APCBR",
+    "nome": "Avenida Presidente Castelo Branco",
+    "codigo": "APCBR",
+    "idMapaSetor": "MAP-CFF-N1-VERDE",
+    "pontos": [
+      {
+        "x": 0.89135,
+        "y": 0.08
+      },
+      {
+        "x": 0.89135,
+        "y": 0.9
+      }
+    ]
+  },
+  {
+    "id": "COR-BR-RANPM",
+    "nome": "Rua Antônio Pompeu",
+    "codigo": "RANPM",
+    "idMapaSetor": "MAP-CFF-N2-BRANCO",
+    "pontos": [
+      {
+        "x": 0.156135,
+        "y": 0.1
+      },
+      {
+        "x": 0.156135,
+        "y": 0.61
+      }
+    ]
+  },
+  {
+    "id": "COR-BR-RMDAL",
+    "nome": "Rua Meton de Alencar",
+    "codigo": "RMDAL",
+    "idMapaSetor": "MAP-CFF-N2-BRANCO",
+    "pontos": [
+      {
+        "x": 0.18863,
+        "y": 0.1
+      },
+      {
+        "x": 0.18863,
+        "y": 0.61
+      }
+    ]
+  },
+  {
+    "id": "COR-BR-RLBBR",
+    "nome": "Rua Liberato Barroso",
+    "codigo": "RLBBR",
+    "idMapaSetor": "MAP-CFF-N2-BRANCO",
+    "pontos": [
+      {
+        "x": 0.486234,
+        "y": 0.1
+      },
+      {
+        "x": 0.486234,
+        "y": 0.61
+      }
+    ]
+  },
+  {
+    "id": "COR-BR-RGLRC",
+    "nome": "Rua Guilherme Rocha",
+    "codigo": "RGLRC",
+    "idMapaSetor": "MAP-CFF-N2-BRANCO",
+    "pontos": [
+      {
+        "x": 0.555224,
+        "y": 0.1
+      },
+      {
+        "x": 0.555224,
+        "y": 0.61
+      }
+    ]
+  },
+  {
+    "id": "COR-BR-RSNJG",
+    "nome": "Rua Senador Jaguaribe",
+    "codigo": "RSNJG",
+    "idMapaSetor": "MAP-CFF-N2-BRANCO",
+    "pontos": [
+      {
+        "x": 0.85639,
+        "y": 0.1
+      },
+      {
+        "x": 0.85639,
+        "y": 0.61
+      }
+    ]
+  },
+  {
+    "id": "COR-BR-APCBR",
+    "nome": "Avenida Presidente Castelo Branco",
+    "codigo": "APCBR",
+    "idMapaSetor": "MAP-CFF-N2-BRANCO",
+    "pontos": [
+      {
+        "x": 0.888747,
+        "y": 0.1
+      },
+      {
+        "x": 0.888747,
+        "y": 0.61
+      }
+    ]
+  },
+  {
+    "id": "COR-BR-A13DM",
+    "nome": "Avenida 13 de Maio",
+    "codigo": "A13DM",
+    "idMapaSetor": "MAP-CFF-N2-BRANCO",
+    "pontos": [
+      {
+        "x": 0.2,
+        "y": 0.106097
+      },
+      {
+        "x": 0.86,
+        "y": 0.106097
+      }
+    ]
+  },
+  {
+    "id": "COR-BR-TVBTR",
+    "nome": "Travessa Baturité",
+    "codigo": "TVBTR",
+    "idMapaSetor": "MAP-CFF-N2-BRANCO",
+    "pontos": [
+      {
+        "x": 0.2,
+        "y": 0.180987
+      },
+      {
+        "x": 0.86,
+        "y": 0.180987
+      }
+    ]
+  },
+  {
+    "id": "COR-BR-AVDMO",
+    "nome": "Avenida Domingos Olímpio",
+    "codigo": "AVDMO",
+    "idMapaSetor": "MAP-CFF-N2-BRANCO",
+    "pontos": [
+      {
+        "x": 0.2,
+        "y": 0.330923
+      },
+      {
+        "x": 0.86,
+        "y": 0.330923
+      }
+    ]
+  },
+  {
+    "id": "COR-BR-TVPR",
+    "nome": "Travessa Pará",
+    "codigo": "TVPR",
+    "idMapaSetor": "MAP-CFF-N2-BRANCO",
+    "pontos": [
+      {
+        "x": 0.2,
+        "y": 0.47209
+      },
+      {
+        "x": 0.86,
+        "y": 0.47209
+      }
+    ]
+  },
+  {
+    "id": "COR-BR-AVMTB",
+    "nome": "Avenida Monsenhor Tabosa",
+    "codigo": "AVMTB",
+    "idMapaSetor": "MAP-CFF-N2-BRANCO",
+    "pontos": [
+      {
+        "x": 0.2,
+        "y": 0.577019
+      },
+      {
+        "x": 0.86,
+        "y": 0.577019
+      }
+    ]
+  },
+  {
+    "id": "COR-AM-R2DMR",
+    "nome": "Rua 25 de Março",
+    "codigo": "R2DMR",
+    "idMapaSetor": "MAP-CFF-N2-AMARELO",
+    "pontos": [
+      {
+        "x": 0.182707,
+        "y": 0.22
+      },
+      {
+        "x": 0.182707,
+        "y": 0.82
+      }
+    ]
+  },
+  {
+    "id": "COR-AM-RCRFR",
+    "nome": "Rua Coronel Ferraz",
+    "codigo": "RCRFR",
+    "idMapaSetor": "MAP-CFF-N2-AMARELO",
+    "pontos": [
+      {
+        "x": 0.226749,
+        "y": 0.22
+      },
+      {
+        "x": 0.226749,
+        "y": 0.82
+      }
+    ]
+  },
+  {
+    "id": "COR-AM-RGVSM",
+    "nome": "Rua Governador Sampaio",
+    "codigo": "RGVSM",
+    "idMapaSetor": "MAP-CFF-N2-AMARELO",
+    "pontos": [
+      {
+        "x": 0.317114,
+        "y": 0.22
+      },
+      {
+        "x": 0.317114,
+        "y": 0.82
+      }
+    ]
+  },
+  {
+    "id": "COR-AM-RSJS",
+    "nome": "Rua São José",
+    "codigo": "RSJS",
+    "idMapaSetor": "MAP-CFF-N2-AMARELO",
+    "pontos": [
+      {
+        "x": 0.272215,
+        "y": 0.22
+      },
+      {
+        "x": 0.272215,
+        "y": 0.82
+      }
+    ]
+  },
+  {
+    "id": "COR-AM-RCNDD",
+    "nome": "Rua Conde D'Eu",
+    "codigo": "RCNDD",
+    "idMapaSetor": "MAP-CFF-N2-AMARELO",
+    "pontos": [
+      {
+        "x": 0.363295,
+        "y": 0.22
+      },
+      {
+        "x": 0.363295,
+        "y": 0.82
+      }
+    ]
+  },
+  {
+    "id": "COR-AM-RGNBZ",
+    "nome": "Rua General Bezerril",
+    "codigo": "RGNBZ",
+    "idMapaSetor": "MAP-CFF-N2-AMARELO",
+    "pontos": [
+      {
+        "x": 0.407334,
+        "y": 0.22
+      },
+      {
+        "x": 0.407334,
+        "y": 0.82
+      }
+    ]
+  },
+  {
+    "id": "COR-AM-RFLPX",
+    "nome": "Rua Floriano Peixoto",
+    "codigo": "RFLPX",
+    "idMapaSetor": "MAP-CFF-N2-AMARELO",
+    "pontos": [
+      {
+        "x": 0.453087,
+        "y": 0.22
+      },
+      {
+        "x": 0.453087,
+        "y": 0.82
+      }
+    ]
+  },
+  {
+    "id": "COR-AM-RMJFC",
+    "nome": "Rua Major Facundo",
+    "codigo": "RMJFC",
+    "idMapaSetor": "MAP-CFF-N2-AMARELO",
+    "pontos": [
+      {
+        "x": 0.499127,
+        "y": 0.22
+      },
+      {
+        "x": 0.499127,
+        "y": 0.82
+      }
+    ]
+  },
+  {
+    "id": "COR-AM-RBDRB",
+    "nome": "Rua Barão do Rio Branco",
+    "codigo": "RBDRB",
+    "idMapaSetor": "MAP-CFF-N2-AMARELO",
+    "pontos": [
+      {
+        "x": 0.544163,
+        "y": 0.22
+      },
+      {
+        "x": 0.544163,
+        "y": 0.82
+      }
+    ]
+  },
+  {
+    "id": "COR-AM-RSNPM",
+    "nome": "Rua Senador Pompeu",
+    "codigo": "RSNPM",
+    "idMapaSetor": "MAP-CFF-N2-AMARELO",
+    "pontos": [
+      {
+        "x": 0.58892,
+        "y": 0.22
+      },
+      {
+        "x": 0.58892,
+        "y": 0.82
+      }
+    ]
+  },
+  {
+    "id": "COR-AM-RGNSM",
+    "nome": "Rua General Sampaio",
+    "codigo": "RGNSM",
+    "idMapaSetor": "MAP-CFF-N2-AMARELO",
+    "pontos": [
+      {
+        "x": 0.635671,
+        "y": 0.22
+      },
+      {
+        "x": 0.635671,
+        "y": 0.82
+      }
+    ]
+  },
+  {
+    "id": "COR-AM-R24DM",
+    "nome": "Rua 24 de Maio",
+    "codigo": "R24DM",
+    "idMapaSetor": "MAP-CFF-N2-AMARELO",
+    "pontos": [
+      {
+        "x": 0.681422,
+        "y": 0.22
+      },
+      {
+        "x": 0.681422,
+        "y": 0.82
+      }
+    ]
+  },
+  {
+    "id": "COR-AM-RTRGN",
+    "nome": "Rua Tristão Gonçalves",
+    "codigo": "RTRGN",
+    "idMapaSetor": "MAP-CFF-N2-AMARELO",
+    "pontos": [
+      {
+        "x": 0.726177,
+        "y": 0.22
+      },
+      {
+        "x": 0.726177,
+        "y": 0.82
+      }
+    ]
+  },
+  {
+    "id": "COR-AM-AVIMP",
+    "nome": "Avenida do Imperador",
+    "codigo": "AVIMP",
+    "idMapaSetor": "MAP-CFF-N2-AMARELO",
+    "pontos": [
+      {
+        "x": 0.765089,
+        "y": 0.22
+      },
+      {
+        "x": 0.765089,
+        "y": 0.82
+      }
+    ]
+  },
+  {
+    "id": "COR-AM-RPRIS",
+    "nome": "Rua Princesa Isabel",
+    "codigo": "RPRIS",
+    "idMapaSetor": "MAP-CFF-N2-AMARELO",
+    "pontos": [
+      {
+        "x": 0.798797,
+        "y": 0.22
+      },
+      {
+        "x": 0.798797,
+        "y": 0.82
+      }
+    ]
+  },
+  {
+    "id": "COR-AM-AVCRP",
+    "nome": "Avenida Carapinima",
+    "codigo": "AVCRP",
+    "idMapaSetor": "MAP-CFF-N2-AMARELO",
+    "pontos": [
+      {
+        "x": 0.2,
+        "y": 0.817569
+      },
+      {
+        "x": 0.86,
+        "y": 0.817569
+      }
+    ]
+  },
+  {
+    "id": "COR-AM-RJSA",
+    "nome": "Rua José Avelino",
+    "codigo": "RJSA",
+    "idMapaSetor": "MAP-CFF-N2-AMARELO",
+    "pontos": [
+      {
+        "x": 0.2,
+        "y": 0.89357
+      },
+      {
+        "x": 0.86,
+        "y": 0.89357
+      }
+    ]
+  },
+  {
+    "id": "COR-AM-AVALN",
+    "nome": "Avenida Alberto Nepomuceno",
+    "codigo": "AVALN",
+    "idMapaSetor": "MAP-CFF-N2-AMARELO",
+    "pontos": [
+      {
+        "x": 0.2,
+        "y": 0.94054
+      },
+      {
+        "x": 0.86,
+        "y": 0.94054
+      }
+    ]
+  },
+  {
+    "id": "COR-RX-R2DMR",
+    "nome": "Rua 25 de Março",
+    "codigo": "R2DMR",
+    "idMapaSetor": "MAP-CFF-N3-ROXO",
+    "pontos": [
+      {
+        "x": 0.1998,
+        "y": 0.22
+      },
+      {
+        "x": 0.1998,
+        "y": 0.82
+      }
+    ]
+  },
+  {
+    "id": "COR-RX-RCRFR",
+    "nome": "Rua Coronel Ferraz",
+    "codigo": "RCRFR",
+    "idMapaSetor": "MAP-CFF-N3-ROXO",
+    "pontos": [
+      {
+        "x": 0.2439,
+        "y": 0.22
+      },
+      {
+        "x": 0.2439,
+        "y": 0.82
+      }
+    ]
+  },
+  {
+    "id": "COR-RX-RGVSM",
+    "nome": "Rua Governador Sampaio",
+    "codigo": "RGVSM",
+    "idMapaSetor": "MAP-CFF-N3-ROXO",
+    "pontos": [
+      {
+        "x": 0.3342,
+        "y": 0.22
+      },
+      {
+        "x": 0.3342,
+        "y": 0.82
+      }
+    ]
+  },
+  {
+    "id": "COR-RX-RSJS",
+    "nome": "Rua São José",
+    "codigo": "RSJS",
+    "idMapaSetor": "MAP-CFF-N3-ROXO",
+    "pontos": [
+      {
+        "x": 0.2893,
+        "y": 0.22
+      },
+      {
+        "x": 0.2893,
+        "y": 0.82
+      }
+    ]
+  },
+  {
+    "id": "COR-RX-RCNDD",
+    "nome": "Rua Conde D'Eu",
+    "codigo": "RCNDD",
+    "idMapaSetor": "MAP-CFF-N3-ROXO",
+    "pontos": [
+      {
+        "x": 0.3804,
+        "y": 0.22
+      },
+      {
+        "x": 0.3804,
+        "y": 0.82
+      }
+    ]
+  },
+  {
+    "id": "COR-RX-RGNBZ",
+    "nome": "Rua General Bezerril",
+    "codigo": "RGNBZ",
+    "idMapaSetor": "MAP-CFF-N3-ROXO",
+    "pontos": [
+      {
+        "x": 0.4244,
+        "y": 0.22
+      },
+      {
+        "x": 0.4244,
+        "y": 0.82
+      }
+    ]
+  },
+  {
+    "id": "COR-RX-RFLPX",
+    "nome": "Rua Floriano Peixoto",
+    "codigo": "RFLPX",
+    "idMapaSetor": "MAP-CFF-N3-ROXO",
+    "pontos": [
+      {
+        "x": 0.4702,
+        "y": 0.22
+      },
+      {
+        "x": 0.4702,
+        "y": 0.82
+      }
+    ]
+  },
+  {
+    "id": "COR-RX-RMJFC",
+    "nome": "Rua Major Facundo",
+    "codigo": "RMJFC",
+    "idMapaSetor": "MAP-CFF-N3-ROXO",
+    "pontos": [
+      {
+        "x": 0.5162,
+        "y": 0.22
+      },
+      {
+        "x": 0.5162,
+        "y": 0.82
+      }
+    ]
+  },
+  {
+    "id": "COR-RX-RBDRB",
+    "nome": "Rua Barão do Rio Branco",
+    "codigo": "RBDRB",
+    "idMapaSetor": "MAP-CFF-N3-ROXO",
+    "pontos": [
+      {
+        "x": 0.5613,
+        "y": 0.22
+      },
+      {
+        "x": 0.5613,
+        "y": 0.82
+      }
+    ]
+  },
+  {
+    "id": "COR-RX-RSNPM",
+    "nome": "Rua Senador Pompeu",
+    "codigo": "RSNPM",
+    "idMapaSetor": "MAP-CFF-N3-ROXO",
+    "pontos": [
+      {
+        "x": 0.6061,
+        "y": 0.22
+      },
+      {
+        "x": 0.6061,
+        "y": 0.82
+      }
+    ]
+  },
+  {
+    "id": "COR-RX-RGNSM",
+    "nome": "Rua General Sampaio",
+    "codigo": "RGNSM",
+    "idMapaSetor": "MAP-CFF-N3-ROXO",
+    "pontos": [
+      {
+        "x": 0.6528,
+        "y": 0.22
+      },
+      {
+        "x": 0.6528,
+        "y": 0.82
+      }
+    ]
+  },
+  {
+    "id": "COR-RX-R24DM",
+    "nome": "Rua 24 de Maio",
+    "codigo": "R24DM",
+    "idMapaSetor": "MAP-CFF-N3-ROXO",
+    "pontos": [
+      {
+        "x": 0.6985,
+        "y": 0.22
+      },
+      {
+        "x": 0.6985,
+        "y": 0.82
+      }
+    ]
+  },
+  {
+    "id": "COR-RX-RTRGN",
+    "nome": "Rua Tristão Gonçalves",
+    "codigo": "RTRGN",
+    "idMapaSetor": "MAP-CFF-N3-ROXO",
+    "pontos": [
+      {
+        "x": 0.7433,
+        "y": 0.22
+      },
+      {
+        "x": 0.7433,
+        "y": 0.82
+      }
+    ]
+  },
+  {
+    "id": "COR-RX-AVIMP",
+    "nome": "Avenida do Imperador",
+    "codigo": "AVIMP",
+    "idMapaSetor": "MAP-CFF-N3-ROXO",
+    "pontos": [
+      {
+        "x": 0.7869,
+        "y": 0.22
+      },
+      {
+        "x": 0.7869,
+        "y": 0.82
+      }
+    ]
+  },
+  {
+    "id": "COR-RX-RPRIS",
+    "nome": "Rua Princesa Isabel",
+    "codigo": "RPRIS",
+    "idMapaSetor": "MAP-CFF-N3-ROXO",
+    "pontos": [
+      {
+        "x": 0.8145,
+        "y": 0.22
+      },
+      {
+        "x": 0.8145,
+        "y": 0.82
+      }
+    ]
+  },
+  {
+    "id": "COR-RX-AVCRP",
+    "nome": "Avenida Carapinima",
+    "codigo": "AVCRP",
+    "idMapaSetor": "MAP-CFF-N3-ROXO",
+    "pontos": [
+      {
+        "x": 0.2,
+        "y": 0.814
+      },
+      {
+        "x": 0.86,
+        "y": 0.814
+      }
+    ]
+  },
+  {
+    "id": "COR-RX-RJSA",
+    "nome": "Rua José Avelino",
+    "codigo": "RJSA",
+    "idMapaSetor": "MAP-CFF-N3-ROXO",
+    "pontos": [
+      {
+        "x": 0.2,
+        "y": 0.879
+      },
+      {
+        "x": 0.86,
+        "y": 0.879
+      }
+    ]
+  }
+]

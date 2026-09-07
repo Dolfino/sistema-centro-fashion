@@ -42,6 +42,7 @@ import { RegistroAuditoriaVenda } from '../src/services/auditoriaVendasService';
 import { CentralAnaliticaModal } from '../src/components/CentralAnaliticaModal';
 import { AdminModal } from '../src/components/AdminModal';
 import { CentralCartograficaModal } from '../src/components/CentralCartograficaModal';
+import { CartografiaService } from '../src/services/cartografiaService';
 import { AtivoMallModal } from '../src/components/AtivoMallModal';
 import { AtivoMidiaPonto } from '../src/services/ativoMallService';
 import { CampanhaCentralModal } from '../src/components/CampanhaCentralModal';
@@ -169,6 +170,7 @@ export default function LegacyMainShellScreen() {
   const [formPanelVisible, setFormPanelVisible] = useState<boolean>(false);
   const [formMode, setFormMode] = useState<'NOVO' | 'EDITAR'>('NOVO');
   const [editingPin, setEditingPin] = useState<SignagePin | null>(null);
+  const [identifiedLocationText, setIdentifiedLocationText] = useState<string>('');
 
   // Estados de Rede e Offline/Outbox (UI-4)
   const [networkState, setNetworkState] = useState<'ONLINE' | 'DEGRADADO' | 'OFFLINE' | 'RECUPERANDO'>('ONLINE');
@@ -366,7 +368,11 @@ export default function LegacyMainShellScreen() {
     if (itemId === 'novo') {
       setSelectedPin(null);
       setPositioningMode(true);
-      setDraftPin({ normalizedX: 0.35, normalizedY: 0.45 });
+      const defX = 0.35;
+      const defY = 0.45;
+      setDraftPin({ normalizedX: defX, normalizedY: defY });
+      const loc = CartografiaService.identificarLocalizacaoNoMapa(selectedMapKey, defX, defY);
+      setIdentifiedLocationText(loc.textoCompleto);
       setLocalCardVisible(true);
     } else if (itemId === 'camadasBtn') {
       setCamadasOpen(true);
@@ -478,7 +484,11 @@ export default function LegacyMainShellScreen() {
     setSelectedPin(null);
     setEditingPin(null);
     setPositioningMode(false);
-    setDraftPin({ normalizedX: loja.x || 0.35, normalizedY: loja.y || 0.45 });
+    const x = loja.x || 0.35;
+    const y = loja.y || 0.45;
+    setDraftPin({ normalizedX: x, normalizedY: y });
+    const loc = CartografiaService.identificarLocalizacaoNoMapa(selectedMapKey, x, y);
+    setIdentifiedLocationText(loc.textoCompleto);
     setFormMode('NOVO');
     setFormPanelVisible(true);
   };
@@ -487,7 +497,11 @@ export default function LegacyMainShellScreen() {
     setSelectedPin(null);
     setEditingPin(null);
     setPositioningMode(false);
-    setDraftPin({ normalizedX: ponto.x || 0.35, normalizedY: ponto.y || 0.45 });
+    const x = ponto.x || 0.35;
+    const y = ponto.y || 0.45;
+    setDraftPin({ normalizedX: x, normalizedY: y });
+    const loc = CartografiaService.identificarLocalizacaoNoMapa(selectedMapKey, x, y);
+    setIdentifiedLocationText(loc.textoCompleto);
     setFormMode('NOVO');
     setFormPanelVisible(true);
   };
@@ -539,6 +553,8 @@ export default function LegacyMainShellScreen() {
   const handleMapClick = (coords: { normalizedX: number; normalizedY: number }) => {
     if (!positioningMode) return;
     setDraftPin({ normalizedX: coords.normalizedX, normalizedY: coords.normalizedY });
+    const loc = CartografiaService.identificarLocalizacaoNoMapa(selectedMapKey, coords.normalizedX, coords.normalizedY);
+    setIdentifiedLocationText(loc.textoCompleto);
     setLocalCardVisible(true);
   };
 
@@ -553,6 +569,7 @@ export default function LegacyMainShellScreen() {
   const handleCancelPositioning = () => {
     setPositioningMode(false);
     setDraftPin(null);
+    setIdentifiedLocationText('');
     setLocalCardVisible(false);
   };
 
@@ -1414,6 +1431,7 @@ export default function LegacyMainShellScreen() {
             sectorName={mapsList.find((m) => m.key === selectedMapKey)?.label || 'Setor Azul'}
             normalizedX={draftPin?.normalizedX || 0}
             normalizedY={draftPin?.normalizedY || 0}
+            localizacaoTexto={identifiedLocationText}
             onCancel={handleCancelPositioning}
             onConfirm={handleConfirmLocation}
           />
@@ -1445,6 +1463,7 @@ export default function LegacyMainShellScreen() {
         confirmedSector={mapsList.find((m) => m.key === selectedMapKey)?.label || 'Setor Azul'}
         normalizedX={draftPin?.normalizedX || editingPin?.normalizedX || 0.35}
         normalizedY={draftPin?.normalizedY || editingPin?.normalizedY || 0.45}
+        identifiedLocationText={identifiedLocationText}
         onClose={() => setFormPanelVisible(false)}
         onSave={handleSaveForm}
       />

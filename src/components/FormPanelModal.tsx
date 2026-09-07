@@ -10,6 +10,7 @@ interface FormPanelModalProps {
   confirmedSector: string;
   normalizedX: number;
   normalizedY: number;
+  identifiedLocationText?: string;
   onClose: () => void;
   onSave: (savedPinData: Partial<SignagePin>) => void;
 }
@@ -21,6 +22,7 @@ export const FormPanelModal: React.FC<FormPanelModalProps> = ({
   confirmedSector,
   normalizedX,
   normalizedY,
+  identifiedLocationText,
   onClose,
   onSave,
 }) => {
@@ -75,11 +77,15 @@ export const FormPanelModal: React.FC<FormPanelModalProps> = ({
       setEntityType('SINALIZACAO');
       setCategoriaOcorrencia('Manutenção');
       setPrioridade('MEDIA');
-      setTitulo('Placa Direcional — Setor Azul');
-      setDescricao('Placa informativa de orientação para visitantes no corredor principal.');
+      setTitulo(
+        identifiedLocationText
+          ? `Registro — ${identifiedLocationText.split('—')[1]?.trim() || confirmedSector}`
+          : 'Placa Direcional — Setor Azul'
+      );
+      setDescricao(identifiedLocationText || 'Placa informativa de orientação para visitantes no corredor principal.');
       setPhotos([]);
     }
-  }, [mode, initialPin, visible]);
+  }, [mode, initialPin, visible, identifiedLocationText]);
 
   if (!visible) return null;
 
@@ -178,7 +184,7 @@ export const FormPanelModal: React.FC<FormPanelModalProps> = ({
         <View style={styles.locationBox}>
           <Text style={styles.locationTitle}>Localização confirmada</Text>
           <Text id="formLocalResumo" style={styles.locationResumo}>
-            {confirmedSector} • Posição (X: {pctX}%, Y: {pctY}%)
+            {identifiedLocationText || `${confirmedSector} • Posição (X: ${pctX}%, Y: ${pctY}%)`}
           </Text>
           <Text id="formCoords" style={styles.locationCoords}>
             Coordenadas espaciais salvas no viewport cartográfico

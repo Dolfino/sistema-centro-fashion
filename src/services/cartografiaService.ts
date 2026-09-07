@@ -15,6 +15,24 @@
  * - #41 Enviar para Validação
  * - #42 Publicação Cartográfica Transacional
  */
+import corredoresGeometriaRaw from '../data/corredores_geometria.json';
+import lojasProducaoRaw from '../data/lojas_producao_unificadas.json';
+
+export interface CorredorGeometriaItem {
+  id: string;
+  nome: string;
+  codigo: string;
+  idMapaSetor: string;
+  pontos: { x: number; y: number }[];
+}
+
+export interface LocalizacaoIdentificada {
+  textoCompleto: string;
+  setorRotulo: string;
+  corredorNome?: string;
+  segmentoTexto?: string;
+  lojaMaisProximaNumero?: string;
+}
 
 export interface PontoReferenciaCartografico {
   id: string;
@@ -301,5 +319,104 @@ export class CartografiaService {
     SNAPSHOTS_MOCK.forEach((s) => (s.status = 'ARQUIVADO'));
     SNAPSHOTS_MOCK.unshift(novo);
     return novo;
+  }
+
+  /**
+   * Identifica automaticamente a localização espacial no mapa (Setor, Corredor, Segmento início/meio/fim e Loja mais próxima)
+   * Baseado na malha cartográfica oficial e catálogo unificado.
+   */
+  static identificarLocalizacaoNoMapa(setorKey: string, px: number, py: number): LocalizacaoIdentificada {
+    let idMapaSetor = 'MAP-CFF-N1-AZUL';
+    let setorRotulo = 'Setor Azul • Piso 1';
+    const sUpper = (setorKey || '').toUpperCase();
+
+    if (sUpper.includes('VERDE')) {
+      idMapaSetor = 'MAP-CFF-N1-VERDE';
+      setorRotulo = 'Setor Verde • Piso 1';
+    } else if (sUpper.includes('AMARELO')) {
+      idMapaSetor = 'MAP-CFF-N2-AMARELO';
+      setorRotulo = 'Setor Amarelo • Piso 1';
+    } else if (sUpper.includes('ROXO')) {
+      idMapaSetor = 'MAP-CFF-N3-ROXO';
+      setorRotulo = 'Setor Roxo • Piso 1';
+    } else if (sUpper.includes('BRANCO')) {
+      idMapaSetor = 'MAP-CFF-N2-BRANCO';
+      setorRotulo = 'Setor Branco • Piso 1';
+    } else if (sUpper.includes('NIVEL_1') || sUpper.includes('VISAO GERAL')) {
+      setorRotulo = 'Nível 1 • Geral';
+    }
+
+    const corredores = corredoresGeometriaRaw as CorredorGeometriaItem[];
+    const setorKeyClean = sUpper.replace('SETOR_', '');
+    const corredoresSetor = corredores.filter(
+      (c) => c.idMapaSetor === idMapaSetor || (c.idMapaSetor && c.idMapaSetor.toUpperCase().includes(setorKeyClean))
+    );
+
+    let melhorCorredor: CorredorGeometriaItem | null = null;
+    let menorDistCorredor = Infinity;
+    let tFinal = 0.5;
+
+    for (const c of corredoresSetor) {
+      if (!c.pontos || c.pontos.length < 2) continue;
+      for (let i = 0; i < c.pontos.length - 1; i++) {
+        const p1 = c.pontos[i];
+        const p2 = c.pontos[i + 1];
+        const l2 = (p2.x - p1.x) * (p2.x - p1.x) + (p2.y - p1.y) * (p2.y - p1.y);
+        let t = l2 === 0 ? 0 : ((px - p1.x) * (p2.x - p1.x) + (py - p1.y) * (p2.y - p1.y)) / l2;
+        t = Math.max(0, Math.min(1, t));
+        const projX = p1.x + t * (p2.x - p1.x);
+        const projY = p1.y + t * (p2.y - p1.y);
+        const distSq = (px - projX) * (px - projX) + (py - projY) * (py - projY);
+
+        if (distSq < menorDistCorredor) {
+          menorDistCorredor = distSq;
+          melhorCorredor = c;
+          tFinal = t;
+        }
+      }
+    }
+
+    let posTexto = 'Meio';
+    if (tFinal < 0.33) posTexto = 'Início';
+    else if (tFinal > 0.67) posTexto = 'Final';
+
+    const lojas = lojasProducaoRaw as any[];
+    const lojasSetor = lojas.filter(
+      (l) =>
+        (l.idMapaSetor && l.idMapaSetor.toUpperCase().includes(setorKeyClean)) ||
+        (l.setor && l.setor.toUpperCase().includes(setorKeyClean))
+    );
+
+    let lojaMaisProxima: any = null;
+    let menorDistLoja = Infinity;
+
+    const listaParaBusca = lojasSetor.length > 0 ? lojasSetor : lojas;
+    for (const l of listaParaBusca) {
+      if (typeof l.x !== 'number' || typeof l.y !== 'number') continue;
+      const dSq = (l.x - px) * (l.x - px) + (l.y - py) * (l.y - py);
+      if (dSq < menorDistLoja) {
+        menorDistLoja = dSq;
+        lojaMaisProxima = l;
+      }
+    }
+
+    const partes: string[] = [setorRotulo];
+    const segmentoTexto = melhorCorredor ? `${posTexto} de ${melhorCorredor.nome}` : undefined;
+
+    if (melhorCorredor) {
+      partes.push(melhorCorredor.nome);
+      partes.push(segmentoTexto!);
+    }
+    if (lojaMaisProxima && lojaMaisProxima.numeroBox) {
+      partes.push(`Loja ${lojaMaisProxima.numeroBox}`);
+    }
+
+    return {
+      textoCompleto: partes.join(' — '),
+      setorRotulo,
+      corredorNome: melhorCorredor ? melhorCorredor.nome : undefined,
+      segmentoTexto,
+      lojaMaisProximaNumero: lojaMaisProxima?.numeroBox,
+    };
   }
 }
