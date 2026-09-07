@@ -17,6 +17,31 @@
  */
 import corredoresGeometriaRaw from '../data/corredores_geometria.json';
 import lojasProducaoRaw from '../data/lojas_producao_unificadas.json';
+import cartografiaDataRaw from '../data/cartografia_referencias_cruzamentos.json';
+
+export interface PontoReferenciaOficial {
+  id: string;
+  idMapaSetor: string;
+  nome: string;
+  tipo?: string;
+  subtipo?: string;
+  x: number;
+  y: number;
+  descricao: string;
+  status: string;
+  ativo: boolean;
+}
+
+export interface CruzamentoOficial {
+  id: string;
+  idMapaSetor: string;
+  corredorA?: string;
+  corredorB?: string;
+  nomeReferencia: string;
+  x: number;
+  y: number;
+  ativo: boolean;
+}
 
 export interface CorredorGeometriaItem {
   id: string;
@@ -193,6 +218,45 @@ let SNAPSHOTS_MOCK: SnapshotCartografico[] = [
 ];
 
 export class CartografiaService {
+  /**
+   * Mapeamento de chave de setor do app para o ID_MAPA_SETOR oficial
+   */
+  static normalizarIdMapaSetor(setorKey: string): string {
+    const key = (setorKey || '').toUpperCase();
+    if (key.includes('AZUL')) return 'MAP-CFF-N1-AZUL';
+    if (key.includes('VERDE')) return 'MAP-CFF-N1-VERDE';
+    if (key.includes('AMARELO')) return 'MAP-CFF-N2-AMARELO';
+    if (key.includes('BRANCO')) return 'MAP-CFF-N2-BRANCO';
+    if (key.includes('ROXO')) return 'MAP-CFF-N3-ROXO';
+    if (key.includes('VERMELHO')) return 'MAP-CFF-N3-VERMELHO';
+    if (key.includes('NIVEL_1')) return 'PLA-CFF-N1-2025';
+    return key;
+  }
+
+  /**
+   * Retorna os pontos de referência oficiais cadastrados na planilha/base cartográfica
+   */
+  static obterReferenciasOficiais(setorKey?: string): PontoReferenciaOficial[] {
+    const rawList = (cartografiaDataRaw.referencias || []) as PontoReferenciaOficial[];
+    if (!setorKey || setorKey === 'TODOS') {
+      return rawList.filter((r) => r.ativo !== false && r.x > 0 && r.y > 0);
+    }
+    const targetId = CartografiaService.normalizarIdMapaSetor(setorKey);
+    return rawList.filter((r) => r.idMapaSetor === targetId && r.ativo !== false && r.x > 0 && r.y > 0);
+  }
+
+  /**
+   * Retorna os cruzamentos oficiais cadastrados na planilha/base cartográfica
+   */
+  static obterCruzamentosOficiais(setorKey?: string): CruzamentoOficial[] {
+    const rawList = (cartografiaDataRaw.cruzamentos || []) as CruzamentoOficial[];
+    if (!setorKey || setorKey === 'TODOS') {
+      return rawList.filter((c) => c.ativo !== false && c.x > 0 && c.y > 0);
+    }
+    const targetId = CartografiaService.normalizarIdMapaSetor(setorKey);
+    return rawList.filter((c) => c.idMapaSetor === targetId && c.ativo !== false && c.x > 0 && c.y > 0);
+  }
+
   /**
    * Retorna os pontos de referência cartográfica
    */

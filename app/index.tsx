@@ -1461,13 +1461,13 @@ export default function LegacyMainShellScreen() {
         onClose={() => setCamadasOpen(false)}
         showSinalizacoes={showSinalizacoes}
         onToggleSinalizacoes={(enabled) => setShowSinalizacoes(enabled)}
-        totalPinsCount={pinsList.length}
+        totalPinsCount={pinsList.filter((p) => !p.sector || p.sector === selectedMapKey).length || pinsList.length}
         showReferencias={showReferencias}
         onToggleReferencias={(enabled) => setShowReferencias(enabled)}
-        totalReferenciasCount={15}
+        totalReferenciasCount={CartografiaService.obterReferenciasOficiais(selectedMapKey).length}
         showCruzamentos={showCruzamentos}
         onToggleCruzamentos={(enabled) => setShowCruzamentos(enabled)}
-        totalCruzamentosCount={13}
+        totalCruzamentosCount={CartografiaService.obterCruzamentosOficiais(selectedMapKey).length}
         showLojas={showLojas}
         onToggleLojas={(enabled) => {
           setShowLojas(enabled);

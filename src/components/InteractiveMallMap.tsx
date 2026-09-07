@@ -14,6 +14,11 @@ import {
 import { LegacyTheme } from '../theme/legacy-theme';
 import { CapturedPhoto } from '../services/mediaService';
 import { CatalogoProducaoService, LojaProducaoItem } from '../services/catalogoProducaoService';
+import {
+  CartografiaService,
+  PontoReferenciaOficial,
+  CruzamentoOficial,
+} from '../services/cartografiaService';
 
 const MAP_IMAGES: Record<string, ImageSourcePropType> = {
   SETOR_AZUL: require('../../assets/maps/SETOR_AZUL.png'),
@@ -176,6 +181,64 @@ const BoxDotMarker: React.FC<{
   );
 };
 
+// Marcador circular de Referência Cartográfica Oficial (#10144d com anel branco e dot celeste)
+const CartographicReferenceMarker: React.FC<{
+  refItem: PontoReferenciaOficial;
+  size?: number;
+}> = ({ refItem, size = 18 }) => {
+  return (
+    <View
+      style={{
+        width: size,
+        height: size,
+        borderRadius: size / 2,
+        backgroundColor: '#10144d',
+        borderColor: '#ffffff',
+        borderWidth: Math.max(1.5, Math.round(size * 0.12)),
+        alignItems: 'center',
+        justifyContent: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.45,
+        shadowRadius: 4,
+        elevation: 5,
+      }}
+    >
+      <View
+        style={{
+          width: Math.max(4, Math.round(size * 0.36)),
+          height: Math.max(4, Math.round(size * 0.36)),
+          borderRadius: Math.max(2, Math.round(size * 0.18)),
+          backgroundColor: '#38bdf8',
+        }}
+      />
+    </View>
+  );
+};
+
+// Marcador de Cruzamento Cartográfico Oficial (nó quadrado verde claro #22c55e com borda #15803d)
+const CartographicCrossingMarker: React.FC<{
+  size?: number;
+}> = ({ size = 10 }) => {
+  return (
+    <View
+      style={{
+        width: size,
+        height: size,
+        backgroundColor: '#22c55e',
+        borderColor: '#15803d',
+        borderWidth: Math.max(1, Math.round(size * 0.15)),
+        borderRadius: 2,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.35,
+        shadowRadius: 2,
+        elevation: 3,
+      }}
+    />
+  );
+};
+
 export const InteractiveMallMap: React.FC<InteractiveMallMapProps> = ({
   selectedMapKey,
   pins,
@@ -236,6 +299,18 @@ export const InteractiveMallMap: React.FC<InteractiveMallMapProps> = ({
     if (filtroStatusOcupacao === 'TODOS') return lojasSetor;
     return lojasSetor.filter((l) => (l.statusOcupacao || 'OCUPADO_ADIMPLENTE') === filtroStatusOcupacao);
   }, [lojasSetor, filtroStatusOcupacao]);
+
+  // Referências oficiais do setor corrente (ex: Acesso ao elevador torre 2)
+  const referenciasSetor = useMemo(() => {
+    if (!showReferencias) return [];
+    return CartografiaService.obterReferenciasOficiais(selectedMapKey);
+  }, [selectedMapKey, showReferencias]);
+
+  // Cruzamentos oficiais do setor corrente (nós de circulação nas esquinas)
+  const cruzamentosSetor = useMemo(() => {
+    if (!showCruzamentos) return [];
+    return CartografiaService.obterCruzamentosOficiais(selectedMapKey);
+  }, [selectedMapKey, showCruzamentos]);
 
   const initialVw = isMobile ? windowWidth - 32 : Math.min(windowWidth - 60, 1460);
   const initialVh = isMobile ? Math.max(460, windowHeight - 150) : Math.max(540, windowHeight - 170);
@@ -570,17 +645,31 @@ export const InteractiveMallMap: React.FC<InteractiveMallMapProps> = ({
     if (pin.priority === 'CRITICA') {
       return '#dc2626'; // Vermelho crítico
     }
+    // Prioridade para a cor de categoria configurada ou herdada do legado
+    if (pin.categoryColor) {
+      return pin.categoryColor;
+    }
+    const cat = (pin.category || '').toUpperCase();
+    if (cat.includes('PAINEL')) return '#8b5cf6'; // Roxo (ex: Painel Rua Princesa Isabel)
+    if (cat.includes('SERVIÇO') || cat.includes('SERVICO')) return '#0d9488'; // Teal/Verde petróleo
+    if (cat.includes('RUA') || cat.includes('LOGRADOURO')) return '#2563eb'; // Azul royal
+    if (cat.includes('INFORMATIVA') || cat.includes('DIRECIONAL')) return '#ea580c'; // Laranja
+    if (cat.includes('TRIEDO') || cat.includes('TOTEM')) return '#f59e0b'; // Âmbar
+    if (cat.includes('SEGURANÇA') || cat.includes('SEGURANCA') || cat.includes('EMERGÊNCIA')) return '#059669'; // Verde
+    if (cat.includes('ADESIVO')) return '#ec4899'; // Rosa
+    if (cat.includes('LOJA') || cat.includes('COMERCIAL')) return '#3b82f6';
+
     switch (pin.status) {
       case 'ATIVA':
-        return '#0284c7'; // Azul royal sinalização (ou verde se configurado)
+        return '#0284c7';
       case 'MANUTENCAO':
       case 'EM_ANDAMENTO':
-        return '#e08b00'; // Laranja manutenção
+        return '#e08b00';
       case 'SUBSTITUIR':
       case 'REMOVER':
-        return '#d94841'; // Vermelho alerta
+        return '#d94841';
       default:
-        return pin.categoryColor || '#68717d';
+        return '#68717d';
     }
   };
 
@@ -642,10 +731,19 @@ export const InteractiveMallMap: React.FC<InteractiveMallMapProps> = ({
       </View>
 
       {/* Camada de Marcadores / PINs Projetados com Alta Precisão */}
+      {/* Camada de Marcadores / PINs de Sinalizações Projetados com Alta Precisão */}
       {showSinalizacoes && (
         <View style={styles.pinsLayer} pointerEvents="box-none">
           {pins
             .filter((p) => {
+              // Filtragem por setor para manter paridade estrita com a visão selecionada
+              if (p.sector && selectedMapKey) {
+                const sKey = (selectedMapKey || '').toUpperCase().replace('SETOR_', '');
+                const pSec = (p.sector || '').toUpperCase().replace('SETOR_', '');
+                const matchSetor = !pSec || pSec.includes(sKey) || sKey.includes(pSec);
+                if (!matchSetor) return false;
+              }
+
               if (!filterConservation || filterConservation === 'TODOS') return true;
               if (filterConservation === 'ATENCAO') {
                 return (
@@ -683,11 +781,16 @@ export const InteractiveMallMap: React.FC<InteractiveMallMapProps> = ({
               const posX = pinScreenX - pinWidth / 2;
               const posY = pinScreenY - pinHeight;
 
+              const tooltipTitle = `${pin.assetCode || ''} • ${pin.category || 'Sinalização'}${pin.humanLocation ? ' — ' + pin.humanLocation : ''}`;
+
               return (
                 <TouchableOpacity
                   key={pin.id}
                   id={`pin-marker-${pin.id}`}
-                  {...({ dataSet: { role: 'pin' } } as any)}
+                  {...({
+                    dataSet: { role: 'pin' },
+                    title: tooltipTitle,
+                  } as any)}
                   activeOpacity={0.7}
                   hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                   onPress={(e) => {
@@ -715,6 +818,80 @@ export const InteractiveMallMap: React.FC<InteractiveMallMapProps> = ({
                 </TouchableOpacity>
               );
             })}
+        </View>
+      )}
+
+      {/* Camada de Referências Cartográficas Oficiais (ex: Acesso ao elevador torre 2) */}
+      {showReferencias && referenciasSetor.length > 0 && (
+        <View style={styles.pinsLayer} pointerEvents="box-none">
+          {referenciasSetor.map((refItem) => {
+            const posX = translate.x + refItem.x * natural.width * scale;
+            const posY = translate.y + refItem.y * natural.height * scale;
+            const refSize = Math.min(26, Math.max(13, Math.round(16 * Math.pow(zoomRatio, 0.35))));
+            const tooltipTitle = refItem.nome || refItem.descricao || 'Ponto de Referência';
+
+            return (
+              <TouchableOpacity
+                key={`ref-cart-${refItem.id}`}
+                id={`ref-marker-${refItem.id}`}
+                {...({
+                  dataSet: { role: 'pin' },
+                  title: tooltipTitle,
+                } as any)}
+                activeOpacity={0.8}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                style={[
+                  styles.pinContainer,
+                  {
+                    left: posX - refSize / 2,
+                    top: posY - refSize / 2,
+                    width: refSize,
+                    height: refSize,
+                    zIndex: 35,
+                  },
+                ]}
+              >
+                <CartographicReferenceMarker refItem={refItem} size={refSize} />
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      )}
+
+      {/* Camada de Cruzamentos Cartográficos Oficiais (Pequenos nós verdes nos cantos dos blocos) */}
+      {showCruzamentos && cruzamentosSetor.length > 0 && (
+        <View style={styles.pinsLayer} pointerEvents="box-none">
+          {cruzamentosSetor.map((crzItem) => {
+            const posX = translate.x + crzItem.x * natural.width * scale;
+            const posY = translate.y + crzItem.y * natural.height * scale;
+            const crzSize = Math.min(18, Math.max(8, Math.round(10 * Math.pow(zoomRatio, 0.35))));
+            const tooltipTitle = crzItem.nomeReferencia || crzItem.id || 'Cruzamento';
+
+            return (
+              <TouchableOpacity
+                key={`crz-cart-${crzItem.id}`}
+                id={`crz-marker-${crzItem.id}`}
+                {...({
+                  dataSet: { role: 'pin' },
+                  title: tooltipTitle,
+                } as any)}
+                activeOpacity={0.8}
+                hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
+                style={[
+                  styles.pinContainer,
+                  {
+                    left: posX - crzSize / 2,
+                    top: posY - crzSize / 2,
+                    width: crzSize,
+                    height: crzSize,
+                    zIndex: 30,
+                  },
+                ]}
+              >
+                <CartographicCrossingMarker size={crzSize} />
+              </TouchableOpacity>
+            );
+          })}
         </View>
       )}
 

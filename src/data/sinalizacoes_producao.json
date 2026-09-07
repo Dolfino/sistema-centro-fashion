@@ -1,0 +1,3660 @@
+[
+  {
+    "id": "SIG-F7C6394B32604F8C",
+    "assetCode": "SIG-20260816-0002",
+    "category": "Placa de segurança",
+    "categoryColor": "#059669",
+    "sector": "SETOR_AZUL",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.907428,
+    "normalizedY": 0.054169,
+    "notes": "A peça é de ACM, em bom estado",
+    "humanLocation": "Avenida do Imperador",
+    "responsible": "Segurança",
+    "photos": [],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-0F7BCC40CC1A4813",
+    "assetCode": "SIG-20260817-0002",
+    "category": "Placa de rua",
+    "categoryColor": "#2563eb",
+    "sector": "SETOR_ROXO",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.187654,
+    "normalizedY": 0.27261,
+    "notes": "RUA 25 DE MARÇO / AV. DOM MANUEL\nSETOR ROXO",
+    "humanLocation": "Rua 25 de Março",
+    "responsible": "CEOP",
+    "photos": [
+      {
+        "id": "FOTO-26A553D2EEA34AFC",
+        "fileName": "SIG-20260817-0002_1c1bcd7a.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 273873,
+        "sha256": "96976c174872724c7a02c01eb2b8468755962322e62a3910e1e752152cfc96be",
+        "localUri": "https://drive.google.com/file/d/1r4VNa7m7m5sfcPFtgZxJ8hWqRhVKWugp/preview",
+        "uploadedToS3": true
+      },
+      {
+        "id": "FOTO-C143C315B2194CC8",
+        "fileName": "SIG-20260817-0002_5a4d48a9.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 218742,
+        "sha256": "519a56bdb0aebc75d343ee2d7148f9ede688dd207e84e7a2947b22453988b71b",
+        "localUri": "https://drive.google.com/file/d/1SoQQuM83vK83IkM9Dt-avn08UemKyF7L/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-DB2E0C95B81B4F14",
+    "assetCode": "SIG-20260817-0003",
+    "category": "Placa informativa",
+    "categoryColor": "#ea580c",
+    "sector": "SETOR_ROXO",
+    "status": "ATIVA",
+    "conservationState": "Regular",
+    "normalizedX": 0.165831,
+    "normalizedY": 0.20479,
+    "notes": "A peça está empoeirada, suja e adesivo descolando",
+    "humanLocation": "Placa Direcional de Serviços",
+    "responsible": "CEOP",
+    "photos": [
+      {
+        "id": "FOTO-AEBB216740A34C51",
+        "fileName": "SIG-20260817-0003_18a80080.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 413879,
+        "sha256": "439373554e0501c8527be516a98491f49652febd6bb7a45bba8b819c8516759a",
+        "localUri": "https://drive.google.com/file/d/1wKCj87aFnTl6s0clFVj49LKjHpKSxD6_/preview",
+        "uploadedToS3": true
+      },
+      {
+        "id": "FOTO-2BA2906A43D345CD",
+        "fileName": "SIG-20260817-0003_e63fa3a9.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 279314,
+        "sha256": "f6bbd908fa300e2c3c7024b0297e86bf047dbecb3de40a95f7dd7b627ece73f9",
+        "localUri": "https://drive.google.com/file/d/1_UHhHbo_HzvlAvBhFOoQ-OhMv2qNtRNg/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-687A5E9B3ADA4B19",
+    "assetCode": "SIG-20260818-0001",
+    "category": "Placa informativa",
+    "categoryColor": "#ea580c",
+    "sector": "SETOR_VERDE",
+    "status": "ATIVA",
+    "conservationState": "Ruim",
+    "normalizedX": 0.8952582397,
+    "normalizedY": 0.9111707512,
+    "notes": "Placa suja",
+    "humanLocation": "Avenida Presidente Castelo Branco",
+    "responsible": "CEOP",
+    "photos": [
+      {
+        "id": "FOTO-9874FBC2849B4A49",
+        "fileName": "SIG-20260818-0001_9494371a.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 281947,
+        "sha256": "f11d7e15eff5b9fc3dae25a73e064cd3a233c2ca55a0b3fb2000e88e1609edc8",
+        "localUri": "https://drive.google.com/file/d/1AxtcJRwkF_GLwTluk_87xyX2IBB8N0yK/preview",
+        "uploadedToS3": true
+      },
+      {
+        "id": "FOTO-A5534D80B20146CB",
+        "fileName": "SIG-20260818-0001_da8c5cc6.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 328363,
+        "sha256": "23d306403c8d88eb441080d9d3b576c89208279b58a23fd3d2499899a3565d2a",
+        "localUri": "https://drive.google.com/file/d/1UXv9Eg1os9agKQvNBlgwqC8-avUoyJ81/preview",
+        "uploadedToS3": true
+      },
+      {
+        "id": "FOTO-C8C120CCB35F46FD",
+        "fileName": "SIG-20260818-0001_da8c5cc6.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 328363,
+        "sha256": "23d306403c8d88eb441080d9d3b576c89208279b58a23fd3d2499899a3565d2a",
+        "localUri": "https://drive.google.com/file/d/1r28TYe4b8JHfUrNlMrtV-utawOKwxqI2/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-2FB7461A5718469C",
+    "assetCode": "SIG-20260818-0002",
+    "category": "Placa de rua",
+    "categoryColor": "#2563eb",
+    "sector": "SETOR_VERDE",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.8777877354,
+    "normalizedY": 0.7494730297,
+    "notes": "Placa com o nome da rua",
+    "humanLocation": "Avenida Presidente Castelo Branco",
+    "responsible": "CEOP",
+    "photos": [
+      {
+        "id": "FOTO-539FB571D4494DDB",
+        "fileName": "SIG-20260818-0002_7880fdad.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 194702,
+        "sha256": "7a239d4f08b97d09425e062928357bae9a11425a765448eef95663a5bc2c864e",
+        "localUri": "https://drive.google.com/file/d/1UbY4mZl59Eil2BSS5DTv-R1YkPL5UqpK/preview",
+        "uploadedToS3": true
+      },
+      {
+        "id": "FOTO-C78885F252FF4940",
+        "fileName": "SIG-20260818-0002_82e989cf.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 335812,
+        "sha256": "7845c501e36a85617951f86a8a1acba0e35f868cbf63a04c1f622fda6d799640",
+        "localUri": "https://drive.google.com/file/d/1ERu2AQirl9JbLZXnMdmaqghQPo2DE8Gl/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-BE4476B8FF0D4D7A",
+    "assetCode": "SIG-20260818-0003",
+    "category": "Totem",
+    "categoryColor": "#f59e0b",
+    "sector": "SETOR_VERDE",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.8975645442,
+    "normalizedY": 0.6177137359,
+    "notes": "Peça bem conservada",
+    "humanLocation": "Avenida Presidente Castelo Branco",
+    "responsible": "Marketing",
+    "photos": [
+      {
+        "id": "FOTO-B766A6F9CB634551",
+        "fileName": "SIG-20260818-0003_05849a33.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 245809,
+        "sha256": "ac73dbdc71e61e03563e76011c10d50a8350738e68006929c63ff15be936cc01",
+        "localUri": "https://drive.google.com/file/d/1x9aXFUAhsZr2c8wheKGf9iqowXaCLDFy/preview",
+        "uploadedToS3": true
+      },
+      {
+        "id": "FOTO-2AA51416E2A04C7E",
+        "fileName": "SIG-20260818-0003_0be87f72.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 283719,
+        "sha256": "36c0d859dd94825499da5def1329ab820a717fbdf387b1fcc67737d031960601",
+        "localUri": "https://drive.google.com/file/d/1eayF_2K55R8lfeA6memb2hM-hm1m--3p/preview",
+        "uploadedToS3": true
+      },
+      {
+        "id": "FOTO-F64660E86A61495F",
+        "fileName": "SIG-20260818-0003_fe5d4cce.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 291096,
+        "sha256": "02c15e1462e3e19adcdfc7e9ab05fe4d1b6a3ea12db82ef0310f36f4a2bffcca",
+        "localUri": "https://drive.google.com/file/d/1tU9Y9oum8Oxi25VjhOgg1kOGDANwluMi/preview",
+        "uploadedToS3": true
+      },
+      {
+        "id": "FOTO-1EBAF07BC2AE4E7A",
+        "fileName": "SIG-20260818-0003_INSP_aea99b51_07c46cc5.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 276319,
+        "sha256": "6c13cb258c093ae91f4e6e204f4a54962877953d65d91f6b4ca3c3d8da42dcea",
+        "localUri": "https://drive.google.com/file/d/1KR9dAHiHUxex_Yu8R2bhUaeFU1acWYd-/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-233A0D3550B147AA",
+    "assetCode": "SIG-20260818-0005",
+    "category": "Placa de rua",
+    "categoryColor": "#2563eb",
+    "sector": "SETOR_VERDE",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.8699173169,
+    "normalizedY": 0.3024956789,
+    "notes": "Nenhuma observação",
+    "humanLocation": "Rua Senador Jaguaribe",
+    "responsible": "CEOP",
+    "photos": [
+      {
+        "id": "FOTO-4BD0F33297E34D8F",
+        "fileName": "SIG-20260818-0005_63fd5e25.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 238008,
+        "sha256": "5878d609702def8ebc9a9ac1d5f52527fd97174cf25ca5098adf1a7456f11c85",
+        "localUri": "https://drive.google.com/file/d/1eOFN2Ft0m6m3BAQ1SlWUkeAMl_POBJdC/preview",
+        "uploadedToS3": true
+      },
+      {
+        "id": "FOTO-79CBA3D2FFE74C66",
+        "fileName": "SIG-20260818-0005_839a1c13.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 335812,
+        "sha256": "7845c501e36a85617951f86a8a1acba0e35f868cbf63a04c1f622fda6d799640",
+        "localUri": "https://drive.google.com/file/d/1AFMeQFQKdfamgJwC_zuClq1d16-k8Pgj/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-DAF898ED310E4F05",
+    "assetCode": "SIG-20260819-0001",
+    "category": "Placa de loja",
+    "categoryColor": "#3b82f6",
+    "sector": "SETOR_VERDE",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.8674646703,
+    "normalizedY": 0.1107961083,
+    "notes": "Sem observação",
+    "humanLocation": "Rua Senador Jaguaribe",
+    "responsible": "CEOP",
+    "photos": [
+      {
+        "id": "FOTO-08AE39FB68DE4486",
+        "fileName": "SIG-20260819-0001_f65fccdd.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 231137,
+        "sha256": "27a2b234a6aa70db77ab41b60db081f07b6c118fb01f8fd04409c785be85d1d2",
+        "localUri": "https://drive.google.com/file/d/1z-ZKL3gOtvtplUv7QJx9s-ddwLO28fAD/preview",
+        "uploadedToS3": true
+      },
+      {
+        "id": "FOTO-40BD48FB01D44194",
+        "fileName": "SIG-20260819-0001_75251a84.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 334323,
+        "sha256": "0067d707d1703125b388af523c2432b40240d65f1ee673f20e260bfb0b35c286",
+        "localUri": "https://drive.google.com/file/d/1gaicYz1rUyi0ofIUhsqhWR0WOIRylAKe/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-68C838AB7910487F",
+    "assetCode": "SIG-20260819-0002",
+    "category": "Placa de rua",
+    "categoryColor": "#2563eb",
+    "sector": "SETOR_VERDE",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.7942129567,
+    "normalizedY": 0.3038493019,
+    "notes": "Sem observação",
+    "humanLocation": "Rua Doutor João Moreira",
+    "responsible": "CEOP",
+    "photos": [
+      {
+        "id": "FOTO-A1A496DE1B0140DD",
+        "fileName": "SIG-20260819-0002_61338272.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 247156,
+        "sha256": "dd262acaeea25ba28bb18b3a32583076e29cb2e6b768b00efd5e55939318fc6f",
+        "localUri": "https://drive.google.com/file/d/1eV8yVScQlGvm8TqoO3DiTybg11l6o5-u/preview",
+        "uploadedToS3": true
+      },
+      {
+        "id": "FOTO-2B0F70370D9A477D",
+        "fileName": "SIG-20260819-0002_803a8cd8.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 344775,
+        "sha256": "76f108844edb0700748879545a597e0461fb55efcd8941b0eb9a4ec041e5b728",
+        "localUri": "https://drive.google.com/file/d/1TWiaf54uPCd994WfO-aeNnj5WkYbhj1r/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-DCF7CC474EF64D9C",
+    "assetCode": "SIG-20260819-0005",
+    "category": "Adesivo de parede",
+    "categoryColor": "#ec4899",
+    "sector": "SETOR_AZUL",
+    "status": "ATIVA",
+    "conservationState": "Regular",
+    "normalizedX": 0.5739753374,
+    "normalizedY": 0.6274029406,
+    "notes": "Sem observação",
+    "humanLocation": "Estacionamento",
+    "responsible": "Marketing",
+    "photos": [
+      {
+        "id": "FOTO-D3E5590EC5C54B34",
+        "fileName": "SIG-20260819-0005_9b1e29cd.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 21712,
+        "sha256": "b26c00b48a319e920513c6fdd0c8818f7d57bc162fa7e5210cbaf5fcce46f7ed",
+        "localUri": "https://drive.google.com/file/d/1-rj35k1Q-mtebR2SZbzy8ZSACj3ve3lr/preview",
+        "uploadedToS3": true
+      },
+      {
+        "id": "FOTO-E65F0AD484484D8D",
+        "fileName": "SIG-20260819-0005_9b1e29cd.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 21712,
+        "sha256": "b26c00b48a319e920513c6fdd0c8818f7d57bc162fa7e5210cbaf5fcce46f7ed",
+        "localUri": "https://drive.google.com/file/d/1-rj35k1Q-mtebR2SZbzy8ZSACj3ve3lr/preview",
+        "uploadedToS3": true
+      },
+      {
+        "id": "FOTO-3874452994E144D3",
+        "fileName": "SIG-20260819-0005_INSP_d2185740_b8dcb5d8.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 86426,
+        "sha256": "d085e8c6ff5eecf61835903af40c69ec522503302df1d3e68f6371de46f4eb97",
+        "localUri": "https://drive.google.com/file/d/1rTS9Lg8pjjl8EHymACKFB0tPsptNagd-/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-9DE6EAEB99064341",
+    "assetCode": "SIG-20260819-0006",
+    "category": "Outra",
+    "categoryColor": "#0284c7",
+    "sector": "SETOR_VERDE",
+    "status": "ATIVA",
+    "conservationState": "Ruim",
+    "normalizedX": 0.939086533,
+    "normalizedY": 0.9607610703,
+    "notes": "Muito desgastado e enferrujado",
+    "humanLocation": "Outdoor",
+    "responsible": "CEOP",
+    "photos": [
+      {
+        "id": "FOTO-23040D5707C443B4",
+        "fileName": "SIG-20260819-0006_00bab5c1.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 146749,
+        "sha256": "c2dcdf9fc3c31708bca577fcf3fe0ba3f8430c26a77697947ccca364d53c1261",
+        "localUri": "https://drive.google.com/file/d/1TjqK9j5-SPMovq-toam1NIcmgj5tSehC/preview",
+        "uploadedToS3": true
+      },
+      {
+        "id": "FOTO-32155B466F014036",
+        "fileName": "SIG-20260819-0006_3be8914c.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 349342,
+        "sha256": "73606eef1ad4f3cb531293b571e0b150b29f17bce4ffaf6fbb2c7e66ca844b42",
+        "localUri": "https://drive.google.com/file/d/1i-ow59P0_5iKB_bDieq_DmjjtE5c615r/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-2E467F84A3E540EC",
+    "assetCode": "SIG-20260820-0001",
+    "category": "Placa de galeria",
+    "categoryColor": "#0284c7",
+    "sector": "SETOR_VERDE",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.7812685723,
+    "normalizedY": 0.1201446117,
+    "notes": "Sem observação",
+    "humanLocation": "Rua Doutor João Moreira",
+    "responsible": "CEOP",
+    "photos": [
+      {
+        "id": "FOTO-5439D8B98F6E495A",
+        "fileName": "SIG-20260820-0001_f6a14e39.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 182232,
+        "sha256": "795d763be310fc4538340437cb35c4552ce01d88f0eff081e866a7bde63523e8",
+        "localUri": "https://drive.google.com/file/d/1Gv0PXc7sAylhjqqq2DnzRjsZRw39oD1a/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-AAEABEB5A5F94850",
+    "assetCode": "SIG-20260820-0002",
+    "category": "Adesivo de piso",
+    "categoryColor": "#ec4899",
+    "sector": "SETOR_VERDE",
+    "status": "ATIVA",
+    "conservationState": "Crítica",
+    "normalizedX": 0.792454061,
+    "normalizedY": 0.6413647935,
+    "notes": "Desgastado",
+    "humanLocation": "Rua Doutor João Moreira",
+    "responsible": "CEOP",
+    "photos": [
+      {
+        "id": "FOTO-BC000E92FD154E38",
+        "fileName": "SIG-20260820-0002_35cd7300.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 184110,
+        "sha256": "35cd77bd466e95b1fdc0baa840a40abac71921983051aacb41fc9a14bf009643",
+        "localUri": "https://drive.google.com/file/d/1lsFiStt6U4zgp_DRpTHJtbwhbrJTlNh-/preview",
+        "uploadedToS3": true
+      },
+      {
+        "id": "FOTO-924915BAFFF746FB",
+        "fileName": "SIG-20260820-0002_c4b48580.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 305824,
+        "sha256": "2dad86ad28483a99e3de8c04f8466bd09cd09f7af447dcc9047b67a754cc4774",
+        "localUri": "https://drive.google.com/file/d/1keqkya5zbDhtYo8KOjD2bGUCVo8gkgVl/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-C078CA4037A04E8A",
+    "assetCode": "SIG-20260820-0003",
+    "category": "Placa de rua",
+    "categoryColor": "#2563eb",
+    "sector": "SETOR_VERDE",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.7883255336,
+    "normalizedY": 0.7484526107,
+    "notes": "Sem observação",
+    "humanLocation": "Rua Doutor João Moreira",
+    "responsible": "CEOP",
+    "photos": [
+      {
+        "id": "FOTO-0DFCFA750BA343CF",
+        "fileName": "SIG-20260820-0003_1a191aa8.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 224126,
+        "sha256": "d6ae4fa89c9f7b046f4e5f5e41e4d3c6df400eaefd96073d98f4ea694d933692",
+        "localUri": "https://drive.google.com/file/d/1DCmdaLk7d_LK_lFiFo74cMFJExy0_foV/preview",
+        "uploadedToS3": true
+      },
+      {
+        "id": "FOTO-414FAAC63E6B47B0",
+        "fileName": "SIG-20260820-0003_734f2c33.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 320141,
+        "sha256": "b1e81ba79de6f6fcaa48c4bab38fc86788732e424fa404750eeaede14d6eaad7",
+        "localUri": "https://drive.google.com/file/d/1Px72Bnrupm0qWSd_qaSvmTr73gnpLu5u/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-2A9ACABBCAEB4943",
+    "assetCode": "SIG-20260820-0004",
+    "category": "Placa de rua",
+    "categoryColor": "#2563eb",
+    "sector": "SETOR_VERDE",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.7320651273,
+    "normalizedY": 0.7465344307,
+    "notes": "Sem observação",
+    "humanLocation": "Rua Castro e Silva",
+    "responsible": "CEOP",
+    "photos": [
+      {
+        "id": "FOTO-8467A893AD9F43B0",
+        "fileName": "SIG-20260820-0004_40b88f61.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 204945,
+        "sha256": "bd7863e33de781ba4a10f6dc8766e10a05fbc8c6243a2a27fe69cc80ca862074",
+        "localUri": "https://drive.google.com/file/d/1KLqPxAuBfNiJdC5v3cLVIiy_F-T6E8in/preview",
+        "uploadedToS3": true
+      },
+      {
+        "id": "FOTO-6FB0D622BC254ECD",
+        "fileName": "SIG-20260820-0004_72b244fe.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 320141,
+        "sha256": "b1e81ba79de6f6fcaa48c4bab38fc86788732e424fa404750eeaede14d6eaad7",
+        "localUri": "https://drive.google.com/file/d/1ELaKfVACw1QQd6iHAQWzLzwxZsx3SoWF/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-2EAC7B1BAC214052",
+    "assetCode": "SIG-20260820-0005",
+    "category": "Placa informativa",
+    "categoryColor": "#ea580c",
+    "sector": "SETOR_VERDE",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.6776563983,
+    "normalizedY": 0.6211845905,
+    "notes": "Sem observação",
+    "humanLocation": "Rua Senador Alencar",
+    "responsible": "CEOP",
+    "photos": [
+      {
+        "id": "FOTO-9B7BBE34BB6B4D5D",
+        "fileName": "SIG-20260820-0005_24d645b1.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 228361,
+        "sha256": "1d5535c6b3228ff124ece22c96c570afc147d595818bb8b83eae7893b723ac7f",
+        "localUri": "https://drive.google.com/file/d/1-9bDVMzmgmfobEUb5RSd8sP1tJt3MIZp/preview",
+        "uploadedToS3": true
+      },
+      {
+        "id": "FOTO-8D6F18868064416A",
+        "fileName": "SIG-20260820-0005_da2f08da.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 333657,
+        "sha256": "6309c1297e7047cfb23a4b47321e4dabbfc7024bb9671fca7512872e0b0cc55a",
+        "localUri": "https://drive.google.com/file/d/180T5R5ATA6gZlPoLel26PqD1HncIBZUP/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-371D3BAA91EC4943",
+    "assetCode": "SIG-20260820-0006",
+    "category": "Sinalização temporária",
+    "categoryColor": "#0284c7",
+    "sector": "SETOR_VERDE",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.703756,
+    "normalizedY": 0.591042,
+    "notes": "Sem observações",
+    "humanLocation": "Rua Castro e Silva",
+    "responsible": "Marketing",
+    "photos": [
+      {
+        "id": "FOTO-B62BC6D7372049E6",
+        "fileName": "SIG-20260820-0006_42db19c8.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 315572,
+        "sha256": "357d678c657419306d1d004859bc7b988c915a5e5839d4acc2936acd272483e6",
+        "localUri": "https://drive.google.com/file/d/1fFB6Sw7R4bDeEqmiFgJf7L8IjS5Yn9uS/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-C78B30588EB64BA2",
+    "assetCode": "SIG-20260820-0007",
+    "category": "Sinalização temporária",
+    "categoryColor": "#0284c7",
+    "sector": "SETOR_VERDE",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.7098124392,
+    "normalizedY": 0.5836421436,
+    "notes": "Sem observação",
+    "humanLocation": "Rua Castro e Silva",
+    "responsible": "Marketing",
+    "photos": [
+      {
+        "id": "FOTO-0D8978537D7447C0",
+        "fileName": "SIG-20260820-0007_f954201e.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 315572,
+        "sha256": "357d678c657419306d1d004859bc7b988c915a5e5839d4acc2936acd272483e6",
+        "localUri": "https://drive.google.com/file/d/1HaGTQ73tnPXRuyfyAG2pzVEgkpbkCKrx/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-852FC0FEE3234C41",
+    "assetCode": "SIG-20260820-0008",
+    "category": "Sinalização temporária",
+    "categoryColor": "#0284c7",
+    "sector": "SETOR_VERDE",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.6431134249,
+    "normalizedY": 0.5885402828,
+    "notes": "Sem observação",
+    "humanLocation": "Rua Senador Alencar",
+    "responsible": "Marketing",
+    "photos": [
+      {
+        "id": "FOTO-6015ED49538E41F6",
+        "fileName": "SIG-20260820-0008_191e290e.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 282645,
+        "sha256": "23aaab36cf5ec7fc796d27e6f60161cdbd381b24346c0c71c03dafb6f8f6578b",
+        "localUri": "https://drive.google.com/file/d/1yJKlNDPEVqIg_6hBMPzdLRGvTzmv4FSA/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-328C0B8D504E413C",
+    "assetCode": "SIG-20260820-0009",
+    "category": "Triedo",
+    "categoryColor": "#f59e0b",
+    "sector": "SETOR_VERDE",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.7208126004,
+    "normalizedY": 0.6005618337,
+    "notes": "Atualizar foto campanha dia dos Pais",
+    "humanLocation": "Rua Castro e Silva",
+    "responsible": "Marketing",
+    "photos": [
+      {
+        "id": "FOTO-12BD744901B24120",
+        "fileName": "SIG-20260820-0009_f4db8e7e.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 279941,
+        "sha256": "7c5036f40d195c271081514fb56a09f706f7d05cf65df4cc22333ebec8afc2de",
+        "localUri": "https://drive.google.com/file/d/1wpHYI92Q_j73EL4GCawWysaWLG7cR2ft/preview",
+        "uploadedToS3": true
+      },
+      {
+        "id": "FOTO-EB07CDC8C72346EE",
+        "fileName": "SIG-20260820-0009_0e83334e.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 250150,
+        "sha256": "44cbeea7f43ca65a2641cef04a10df1fdae4f60b97f1764fb241df22e5ddd0ce",
+        "localUri": "https://drive.google.com/file/d/1xblpydb0ewjeJspbNvk3OBfgPgC29e9P/preview",
+        "uploadedToS3": true
+      },
+      {
+        "id": "FOTO-E6EB21A1BA7B4C43",
+        "fileName": "SIG-20260820-0009_c0438fdf.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 285601,
+        "sha256": "adfe0edad93c89311d346b038e845b7a29375b643127774d835b5137accb79c4",
+        "localUri": "https://drive.google.com/file/d/12yjATJpj6guwwv1Grd_WQjppZGK1rDlb/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-EBE53732B8564432",
+    "assetCode": "SIG-20260820-0010",
+    "category": "Placa de galeria",
+    "categoryColor": "#0284c7",
+    "sector": "SETOR_VERDE",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.7220599883,
+    "normalizedY": 0.5530944508,
+    "notes": "Sem observação",
+    "humanLocation": "Rua Castro e Silva",
+    "responsible": "CEOP",
+    "photos": [
+      {
+        "id": "FOTO-BB14ECD409D84F5B",
+        "fileName": "SIG-20260820-0010_25c2a2d5.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 220057,
+        "sha256": "f98e204fb94cd0ebfe23c47c50c0142d1143646d487635dbc2b9ccaeca306c92",
+        "localUri": "https://drive.google.com/file/d/1Dkz5m7hyq04wIq54tvGwT4u-cgFrfuyQ/preview",
+        "uploadedToS3": true
+      },
+      {
+        "id": "FOTO-A1F8296A4BF448CE",
+        "fileName": "SIG-20260820-0010_cd7c2116.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 280830,
+        "sha256": "6cc1487309f86c7a1c688cba572e6817e804709279ee95ed51da8128a48235ff",
+        "localUri": "https://drive.google.com/file/d/1CaylBzs3XKMx5wdXHPeWcA35lZi2dE4-/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-E7EB24AE26D94E8C",
+    "assetCode": "SIG-20260820-0011",
+    "category": "Placa de rua",
+    "categoryColor": "#2563eb",
+    "sector": "SETOR_VERDE",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.7324666147,
+    "normalizedY": 0.3029184876,
+    "notes": "Sem observação",
+    "humanLocation": "Rua Castro e Silva",
+    "responsible": "CEOP",
+    "photos": [
+      {
+        "id": "FOTO-0BBFD79D34E2458C",
+        "fileName": "SIG-20260820-0011_431f9e2f.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 201721,
+        "sha256": "e993bdbad6ebdb37b5f575c8f2ce80547c46d48cccc8c9fb4952b1e23d0cd988",
+        "localUri": "https://drive.google.com/file/d/1dro8pKuYImnm-0vFvq_DDducobB8jp_J/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-1CB7C473877A4A58",
+    "assetCode": "SIG-20260820-0012",
+    "category": "Placa de galeria",
+    "categoryColor": "#0284c7",
+    "sector": "SETOR_VERDE",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.660853,
+    "normalizedY": 0.120765,
+    "notes": "Sem observações",
+    "humanLocation": "Rua Senador Alencar",
+    "responsible": "CEOP",
+    "photos": [
+      {
+        "id": "FOTO-B3FD647F9BCA4BF9",
+        "fileName": "SIG-20260820-0012_a0143806.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 267991,
+        "sha256": "2436d094b3a390419a4e66232521203be8dd58bd745f8c414338d94bbae3fb0b",
+        "localUri": "https://drive.google.com/file/d/1REEnvUR-6m8nAB-JBDK7dtQl_DasQ3nC/preview",
+        "uploadedToS3": true
+      },
+      {
+        "id": "FOTO-90A6E42991284691",
+        "fileName": "SIG-20260820-0012_ae8b891a.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 328244,
+        "sha256": "f7551c0d687377bb05886715eeb0f5afc0c51f52858ac8afe64c7cc721ed2243",
+        "localUri": "https://drive.google.com/file/d/1Vd1HctvPbjt3nJREnVhWfCRb_enrNkG3/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-F467117C4A6A41EC",
+    "assetCode": "SIG-20260820-0013",
+    "category": "Placa de rua",
+    "categoryColor": "#2563eb",
+    "sector": "SETOR_VERDE",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.6716261923,
+    "normalizedY": 0.3001202621,
+    "notes": "Com mídia comercial",
+    "humanLocation": "Rua Senador Alencar",
+    "responsible": "CEOP",
+    "photos": [
+      {
+        "id": "FOTO-A3E72E7780114208",
+        "fileName": "SIG-20260820-0013_69e09953.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 241822,
+        "sha256": "1e5a2a5c0265d437104d13081f72df88c9e771c2870aa3ced552f0b542244776",
+        "localUri": "https://drive.google.com/file/d/10Ea9ZeobQk5NvY6oDCUzlTHWeakKBICc/preview",
+        "uploadedToS3": true
+      },
+      {
+        "id": "FOTO-0CF3C7D894134DAF",
+        "fileName": "SIG-20260820-0013_efa1e408.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 339196,
+        "sha256": "731ee133046d386db0e65ca792d0eca30382a9b97ab865f0f69fdb90123cf2ad",
+        "localUri": "https://drive.google.com/file/d/1MELYrQn-wEfGEEgBhJmFOqkySQxJFaLj/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-07C2469A27DF4B3B",
+    "assetCode": "SIG-20260820-0014",
+    "category": "Placa de rua",
+    "categoryColor": "#2563eb",
+    "sector": "SETOR_VERDE",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.6778466779,
+    "normalizedY": 0.7432588024,
+    "notes": "Sem observação",
+    "humanLocation": "Rua Senador Alencar",
+    "responsible": "CEOP",
+    "photos": [
+      {
+        "id": "FOTO-A187D25D29084D6E",
+        "fileName": "SIG-20260820-0014_f6b3b322.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 222835,
+        "sha256": "79a907d0ee4d1cd6cf9fd719f5cd6c8430ffa3f2cf177b3adb13d22bf2572c85",
+        "localUri": "https://drive.google.com/file/d/1ICb1_4eVJ5xk5snlfj6iTpkMAapd_nw5/preview",
+        "uploadedToS3": true
+      },
+      {
+        "id": "FOTO-6169A0427302464B",
+        "fileName": "SIG-20260820-0014_ec50f364.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 334257,
+        "sha256": "77749eef6e27b29cbac7e72d9c1582cb67c57bbb63236ee8f48d234a9f71b566",
+        "localUri": "https://drive.google.com/file/d/17Y9EhA8eZfFs0UP_NmDHyx7ku_L35BPI/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-CC854FEB33824568",
+    "assetCode": "SIG-20260820-0015",
+    "category": "Placa de rua",
+    "categoryColor": "#2563eb",
+    "sector": "SETOR_VERDE",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.6165933559,
+    "normalizedY": 0.7432588024,
+    "notes": "Sem observação",
+    "humanLocation": "Rua São Paulo",
+    "responsible": "CEOP",
+    "photos": [
+      {
+        "id": "FOTO-B201B9099C124060",
+        "fileName": "SIG-20260820-0015_b46edd0b.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 244458,
+        "sha256": "1362c15505da520888cd7e3710282cca141279a0e02f5ed38e9ef47720fedab1",
+        "localUri": "https://drive.google.com/file/d/1ZgsBbLii0BWkcseW0vxYLKS8P-nKbaBd/preview",
+        "uploadedToS3": true
+      },
+      {
+        "id": "FOTO-79AC7DAFDEE54D0A",
+        "fileName": "SIG-20260820-0015_28e118b8.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 398377,
+        "sha256": "302244cb8a2de8d5560b2198a16bdd525a2004b466f040966dea7b2a14d8a100",
+        "localUri": "https://drive.google.com/file/d/1yj1z_Z4ZWOnVzeYvV0e7kKTsrAOMNB-e/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-7632A4149E914654",
+    "assetCode": "SIG-20260820-0016",
+    "category": "Placa de rua",
+    "categoryColor": "#2563eb",
+    "sector": "SETOR_VERDE",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.6101306621,
+    "normalizedY": 0.301614446,
+    "notes": "Sem observação",
+    "humanLocation": "Rua São Paulo",
+    "responsible": "CEOP",
+    "photos": [
+      {
+        "id": "FOTO-B4D434E8B5AC46DF",
+        "fileName": "SIG-20260820-0016_fb1b794a.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 199227,
+        "sha256": "ba8720b9eb17653e39dda26e70b2bdc8b18974372b15ce522835f5f426d996d4",
+        "localUri": "https://drive.google.com/file/d/1SWQdnztcilUv6pOUnUNd3gKSRcXtlWSB/preview",
+        "uploadedToS3": true
+      },
+      {
+        "id": "FOTO-0937F76630244DBC",
+        "fileName": "SIG-20260820-0016_f9dba9d8.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 344792,
+        "sha256": "a6629144abdbfe379799cbc1e74e14eb65d5b8ddfbada3e5bfb234d0d0be2e44",
+        "localUri": "https://drive.google.com/file/d/1Kt8yT05XvZFTUz0JhqnmkgqA_szohk23/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-3096DEA617D6496A",
+    "assetCode": "SIG-20260820-0017",
+    "category": "Sinalização temporária",
+    "categoryColor": "#0284c7",
+    "sector": "SETOR_VERDE",
+    "status": "ATIVA",
+    "conservationState": "Regular",
+    "normalizedX": 0.5525730706,
+    "normalizedY": 0.09306694511,
+    "notes": "Estrutura de lona",
+    "humanLocation": "Rua Guilherme Rocha",
+    "responsible": "Marketing",
+    "photos": [
+      {
+        "id": "FOTO-AB592CCAAFBC4526",
+        "fileName": "SIG-20260820-0017_70b9489d.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 270698,
+        "sha256": "199494fefe47eeee23eba26265b2fb521338c7c765e1045cabb9c46c2052de46",
+        "localUri": "https://drive.google.com/file/d/13vt3CUgj0xUnmXdS1YIsWqwnvZR4BQJT/preview",
+        "uploadedToS3": true
+      },
+      {
+        "id": "FOTO-32D95C9FFE0E4FDB",
+        "fileName": "SIG-20260820-0017_ae66b1c6.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 309937,
+        "sha256": "87b5fb9319383f0609d70a4031da690698dbfc682daf90b5ed9cbd9c35f8bb59",
+        "localUri": "https://drive.google.com/file/d/15EN7tVy_TAUmrIRAam3n70A1PJcfQ26g/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-3A510E83CF09484A",
+    "assetCode": "SIG-20260820-0018",
+    "category": "Sinalização temporária",
+    "categoryColor": "#0284c7",
+    "sector": "SETOR_VERDE",
+    "status": "ATIVA",
+    "conservationState": "Regular",
+    "normalizedX": 0.493220063,
+    "normalizedY": 0.0944662666,
+    "notes": "Comercial",
+    "humanLocation": "Rua Liberato Barroso",
+    "responsible": "Marketing",
+    "photos": [
+      {
+        "id": "FOTO-BD1A62CD5C844EAF",
+        "fileName": "SIG-20260820-0018_c433e05c.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 295251,
+        "sha256": "26445943f6390aea736064bdaf43e36051b482ec3191be40682d793ea5e172f3",
+        "localUri": "https://drive.google.com/file/d/1hj_vky2NiDrjvQamzP4F_JGXWj53FBLh/preview",
+        "uploadedToS3": true
+      },
+      {
+        "id": "FOTO-7338E632A6BF41AD",
+        "fileName": "SIG-20260820-0018_905fec93.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 305647,
+        "sha256": "b3d0130c9fdd334700169c145cbe9592c23f8d68cd0fd30ce1b5da5e524bc53e",
+        "localUri": "https://drive.google.com/file/d/1RQNI8p3pwwAurpQiMXDyFON_FvwtK3b6/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-4F7297F586C44EE2",
+    "assetCode": "SIG-20260820-0019",
+    "category": "Sinalização temporária",
+    "categoryColor": "#0284c7",
+    "sector": "SETOR_VERDE",
+    "status": "ATIVA",
+    "conservationState": "Regular",
+    "normalizedX": 0.4655219928,
+    "normalizedY": 0.1067803106,
+    "notes": "Comercial",
+    "humanLocation": "Rua Liberato Barroso",
+    "responsible": "Marketing",
+    "photos": [
+      {
+        "id": "FOTO-F5BB7D9BDE394D85",
+        "fileName": "SIG-20260820-0019_df6f25dc.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 255616,
+        "sha256": "12123795590999a88cb206f34309662cfc0c3333459a37e124388121f6e3d840",
+        "localUri": "https://drive.google.com/file/d/1MKy--M-Hchs03cW-pXoF4C2Ea4k5rEJq/preview",
+        "uploadedToS3": true
+      },
+      {
+        "id": "FOTO-7BA9C4DF959C40D6",
+        "fileName": "SIG-20260820-0019_a8504cfd.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 295951,
+        "sha256": "a42f04bfbd0b28e4c582c21a8bf5ceda0cde8e7a919ca2f3678f19d0dd4b7f26",
+        "localUri": "https://drive.google.com/file/d/1FKIeRhEkXyRKwJ77xptgC4OR6ErKRFHR/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-5ACDAD4309B448D2",
+    "assetCode": "SIG-20260820-0020",
+    "category": "Placa de rua",
+    "categoryColor": "#2563eb",
+    "sector": "SETOR_VERDE",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.5515838538,
+    "normalizedY": 0.3005863365,
+    "notes": "Sem observação",
+    "humanLocation": "Rua Guilherme Rocha",
+    "responsible": "CEOP",
+    "photos": [
+      {
+        "id": "FOTO-CAE742B5CCF840D3",
+        "fileName": "SIG-20260820-0020_280bcba1.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 244511,
+        "sha256": "53050aceee7b181383e2fbcb6f93fed530c888ca7669f08ad8613d79e7615f54",
+        "localUri": "https://drive.google.com/file/d/1gnLP1WexG4xHUmU7r51xhobJ_Livl-la/preview",
+        "uploadedToS3": true
+      },
+      {
+        "id": "FOTO-B7A17F5B253D46E4",
+        "fileName": "SIG-20260820-0020_6db418e9.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 332437,
+        "sha256": "e07e8083c28e983eae341b3c8cb881d94449af04eff582d9957725faebe6d70d",
+        "localUri": "https://drive.google.com/file/d/1PqpXbjyNPD98GgyhwYtLB7x4exdMJkj5/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-C88D73BCB0764AC2",
+    "assetCode": "SIG-20260820-0021",
+    "category": "Placa de rua",
+    "categoryColor": "#2563eb",
+    "sector": "SETOR_VERDE",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.554292958,
+    "normalizedY": 0.7414058296,
+    "notes": "Sem observação",
+    "humanLocation": "Rua Guilherme Rocha",
+    "responsible": "CEOP",
+    "photos": [
+      {
+        "id": "FOTO-3DFBD5B4E3BE49D7",
+        "fileName": "SIG-20260820-0021_cab14312.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 199367,
+        "sha256": "bc91ab605fcfc8a28f99e09a4137e673adf4fc7f2ea4513307378f21d25c8113",
+        "localUri": "https://drive.google.com/file/d/1SPUabdw4y3YZii5T8Ih1hWw-kJFrNZef/preview",
+        "uploadedToS3": true
+      },
+      {
+        "id": "FOTO-A11751C04D3B412C",
+        "fileName": "SIG-20260820-0021_88b7ae3a.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 325399,
+        "sha256": "c41acbf5cf0957819c87e1873d5193fa6e14604e6904dfc410cf89b8512fcd8e",
+        "localUri": "https://drive.google.com/file/d/1K_8xj6RQ7tizVe9TJq2Snv6LwJDiIN2Y/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-632DE97A214A4277",
+    "assetCode": "SIG-20260820-0022",
+    "category": "Totem",
+    "categoryColor": "#f59e0b",
+    "sector": "SETOR_VERDE",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.5197705075,
+    "normalizedY": 0.8312266124,
+    "notes": "Mídia disponível",
+    "humanLocation": "Rua Liberato Barroso",
+    "responsible": "Manutenção",
+    "photos": [
+      {
+        "id": "FOTO-2FA08A5776464515",
+        "fileName": "SIG-20260820-0022_f3acc395.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 254300,
+        "sha256": "46c6ce0f42bb8ecff006f4c90a1ae3e73d87753fb071c099d070fb451437e1b3",
+        "localUri": "https://drive.google.com/file/d/1ydZFJpYvax0IlvWbJCQxrctnimyWNBxE/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-687382674B7D4535",
+    "assetCode": "SIG-20260820-0023",
+    "category": "Placa de rua",
+    "categoryColor": "#2563eb",
+    "sector": "SETOR_VERDE",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.4938786697,
+    "normalizedY": 0.7396617367,
+    "notes": "Sem observações",
+    "humanLocation": "Rua Liberato Barroso",
+    "responsible": "CEOP",
+    "photos": [
+      {
+        "id": "FOTO-D5FFAD9E9B2E4E48",
+        "fileName": "SIG-20260820-0023_316af4a0.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 221415,
+        "sha256": "4043fe457e22df987be5315ad80fbc857d6e5a9e28f179542f8350b7a5c78015",
+        "localUri": "https://drive.google.com/file/d/1gx-TTZbYfgnXzdg9huidFCv4-F0BMpIu/preview",
+        "uploadedToS3": true
+      },
+      {
+        "id": "FOTO-7E10A3A4D37845DF",
+        "fileName": "SIG-20260820-0023_d53e355b.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 293524,
+        "sha256": "52ac273938c6cb065f5b943c3da1d26c7b47ed4ecb2188e17f3410a9d6350e2e",
+        "localUri": "https://drive.google.com/file/d/1cnCMN8fSNj7gqmS648U48O_D7uEaEs4b/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-2F431A5D66F14D24",
+    "assetCode": "SIG-20260820-0024",
+    "category": "Adesivo de piso",
+    "categoryColor": "#ec4899",
+    "sector": "SETOR_VERDE",
+    "status": "ATIVA",
+    "conservationState": "Ruim",
+    "normalizedX": 0.4901798357,
+    "normalizedY": 0.7640790369,
+    "notes": "Desgastado",
+    "humanLocation": "Rua Liberato Barroso",
+    "responsible": "Marketing",
+    "photos": [
+      {
+        "id": "FOTO-9353E10E3E184EC6",
+        "fileName": "SIG-20260820-0024_883c7d88.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 256182,
+        "sha256": "cac785fac4eee1806e8f75d62fe75ffc1584f7c25e80a63dcd25240f14d2cf41",
+        "localUri": "https://drive.google.com/file/d/1ZT4ZjUlemCSNxsAFjKq-eMktmMbA2WKl/preview",
+        "uploadedToS3": true
+      },
+      {
+        "id": "FOTO-E5895F46260F4DE0",
+        "fileName": "SIG-20260820-0024_8a8e5eee.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 318464,
+        "sha256": "ae8b5a2cd12310c9d6cc306fbb017d1be66a2f6120b3e1a699dda5d85234fcc3",
+        "localUri": "https://drive.google.com/file/d/1xeWoK-ckOK7Nvn6wPH81raTQQgVoE3jh/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-98E4A5BFEDDC407C",
+    "assetCode": "SIG-20260820-0025",
+    "category": "Placa de rua",
+    "categoryColor": "#2563eb",
+    "sector": "SETOR_VERDE",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.4909192175,
+    "normalizedY": 0.3021739596,
+    "notes": "Sem observação",
+    "humanLocation": "Rua Liberato Barroso",
+    "responsible": "CEOP",
+    "photos": [
+      {
+        "id": "FOTO-57AC8773A31A497C",
+        "fileName": "SIG-20260820-0025_e4457aa1.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 219105,
+        "sha256": "9947ae9d1e8ed9b196718d5397fb427674eb5f7e667b77bf190ff26034c862c4",
+        "localUri": "https://drive.google.com/file/d/1VUP5eVMQCO5BsM8HXKUqqax6NpVReAvR/preview",
+        "uploadedToS3": true
+      },
+      {
+        "id": "FOTO-793679C5B81149A1",
+        "fileName": "SIG-20260820-0025_21496aea.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 318535,
+        "sha256": "464800f813d0fe85c94193cb95f05122466dd5589ff3d822a81e04567ed28e96",
+        "localUri": "https://drive.google.com/file/d/1NJg6shRT3GIkztGlbl6iEQhKrhLWiT-a/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-456B57BD112A4020",
+    "assetCode": "SIG-20260820-0026",
+    "category": "Adesivo de piso",
+    "categoryColor": "#ec4899",
+    "sector": "SETOR_VERDE",
+    "status": "ATIVA",
+    "conservationState": "Regular",
+    "normalizedX": 0.432157728,
+    "normalizedY": 0.1881822823,
+    "notes": "Sem observação",
+    "humanLocation": "Rua Pedro Pereira",
+    "responsible": "Marketing",
+    "photos": [
+      {
+        "id": "FOTO-F41B5A37C6E344BC",
+        "fileName": "SIG-20260820-0026_7eb2511b.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 209553,
+        "sha256": "0401da36409e03f3d21a29094b2e2ffffe4d6dedfd5f951b9c7062b5232e3c9e",
+        "localUri": "https://drive.google.com/file/d/1YWVPm4IuX1IUTYwEabYR65uiOUWSSLah/preview",
+        "uploadedToS3": true
+      },
+      {
+        "id": "FOTO-3E6886ED32C64439",
+        "fileName": "SIG-20260820-0026_7d4dd6f7.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 301799,
+        "sha256": "6c9c444d5cbf2a7d4902031ac5e6919e3787bfd172e59acb56dc5164c6855bf0",
+        "localUri": "https://drive.google.com/file/d/1FPF42qat1ex9AkRoeULm85kGyBlbipDl/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-6BD8076E0AF641A3",
+    "assetCode": "SIG-20260820-0027",
+    "category": "Placa de rua",
+    "categoryColor": "#2563eb",
+    "sector": "SETOR_VERDE",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.4299840878,
+    "normalizedY": 0.3036401817,
+    "notes": "Sem observação",
+    "humanLocation": "Rua Pedro Pereira",
+    "responsible": "CEOP",
+    "photos": [
+      {
+        "id": "FOTO-C2C7D5215BA040D2",
+        "fileName": "SIG-20260820-0027_787c183a.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 211898,
+        "sha256": "12359037de220ee69acb1cb9f1a67ff605de1ec42ffbe4d42192423864fc862c",
+        "localUri": "https://drive.google.com/file/d/1g3JL2qKShHaolAnjWk9UeAB2xACEtnda/preview",
+        "uploadedToS3": true
+      },
+      {
+        "id": "FOTO-2CC0B44BC5004743",
+        "fileName": "SIG-20260820-0027_732c4df9.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 313268,
+        "sha256": "093dd573a27b23117b28ac3ec4125ac2b8519af2f9a9727f34d114662da601de",
+        "localUri": "https://drive.google.com/file/d/1sw9IjUnV39Pmcv19CTrhjqCF24xep0BX/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-8865C60073DD47AC",
+    "assetCode": "SIG-20260820-0028",
+    "category": "Placa de rua",
+    "categoryColor": "#2563eb",
+    "sector": "SETOR_VERDE",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.431854265,
+    "normalizedY": 0.7408221363,
+    "notes": "Sem observação",
+    "humanLocation": "Rua Pedro Pereira",
+    "responsible": "CEOP",
+    "photos": [
+      {
+        "id": "FOTO-47D6659C5DCC4D3E",
+        "fileName": "SIG-20260820-0028_ad6969cf.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 222406,
+        "sha256": "77c534dd8cd87dd7987bb1d8a6b4cd9ddd8dd725dc122f1f4b733be54afcd622",
+        "localUri": "https://drive.google.com/file/d/1FfMdbgj54aedkcOFcGi0srRGVMetYTgd/preview",
+        "uploadedToS3": true
+      },
+      {
+        "id": "FOTO-CB94473923934D2B",
+        "fileName": "SIG-20260820-0028_64f2afda.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 309528,
+        "sha256": "600dbdea0c6774bec08c4e7b7241e16a162dc0bc95136cd5c71d26fbc979205d",
+        "localUri": "https://drive.google.com/file/d/1arwtXg7na4tBb9yIniIeulmIvL5PWhoN/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-77864E2682A34C89",
+    "assetCode": "SIG-20260820-0029",
+    "category": "Placa de rua",
+    "categoryColor": "#2563eb",
+    "sector": "SETOR_VERDE",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.3710034246,
+    "normalizedY": 0.7393556971,
+    "notes": "Sem observação",
+    "humanLocation": "Rua Dom Pedro I",
+    "responsible": "CEOP",
+    "photos": [
+      {
+        "id": "FOTO-47A2F8451D6C42B2",
+        "fileName": "SIG-20260820-0029_c5b9be53.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 211879,
+        "sha256": "b75f156bb92d3906b42d8a7b2e27ee3b904b130513084ff03cfe5af09cfe3008",
+        "localUri": "https://drive.google.com/file/d/1AWMN_Kh5V8wCBz4lfTyvb6tDRdogFSfU/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-8B87A1B33B3448DC",
+    "assetCode": "SIG-20260820-0030",
+    "category": "Outra",
+    "categoryColor": "#0284c7",
+    "sector": "SETOR_VERDE",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.4455550256,
+    "normalizedY": 0.6564275305,
+    "notes": "Sem observação",
+    "humanLocation": "Rua Pedro Pereira",
+    "responsible": "Marketing",
+    "photos": [
+      {
+        "id": "FOTO-9EB372C649C0438E",
+        "fileName": "SIG-20260820-0030_ce8b4da3.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 238579,
+        "sha256": "77a544c667cfd2008006dc0f4eac489ef8c7eae2ebb2423250f66e1c5c580076",
+        "localUri": "https://drive.google.com/file/d/1hN5BWh3H4ncfOP770_SbM3nZ4jtPKzPO/preview",
+        "uploadedToS3": true
+      },
+      {
+        "id": "FOTO-2D80679267314C6B",
+        "fileName": "SIG-20260820-0030_20e59c13.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 331542,
+        "sha256": "d1bd216453964a126715844b456d36c7bea66c2fa89ca2fb5bfc71a7d8b32b6a",
+        "localUri": "https://drive.google.com/file/d/1H1789U2OCA2R87BkD-u3Kz-2rWZXUMsL/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-706CDE9B94694528",
+    "assetCode": "SIG-20260820-0031",
+    "category": "Placa de rua",
+    "categoryColor": "#2563eb",
+    "sector": "SETOR_VERDE",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.3684195819,
+    "normalizedY": 0.3051514295,
+    "notes": "Sem observação",
+    "humanLocation": "Rua Dom Pedro I",
+    "responsible": "CEOP",
+    "photos": [
+      {
+        "id": "FOTO-1F1B9312C8444FC4",
+        "fileName": "SIG-20260820-0031_400ada14.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 191306,
+        "sha256": "39a5dbe5aca2fe92909563848455864456cebbec9dbbbcd21bb048889a499b27",
+        "localUri": "https://drive.google.com/file/d/1bVEBN2w3Zw5gbUSEA44rTh5yoU7mtq9_/preview",
+        "uploadedToS3": true
+      },
+      {
+        "id": "FOTO-5EBB85BA00BF456F",
+        "fileName": "SIG-20260820-0031_637c5ab0.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 329055,
+        "sha256": "27013c4a4523cec8ce4d0a73ab29ad458560889d713f22f11b8eef61f059c09a",
+        "localUri": "https://drive.google.com/file/d/1CHg9bA6qbUg1lUNZn7JfqerOwqtj-lQO/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-E1C0439E1D4F41C6",
+    "assetCode": "SIG-20260821-0001",
+    "category": "Outra",
+    "categoryColor": "#0284c7",
+    "sector": "SETOR_VERDE",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.5250437697,
+    "normalizedY": 0.9532755116,
+    "notes": "Sem observação",
+    "humanLocation": "Sacolão",
+    "responsible": "Marketing",
+    "photos": [
+      {
+        "id": "FOTO-271C04F403F54D65",
+        "fileName": "SIG-20260821-0001_2a82d130.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 364843,
+        "sha256": "531e8c9dd3f461c935e2b2b3bd93552babcc531f24df8b0f7fa02bb5867dcb6a",
+        "localUri": "https://drive.google.com/file/d/1dnLZ_h_0qBUp5z1Zl6Xs5HAG-CyNRnbN/preview",
+        "uploadedToS3": true
+      },
+      {
+        "id": "FOTO-AF8F561EB55A40E2",
+        "fileName": "SIG-20260821-0001_b6372114.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 322168,
+        "sha256": "84af33785943ea1e09f318929db61756f0e457cb563391955417313dd57f9ec3",
+        "localUri": "https://drive.google.com/file/d/1YzN_AK4wlEpumw1UU_ZWq7MvqyDx4QxI/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-38375E1BBF934164",
+    "assetCode": "SIG-20260824-0001",
+    "category": "Adesivo de piso",
+    "categoryColor": "#ec4899",
+    "sector": "SETOR_VERDE",
+    "status": "ATIVA",
+    "conservationState": "Ruim",
+    "normalizedX": 0.3590780942,
+    "normalizedY": 0.1889177346,
+    "notes": "Peça desgastada",
+    "humanLocation": "Rua Dom Pedro I",
+    "responsible": "Marketing",
+    "photos": [
+      {
+        "id": "FOTO-C7BD7CAC0BF54C9B",
+        "fileName": "SIG-20260824-0001_2832c5a7.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 320397,
+        "sha256": "a6003b8a9f2615a122d6ab20b6b1f422a9aa81cc36bec8fbfd6b0ebed97a5930",
+        "localUri": "https://drive.google.com/file/d/1NKyjmnl-BKrqo27NV_ZveHUV59lO8S2z/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-71349E5916EA44CE",
+    "assetCode": "SIG-20260824-0002",
+    "category": "Placa de galeria",
+    "categoryColor": "#0284c7",
+    "sector": "SETOR_VERDE",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.3566994051,
+    "normalizedY": 0.1214930081,
+    "notes": "Galeria L\n1160 - 1108\nDOM PEDRO I",
+    "humanLocation": "Rua Dom Pedro I",
+    "responsible": "CEOP",
+    "photos": [
+      {
+        "id": "FOTO-BF79675A59964951",
+        "fileName": "SIG-20260824-0002_3180f073.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 195742,
+        "sha256": "f90a1794c5224afb5f96afac868d4026bbf9f50a6c7c593452613e45e74a24f6",
+        "localUri": "https://drive.google.com/file/d/1gOzaWPJi6y0IFZ-y0hC6TS-gTBXHadc_/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-E4025337D1944177",
+    "assetCode": "SIG-20260824-0003",
+    "category": "Placa de galeria",
+    "categoryColor": "#0284c7",
+    "sector": "SETOR_VERDE",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.2962707739,
+    "normalizedY": 0.1216431998,
+    "notes": "Sem Observação",
+    "humanLocation": "Avenida Duque de Caxias",
+    "responsible": "CEOP",
+    "photos": [
+      {
+        "id": "FOTO-449FB0C5752E4003",
+        "fileName": "SIG-20260824-0003_cd0e7b93.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 180054,
+        "sha256": "c0381abc3455f23174f62741cb4c7c7ddb344e134ab14c59e630fe1e356dce59",
+        "localUri": "https://drive.google.com/file/d/1oVeptJUbmPqPdJ2triSzdSM5uUbdDP4Q/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-B4F9889208934B9C",
+    "assetCode": "SIG-20260824-0004",
+    "category": "Placa de rua",
+    "categoryColor": "#2563eb",
+    "sector": "SETOR_VERDE",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.3071590898,
+    "normalizedY": 0.2996097333,
+    "notes": "Sem observações",
+    "humanLocation": "Avenida Duque de Caxias",
+    "responsible": "CEOP",
+    "photos": [
+      {
+        "id": "FOTO-F599D13EE5024A55",
+        "fileName": "SIG-20260824-0004_4757d553.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 343533,
+        "sha256": "d295317efc98419d44681c8a2caed3f852be918988b6237509a75d358f7cc752",
+        "localUri": "https://drive.google.com/file/d/1GeLCJSmgOqGaxVYPoYLe9QPRH4qA37FW/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-E1B512F52DE54057",
+    "assetCode": "SIG-20260824-0005",
+    "category": "Placa de serviço",
+    "categoryColor": "#0d9488",
+    "sector": "SETOR_VERDE",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.3083602753,
+    "normalizedY": 0.5432745756,
+    "notes": "Sem Observações",
+    "humanLocation": "Avenida Duque de Caxias",
+    "responsible": "CEOP",
+    "photos": [
+      {
+        "id": "FOTO-F9B2A01879D64C07",
+        "fileName": "SIG-20260824-0005_c6af19d8.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 205464,
+        "sha256": "5159558d7b1fcba8caeb0c8cf5833702f80334501a119b83b47eb4fde17aabaa",
+        "localUri": "https://drive.google.com/file/d/1ytNQ8YFvYBKLbhMTmSKCcr3Ey6Tjnfw1/preview",
+        "uploadedToS3": true
+      },
+      {
+        "id": "FOTO-89DD0C884E14403A",
+        "fileName": "SIG-20260824-0005_5f36c321.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 325172,
+        "sha256": "0b8625678ea19131767751b52ae40c02f83c53f0049da03be323e4454186210c",
+        "localUri": "https://drive.google.com/file/d/1SXiLYtKuO481hR3-8Pkp-14QbeXwPcU_/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-F102C333ACFF4918",
+    "assetCode": "SIG-20260824-0006",
+    "category": "Placa de rua",
+    "categoryColor": "#2563eb",
+    "sector": "SETOR_VERDE",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.3080930441,
+    "normalizedY": 0.7385390412,
+    "notes": "Sem Observação",
+    "humanLocation": "Avenida Duque de Caxias",
+    "responsible": "CEOP",
+    "photos": [
+      {
+        "id": "FOTO-1FF27260B72F4F2D",
+        "fileName": "SIG-20260824-0006_e8a23169.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 262187,
+        "sha256": "199154f1b1619c376516d0bd977863ec09a4140c33896b0742ccbc8f9f0765a2",
+        "localUri": "https://drive.google.com/file/d/1EtmUgmt7grnK6Hdm_BaGnz1TKy9dP1Nj/preview",
+        "uploadedToS3": true
+      },
+      {
+        "id": "FOTO-1C6989BE7E364B77",
+        "fileName": "SIG-20260824-0006_84c577da.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 318543,
+        "sha256": "658f6938901dc4391cc84f6b3d793343cca97f9d2e9598d8b39c9b6cce809741",
+        "localUri": "https://drive.google.com/file/d/1cQKWR-9y8AL0V5QiHvcj6E-5Y2Trl6pc/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-C1F97B731B874DB8",
+    "assetCode": "SIG-20260824-0007",
+    "category": "Placa de rua",
+    "categoryColor": "#2563eb",
+    "sector": "SETOR_VERDE",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.2468915266,
+    "normalizedY": 0.7366487683,
+    "notes": "Sem Observação",
+    "humanLocation": "Rua Clarindo de Queiroz",
+    "responsible": "CEOP",
+    "photos": [
+      {
+        "id": "FOTO-FDE75C794B0849F6",
+        "fileName": "SIG-20260824-0007_78d5a191.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 196571,
+        "sha256": "e51954f174ddfbe42a7259ddcefb1d35bd5fba609a30b5481835193365b72e32",
+        "localUri": "https://drive.google.com/file/d/1DLBrT0hK4xkDkdO2r_rOu3yoLMDyF9ym/preview",
+        "uploadedToS3": true
+      },
+      {
+        "id": "FOTO-CF39DB7168644957",
+        "fileName": "SIG-20260824-0007_e88ba31f.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 369564,
+        "sha256": "966596ee922a179fbdb1766e9824e8619376cd92f62c7cb88cab9fd44b1c6d0d",
+        "localUri": "https://drive.google.com/file/d/1fQ2xSZktltkLcb49R6QO_RvuZwWZ8Z95/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-813CABEF0F244AC6",
+    "assetCode": "SIG-20260824-0008",
+    "category": "Adesivo de piso",
+    "categoryColor": "#ec4899",
+    "sector": "SETOR_VERDE",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.3202531823,
+    "normalizedY": 0.5453539154,
+    "notes": "Desgastado",
+    "humanLocation": "Avenida Duque de Caxias",
+    "responsible": "Marketing",
+    "photos": [
+      {
+        "id": "FOTO-6F3475B3FEBA481E",
+        "fileName": "SIG-20260824-0008_12c17bb6.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 279682,
+        "sha256": "f65b2580e4051ac88fb218e7f96a1543f95e3acb7d3a42706c9de46fbc429419",
+        "localUri": "https://drive.google.com/file/d/12SOg3hIERAEwH8Y44uvStsnn46VnBn4V/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-13B852124626473F",
+    "assetCode": "SIG-20260824-0009",
+    "category": "Adesivo de parede",
+    "categoryColor": "#ec4899",
+    "sector": "SETOR_VERDE",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.3387205811,
+    "normalizedY": 0.6211048695,
+    "notes": "Sem observação",
+    "humanLocation": "Rua Dom Pedro I",
+    "responsible": "Marketing",
+    "photos": [
+      {
+        "id": "FOTO-524FF990E86A4F9B",
+        "fileName": "SIG-20260824-0009_b6617f93.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 336670,
+        "sha256": "89ee868f3ccdba01014e47a00f8cd241603d078c9eadff7d97fb4b1e043cf242",
+        "localUri": "https://drive.google.com/file/d/17b6oDofC00Aa4U7V1c5Q8YlmA2k4Lvw7/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-5592B4E40382482E",
+    "assetCode": "SIG-20260824-0010",
+    "category": "Banner",
+    "categoryColor": "#0284c7",
+    "sector": "SETOR_VERDE",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.3638791399,
+    "normalizedY": 0.6273040279,
+    "notes": "Colada com fita na lateral interna do elevador",
+    "humanLocation": "Rua Dom Pedro I",
+    "responsible": "Marketing",
+    "photos": [
+      {
+        "id": "FOTO-C81908D2C94C4387",
+        "fileName": "SIG-20260824-0010_12243d8b.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 196025,
+        "sha256": "c64954adb4d98523ae27c1bb2c037671e2f177c0febc793bb50316bf5f24b33b",
+        "localUri": "https://drive.google.com/file/d/1XsxTx9_bybcaOTAj2NPS2O96aEbjHFJ1/preview",
+        "uploadedToS3": true
+      },
+      {
+        "id": "FOTO-53B5E0C20AD84EFC",
+        "fileName": "SIG-20260824-0010_a3a34dd1.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 229250,
+        "sha256": "b253ef52acfe24850c44822eca1af68d1d88d8405025b3938dfc229f1b41eb50",
+        "localUri": "https://drive.google.com/file/d/1V2ViETSfoYpVVojzBPebUCkizMY4g6Bf/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-C662CFACF81247F0",
+    "assetCode": "SIG-20260824-0011",
+    "category": "Placa de rua",
+    "categoryColor": "#2563eb",
+    "sector": "SETOR_VERDE",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.2483672941,
+    "normalizedY": 0.2972471507,
+    "notes": "Sem observação",
+    "humanLocation": "Rua Clarindo de Queiroz",
+    "responsible": "CEOP",
+    "photos": [
+      {
+        "id": "FOTO-28724758E5854E0D",
+        "fileName": "SIG-20260824-0011_b70c629e.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 183025,
+        "sha256": "c8c0e0efafc6f8c8d305d436d034aa8c099d923ac2f323cc330f71704ed32264",
+        "localUri": "https://drive.google.com/file/d/1jF59neHB369ZlzNxApG6fQHPRDi-7Iku/preview",
+        "uploadedToS3": true
+      },
+      {
+        "id": "FOTO-6D44B3BD12B34DE8",
+        "fileName": "SIG-20260824-0011_2f9ebdf6.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 327598,
+        "sha256": "22055eaf687eaed65bbb73efa92693e5b398d123799a9ee35d8fa899eafe51cb",
+        "localUri": "https://drive.google.com/file/d/16KyWsvpEgT1eL6qXayu4_h7swM_o2tSe/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-847BABD48C314513",
+    "assetCode": "SIG-20260824-0012",
+    "category": "Placa de serviço",
+    "categoryColor": "#0d9488",
+    "sector": "SETOR_VERDE",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.2238694858,
+    "normalizedY": 0.09665577503,
+    "notes": "Sem observação",
+    "humanLocation": "Rua Clarindo de Queiroz",
+    "responsible": "CEOP",
+    "photos": [
+      {
+        "id": "FOTO-D997D1E9358D449B",
+        "fileName": "SIG-20260824-0012_b8835cf3.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 266558,
+        "sha256": "3e5ac2d0ef0431a03fe2c9927616c35575e06e2941ed93e84edb229b34b458a5",
+        "localUri": "https://drive.google.com/file/d/1eoebT2BTIBXuNlU9OL3qz5cuhVY2thvI/preview",
+        "uploadedToS3": true
+      },
+      {
+        "id": "FOTO-278A30D082D345D0",
+        "fileName": "SIG-20260824-0012_9b4ebee9.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 268726,
+        "sha256": "bf9d6aebae8c8914d8d88c0adcd5f826c4dbbac7f10d06de073399a823fde5fd",
+        "localUri": "https://drive.google.com/file/d/1efucfctb_w3SdgeyE47ZiQCNWX4Dhxxx/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-42B0F2C0ABA541C6",
+    "assetCode": "SIG-20260824-0013",
+    "category": "Placa informativa",
+    "categoryColor": "#ea580c",
+    "sector": "SETOR_VERDE",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.174707262,
+    "normalizedY": 0.1164757181,
+    "notes": "Sem Observação",
+    "humanLocation": "Rua Meton de Alencar",
+    "responsible": "CEOP",
+    "photos": [
+      {
+        "id": "FOTO-1DBB46BEBACD4D4D",
+        "fileName": "SIG-20260824-0013_2225a334.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 237243,
+        "sha256": "d4bf02452ac94befbee67e5661dd39e548af726a02821284850f1a4266e734d8",
+        "localUri": "https://drive.google.com/file/d/1Lslzsq83E2tuCl4NH45s9by43p9697Tg/preview",
+        "uploadedToS3": true
+      },
+      {
+        "id": "FOTO-FC59E900C0CB4E42",
+        "fileName": "SIG-20260824-0013_57935b1c.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 334913,
+        "sha256": "ee07db3456786aaf350894f73bb18f2a64c39e219831014beb07f2e3e1ff3faf",
+        "localUri": "https://drive.google.com/file/d/19QY8E4qtfpv62ARWBWLrWbVxiIcm0VVs/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-D45CFAC5FA8F48E4",
+    "assetCode": "SIG-20260824-0014",
+    "category": "Placa de rua",
+    "categoryColor": "#2563eb",
+    "sector": "SETOR_VERDE",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.1759854753,
+    "normalizedY": 0.294924743,
+    "notes": "Rua Meton de Alencar\nRua Antônio Pompeu",
+    "humanLocation": "Rua Meton de Alencar",
+    "responsible": "CEOP",
+    "photos": [
+      {
+        "id": "FOTO-A44FC0B81DD34643",
+        "fileName": "SIG-20260824-0014_b343b735.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 234370,
+        "sha256": "4f2a04a4519eb77dd68b14ee39be8bfa397ba49437b99497e22e37855b803a94",
+        "localUri": "https://drive.google.com/file/d/1qByZKAPlQcMZh2Hoh62q3RB6zXRfwVs5/preview",
+        "uploadedToS3": true
+      },
+      {
+        "id": "FOTO-6C769DDC855B48AB",
+        "fileName": "SIG-20260824-0014_e0602929.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 354685,
+        "sha256": "07563ea1b62c4fbfe7c5409c4ad012f5f8a60430e1603d49349ceef5aea354d3",
+        "localUri": "https://drive.google.com/file/d/1qxKd99bJxQtoyZQYAPa3konBHVfGRg5J/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-769F89924915497F",
+    "assetCode": "SIG-20260824-0015",
+    "category": "Placa de loja",
+    "categoryColor": "#3b82f6",
+    "sector": "SETOR_VERDE",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.197125239,
+    "normalizedY": 0.6211540757,
+    "notes": "Sem observação",
+    "humanLocation": "Rua Meton de Alencar",
+    "responsible": "CEOP",
+    "photos": [
+      {
+        "id": "FOTO-D9629B8C4CD54C21",
+        "fileName": "SIG-20260824-0015_73e5c128.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 236064,
+        "sha256": "792a0e9d1a167b9b28420182907f8d2f01e07572ad319da32a34fbbebde44d82",
+        "localUri": "https://drive.google.com/file/d/1wX04RNN48B-p0dcXqB5GW1ugOEPQcf9f/preview",
+        "uploadedToS3": true
+      },
+      {
+        "id": "FOTO-D508BFEAB9BC473E",
+        "fileName": "SIG-20260824-0015_63f2648c.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 350205,
+        "sha256": "536e55c15aba89205e98ad276fbc3058d9ba43b2ab4a6900599c1d970e3ee30c",
+        "localUri": "https://drive.google.com/file/d/1FibkwKX7c9O3cUXnDZsm9MAeneCfD3Ft/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-DEF7575992714EBB",
+    "assetCode": "SIG-20260824-0016",
+    "category": "Placa de rua",
+    "categoryColor": "#2563eb",
+    "sector": "SETOR_VERDE",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.176548738,
+    "normalizedY": 0.7358694345,
+    "notes": "Sem observação",
+    "humanLocation": "Rua Meton de Alencar",
+    "responsible": "CEOP",
+    "photos": [
+      {
+        "id": "FOTO-12DCC3743E3146A1",
+        "fileName": "SIG-20260824-0016_1e7cb054.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 221226,
+        "sha256": "9b0fe32fe31bd93090ed68b1a735f307aff1ec65e0053ff49e4bd8db857a4fa8",
+        "localUri": "https://drive.google.com/file/d/1DW4VX2moff5v92QfiH_428vIUeIcbF37/preview",
+        "uploadedToS3": true
+      },
+      {
+        "id": "FOTO-9AB1A87FB6AD4ABB",
+        "fileName": "SIG-20260824-0016_c7cf2698.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 327016,
+        "sha256": "a0076d46fcb1a83ca5cb268e6c2e1413891b540e5aa46e274129e646e328cc84",
+        "localUri": "https://drive.google.com/file/d/1PesO6nhkvfJi8CJas-L7CDlmTiuf3Y2S/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-9F388D87BEE944BA",
+    "assetCode": "SIG-20260824-0017",
+    "category": "Placa de serviço",
+    "categoryColor": "#0d9488",
+    "sector": "SETOR_VERDE",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.2132368384,
+    "normalizedY": 0.9290333962,
+    "notes": "Retire aqui\nseu carrinho\nde compras\ngratuito",
+    "humanLocation": "Placa informativa",
+    "responsible": "CEOP",
+    "photos": [
+      {
+        "id": "FOTO-CFB9EEFA4E0A4E38",
+        "fileName": "SIG-20260824-0017_454a3ca8.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 185977,
+        "sha256": "dc7902fb15161d457a8a1e5c6cfb119da3aa68b979556d14b71c701481f4b2d8",
+        "localUri": "https://drive.google.com/file/d/1wTZf3X_XhktGHx8MMel52lUbOJtgVWHY/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-49510FA8BA12474E",
+    "assetCode": "SIG-20260824-0018",
+    "category": "Painel",
+    "categoryColor": "#8b5cf6",
+    "sector": "SETOR_AZUL",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.9406646792,
+    "normalizedY": 0.1490238741,
+    "notes": "Sem observação",
+    "humanLocation": "Rua Princesa Isabel",
+    "responsible": "CEOP",
+    "photos": [
+      {
+        "id": "FOTO-8EEC8840DAF24AB4",
+        "fileName": "SIG-20260824-0018_19d8c77a.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 243023,
+        "sha256": "9035307c21dd6aceb4ef51609c68b494c7d8e24edbf1ce15a0bfa83bd174f1f6",
+        "localUri": "https://drive.google.com/file/d/1Vefdt4LieInmL270jN_G2D4nIn2BcJP2/preview",
+        "uploadedToS3": true
+      },
+      {
+        "id": "FOTO-04583316A6E74D13",
+        "fileName": "SIG-20260824-0018_56662f16.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 307120,
+        "sha256": "f9a9bb6c74e2bc1b6c70e87efde693e584a651c5dbc8a51b6c1b64b901d17930",
+        "localUri": "https://drive.google.com/file/d/16hUG3RlmcTfoZ7-z3bDvqPHt5kluX8bp/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-DC7A035C65E945BE",
+    "assetCode": "SIG-20260824-0019",
+    "category": "Placa de serviço",
+    "categoryColor": "#0d9488",
+    "sector": "SETOR_AZUL",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.969659,
+    "normalizedY": 0.147954,
+    "notes": "Sem observação",
+    "humanLocation": "Rua Princesa Isabel",
+    "responsible": "CEOP",
+    "photos": [
+      {
+        "id": "FOTO-14D0FE9684B24517",
+        "fileName": "SIG-20260824-0019_fc9d6e52.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 208343,
+        "sha256": "5bc162e04053212dbb7cc2d263c29fa9b0707bf99f754be55670d63b03cd4c5e",
+        "localUri": "https://drive.google.com/file/d/1rfxighOv57lqhuihUrvD03yy8ULRgChw/preview",
+        "uploadedToS3": true
+      },
+      {
+        "id": "FOTO-3FC2BBAAC19A48E2",
+        "fileName": "SIG-20260824-0019_ac76be50.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 288213,
+        "sha256": "b8a45b3d41c74f577ee691c177dde7745c898f79efe88fa15bd68a135ed61828",
+        "localUri": "https://drive.google.com/file/d/1_lDCv7kh9PtAvdEWhuVzWKfFlXvj3f1-/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-50ACEE8A6F5742D8",
+    "assetCode": "SIG-20260824-0020",
+    "category": "Placa de serviço",
+    "categoryColor": "#0d9488",
+    "sector": "SETOR_AZUL",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.709343,
+    "normalizedY": 0.240455,
+    "notes": "Sem observação",
+    "humanLocation": "Área externa lateral azul",
+    "responsible": "CEOP",
+    "photos": [
+      {
+        "id": "FOTO-EB33CC2DB7884899",
+        "fileName": "SIG-20260824-0020_f160b17f.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 288252,
+        "sha256": "8d942a2fce2ef5aa655e5059ab285b8ec5a1db8120a1d3e2c7f315ca519c0649",
+        "localUri": "https://drive.google.com/file/d/1ZqIjH76YMe2uq4Snj1WS4kIFxxjugEnm/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-B3015AD0822B4FA5",
+    "assetCode": "SIG-20260824-0022",
+    "category": "Adesivo de parede",
+    "categoryColor": "#ec4899",
+    "sector": "SETOR_AZUL",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.719007,
+    "normalizedY": 0.236814,
+    "notes": "Sem observação",
+    "humanLocation": "Área externa lateral azul",
+    "responsible": "Marketing",
+    "photos": [
+      {
+        "id": "FOTO-2A9590160B274679",
+        "fileName": "SIG-20260824-0022_8265eb08.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 218561,
+        "sha256": "fc296cb33c6bdd8a326dedcdfa990746720e717b16ef0b2d31ededf171fc03d5",
+        "localUri": "https://drive.google.com/file/d/1gpyfU8esgJmGZixU8pcCi1xW1unMbTE3/preview",
+        "uploadedToS3": true
+      },
+      {
+        "id": "FOTO-28BCA7DC169E4CC2",
+        "fileName": "SIG-20260824-0022_7346dc1d.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 254554,
+        "sha256": "8efa2650f275966b958238de9e68b0f2176990432b26722e49c5cb93174c8f04",
+        "localUri": "https://drive.google.com/file/d/1u0QTzlBpB7jsAaaG7sfUyV1hPdBDfpWn/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-98AA6B9F73394884",
+    "assetCode": "SIG-20260824-0023",
+    "category": "Placa de rua",
+    "categoryColor": "#2563eb",
+    "sector": "SETOR_AZUL",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.9435347968,
+    "normalizedY": 0.2089156216,
+    "notes": "Sem observações",
+    "humanLocation": "Rua Princesa Isabel",
+    "responsible": "CEOP",
+    "photos": [
+      {
+        "id": "FOTO-B7DD272D73BC49E8",
+        "fileName": "SIG-20260824-0023_b860096b.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 238927,
+        "sha256": "c6d102ea61c205a47df5d202096fa286e4a83ba15049a080432bc0e685bc8df8",
+        "localUri": "https://drive.google.com/file/d/1R1fM_s-gDK-8LRCtTlX-MuZQMF47rrU9/preview",
+        "uploadedToS3": true
+      },
+      {
+        "id": "FOTO-490E9F3CDD18447D",
+        "fileName": "SIG-20260824-0023_46249468.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 201708,
+        "sha256": "d3ff58f28649e33610a7f72203e70c66c697ba867e2f6c22bd4588dae7c2cc9b",
+        "localUri": "https://drive.google.com/file/d/11IN5KLDZPcYisiVbBgCQnDcz_oY6fT5o/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-9DA3F349B39B41D6",
+    "assetCode": "SIG-20260824-0024",
+    "category": "Placa informativa",
+    "categoryColor": "#ea580c",
+    "sector": "SETOR_AZUL",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.9585347606,
+    "normalizedY": 0.2223840132,
+    "notes": "Sem observação",
+    "humanLocation": "Rua Princesa Isabel",
+    "responsible": "CEOP",
+    "photos": [
+      {
+        "id": "FOTO-23EA3CA9C1E1463C",
+        "fileName": "SIG-20260824-0024_12cf449b.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 264080,
+        "sha256": "a85e29c792b5ac8eb9e57ae03d9117e216e95b36921ed05ef6839c8bdf66c956",
+        "localUri": "https://drive.google.com/file/d/1ftYDCCF5rAyWVQiUGZAw-tgRtI19nSUo/preview",
+        "uploadedToS3": true
+      },
+      {
+        "id": "FOTO-AEB255D398EE45EF",
+        "fileName": "SIG-20260824-0024_abb77505.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 265807,
+        "sha256": "37513934c910acde01f8e7402071a65d67f786be3fe7b239c59d1e391e50e468",
+        "localUri": "https://drive.google.com/file/d/1Me5dVRY9_08OELWTQQYKR1p90JrK_BqS/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-1D444E688DC1446A",
+    "assetCode": "SIG-20260826-0003",
+    "category": "Adesivo de parede",
+    "categoryColor": "#ec4899",
+    "sector": "SETOR_VERDE",
+    "status": "ATIVA",
+    "conservationState": "Regular",
+    "normalizedX": 0.996422327,
+    "normalizedY": 0.6108465907,
+    "notes": "Sem Observação",
+    "humanLocation": "Adesivo Loja SIGA",
+    "responsible": "Marketing",
+    "photos": [
+      {
+        "id": "FOTO-F78787922AAA4122",
+        "fileName": "SIG-20260826-0003_824b7530.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 21712,
+        "sha256": "b26c00b48a319e920513c6fdd0c8818f7d57bc162fa7e5210cbaf5fcce46f7ed",
+        "localUri": "https://drive.google.com/file/d/13Vk-kVjA4oAfg-ci8WE73JxCkEGsHLqS/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-597ECE10809A471F",
+    "assetCode": "SIG-20260827-0001",
+    "category": "Placa de sinalização",
+    "categoryColor": "#0284c7",
+    "sector": "SETOR_AZUL",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.7148456291,
+    "normalizedY": 0.2180924035,
+    "notes": "Sem observações",
+    "humanLocation": "Área externa lateral azul",
+    "responsible": "CEOP",
+    "photos": [
+      {
+        "id": "FOTO-6E6183AEBA074253",
+        "fileName": "SIG-20260827-0001_c2273493.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 348725,
+        "sha256": "8fc70846ba8987d9bf3bb7b728208b3f3ffce2cc18a4c8b2ecd1676ff82a5491",
+        "localUri": "https://drive.google.com/file/d/1BHUAja04NqR15NuRWecSdyoOT2xEs1Be/preview",
+        "uploadedToS3": true
+      },
+      {
+        "id": "FOTO-02A6E2C23D2E476D",
+        "fileName": "SIG-20260827-0001_eb428f21.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 297890,
+        "sha256": "4277bbd3ed9e9d720edea67577cbad134462364b8d53e10715e135c3f2dd5cae",
+        "localUri": "https://drive.google.com/file/d/1OWDvcVBn_0siW_KmgdVBtxJmVLxSca06/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-A63D39F047B34BD0",
+    "assetCode": "SIG-20260827-0002",
+    "category": "Panfleto",
+    "categoryColor": "#0284c7",
+    "sector": "SETOR_AZUL",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.7181648222,
+    "normalizedY": 0.2345484852,
+    "notes": "Achadinho",
+    "humanLocation": "Área externa lateral azul",
+    "responsible": "Marketing",
+    "photos": [
+      {
+        "id": "FOTO-192EB7DB623440A9",
+        "fileName": "SIG-20260827-0002_a4d95a8f.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 201185,
+        "sha256": "4f9ceeb928bae80d74c958452291225528aa987ce965763e45b278306a1eb267",
+        "localUri": "https://drive.google.com/file/d/1rUkARMOeNyop7ffBS6CKGKwYnLV6yeNc/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-E9C740CB7E3D4A07",
+    "assetCode": "SIG-20260827-0003",
+    "category": "Adesivo de parede",
+    "categoryColor": "#ec4899",
+    "sector": "SETOR_AZUL",
+    "status": "ATIVA",
+    "conservationState": "Regular",
+    "normalizedX": 0.7215950413,
+    "normalizedY": 0.2373139817,
+    "notes": "Validade da mídia",
+    "humanLocation": "Área externa lateral azul",
+    "responsible": "Marketing",
+    "photos": [
+      {
+        "id": "FOTO-6CE2E799CBE54415",
+        "fileName": "SIG-20260827-0003_65edebbb.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 236270,
+        "sha256": "826de7a47541edf16f26b06c5ea9ab70ff7434f8422b7e755976ecaf166f9ea9",
+        "localUri": "https://drive.google.com/file/d/1Jed7bNXkVaLS00f9ltlCiIh87vuQ7plG/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-AE6C01F1DB58412C",
+    "assetCode": "SIG-20260827-0004",
+    "category": "Metalon & Lona",
+    "categoryColor": "#0284c7",
+    "sector": "SETOR_AZUL",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.7297354859,
+    "normalizedY": 0.2633259236,
+    "notes": "Sobre Validade",
+    "humanLocation": "Área externa lateral azul",
+    "responsible": "Marketing",
+    "photos": [
+      {
+        "id": "FOTO-FAB1B4F40916481E",
+        "fileName": "SIG-20260827-0004_cadc7e8b.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 270045,
+        "sha256": "140b118c17c79aaa0b357f2ba135bf0acde810d36003212b710eaeb22b9182e3",
+        "localUri": "https://drive.google.com/file/d/1mfgpwOdNw0i4o9Tyc4dtELhwfvVpvo_l/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-0BD9ABEFFFDE478F",
+    "assetCode": "SIG-20260827-0005",
+    "category": "Triedo",
+    "categoryColor": "#f59e0b",
+    "sector": "SETOR_AZUL",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.9395205701,
+    "normalizedY": 0.3042143555,
+    "notes": "Sem observação",
+    "humanLocation": "Rua Princesa Isabel",
+    "responsible": "Marketing",
+    "photos": [
+      {
+        "id": "FOTO-E549106493BB4B81",
+        "fileName": "SIG-20260827-0005_fc46666b.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 255640,
+        "sha256": "23db50f84b346085dd4198c27019b733915f6178fe55f01b199508590151e6f8",
+        "localUri": "https://drive.google.com/file/d/1h8RjYBDJw1boueRKRTBR_TDyKCeGetFn/preview",
+        "uploadedToS3": true
+      },
+      {
+        "id": "FOTO-2BE262EF30E34A08",
+        "fileName": "SIG-20260827-0005_2e5fc71f.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 233307,
+        "sha256": "da34a27b8c0b3313dc65591f53ed7c3a6166e6964230276b8514dd2ed688b2c5",
+        "localUri": "https://drive.google.com/file/d/1LhjDEdtgqFa8X7VEM2VKn2wVOnEW4X_j/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-DFB0782E4FB34378",
+    "assetCode": "SIG-20260831-0001",
+    "category": "Placa de rua",
+    "categoryColor": "#2563eb",
+    "sector": "SETOR_AZUL",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.8793606176,
+    "normalizedY": 0.6978035734,
+    "notes": "Sem observação",
+    "humanLocation": "Avenida do Imperador",
+    "responsible": "CEOP",
+    "photos": [
+      {
+        "id": "FOTO-C5E6E4A154EE406E",
+        "fileName": "SIG-20260831-0001_6d30bff2.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 208943,
+        "sha256": "94b4763b237d3be425f696803cae0b543e0489465635a4e4305594298505d1a5",
+        "localUri": "https://drive.google.com/file/d/1UyBWryxXZORBCz9SVaCWJ5s5zPgXeVmf/preview",
+        "uploadedToS3": true
+      },
+      {
+        "id": "FOTO-7DCBD3404B344BA5",
+        "fileName": "SIG-20260831-0001_2fd9d735.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 292265,
+        "sha256": "bddefd7a7837baef4caf918f108b043fc1be8982605ab0a0ca28ff2d09b3f563",
+        "localUri": "https://drive.google.com/file/d/1O_UaVoy7Uqa_K_ipA1Zgd0ONf3EylzJM/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-F6D5FEBFDEE14E30",
+    "assetCode": "SIG-20260831-0002",
+    "category": "Placa de galeria",
+    "categoryColor": "#0284c7",
+    "sector": "SETOR_AZUL",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.8678798082,
+    "normalizedY": 0.7014577009,
+    "notes": "Sem observação",
+    "humanLocation": "Avenida do Imperador",
+    "responsible": "CEOP",
+    "photos": [
+      {
+        "id": "FOTO-B67D3A3DC6A34FA4",
+        "fileName": "SIG-20260831-0002_7b85fe61.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 206542,
+        "sha256": "ae3bc640a7888b3426f3392f42a94178b09679a8f5efa6b391f8529ab1cb0b60",
+        "localUri": "https://drive.google.com/file/d/1-zKtzsLH_GY6sbdIhJk-aia9krbETBqH/preview",
+        "uploadedToS3": true
+      },
+      {
+        "id": "FOTO-7A5781E4A42744CD",
+        "fileName": "SIG-20260831-0002_64f938e1.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 277725,
+        "sha256": "985c396152b2159087037c2eb1179cd85ac323c6b53b42e7ebf29ce8f9eafa4a",
+        "localUri": "https://drive.google.com/file/d/12aRX1Pv-hItCo_xVwVRjzGxRI6E39yed/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-7349BCF2082D48F9",
+    "assetCode": "SIG-20260831-0003",
+    "category": "Placa de galeria",
+    "categoryColor": "#0284c7",
+    "sector": "SETOR_AZUL",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.8933732182,
+    "normalizedY": 0.702233622,
+    "notes": "Sem observação",
+    "humanLocation": "Avenida do Imperador",
+    "responsible": "CEOP",
+    "photos": [
+      {
+        "id": "FOTO-5CE5B9C4118648C3",
+        "fileName": "SIG-20260831-0003_58e23247.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 191526,
+        "sha256": "4e686c3a1d4203092819a2c004b46f78c58fb3579acd625944186208f7d9e014",
+        "localUri": "https://drive.google.com/file/d/17wMeJ4Uw1X39f7OlMme25a38myUbGHyd/preview",
+        "uploadedToS3": true
+      },
+      {
+        "id": "FOTO-70CE8BD1F6A043C6",
+        "fileName": "SIG-20260831-0003_784e171a.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 264843,
+        "sha256": "bdb3094b19ccf742703c167b673197cb1334f1b206a9ced57d15400e731be1b9",
+        "localUri": "https://drive.google.com/file/d/1TlStd-wA8wD0eFnMLX90RWYrnNSRy7Ay/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-2C66F3AD88AC4C0E",
+    "assetCode": "SIG-20260831-0004",
+    "category": "Placa informativa",
+    "categoryColor": "#ea580c",
+    "sector": "SETOR_AZUL",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.9330868168,
+    "normalizedY": 0.9176945615,
+    "notes": "Sem observação",
+    "humanLocation": "Avenida Alberto Nepomuceno",
+    "responsible": "CEOP",
+    "photos": [
+      {
+        "id": "FOTO-93247390E9194BD0",
+        "fileName": "SIG-20260831-0004_459ce845.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 234827,
+        "sha256": "3a5e8b1de0c091c43a65a8be2cc5c4e18fc1172aff3c80e52f52c80309627373",
+        "localUri": "https://drive.google.com/file/d/1VnuwAiaIp4n_FI5KpiMzaKyuEr8ttPdt/preview",
+        "uploadedToS3": true
+      },
+      {
+        "id": "FOTO-C5FEA2B3E8D14341",
+        "fileName": "SIG-20260831-0004_e6ce9ca1.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 319979,
+        "sha256": "1d176135dbe231168853f2c558d8b06037c83b0179e802b3e8e7c6d922a2c0d4",
+        "localUri": "https://drive.google.com/file/d/1xfLygkoGXN8qwbSeVVWcZMrXK9Ibro9M/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-99BAF2C38D7B471E",
+    "assetCode": "SIG-20260831-0005",
+    "category": "Placa de galeria",
+    "categoryColor": "#0284c7",
+    "sector": "SETOR_AZUL",
+    "status": "ATIVA",
+    "conservationState": "Nova",
+    "normalizedX": 0.9189712252,
+    "normalizedY": 0.9102613956,
+    "notes": "Sem observação",
+    "humanLocation": "Avenida Alberto Nepomuceno",
+    "responsible": "CEOP",
+    "photos": [
+      {
+        "id": "FOTO-51475F3A00FB48CB",
+        "fileName": "SIG-20260831-0005_61ed728a.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 181308,
+        "sha256": "e6f982d4a200ee8fe4b2d217822a68afe1e3a7e9d2e0db17e28b46c5e4e63b6c",
+        "localUri": "https://drive.google.com/file/d/1WelOsULE0J1jOYtBEUGhhTWZgB4CLBL_/preview",
+        "uploadedToS3": true
+      },
+      {
+        "id": "FOTO-3EBA891C8F4647C8",
+        "fileName": "SIG-20260831-0005_5d951431.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 319979,
+        "sha256": "1d176135dbe231168853f2c558d8b06037c83b0179e802b3e8e7c6d922a2c0d4",
+        "localUri": "https://drive.google.com/file/d/199tHJvw6bf0QJii9_2sRmRvY6yVDCoT9/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-0747C61425B04B7C",
+    "assetCode": "SIG-20260831-0006",
+    "category": "Outra",
+    "categoryColor": "#0284c7",
+    "sector": "SETOR_AZUL",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.5203277842,
+    "normalizedY": 0.5485012073,
+    "notes": "Sem observação",
+    "humanLocation": "Adesivo informativo",
+    "responsible": "CEOP",
+    "photos": [
+      {
+        "id": "FOTO-7E72A5BAD5C046A2",
+        "fileName": "SIG-20260831-0006_78b24f59.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 265858,
+        "sha256": "fe7077cc57fee1b05fabbd045207b25d10ee2d85b2893e55b58d5e92c359236a",
+        "localUri": "https://drive.google.com/file/d/1tvk_9IhEr5hrqm7pDlhdV02vHd6Ig3w-/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-8F5B664F23AB49E0",
+    "assetCode": "SIG-20260831-0007",
+    "category": "Outra",
+    "categoryColor": "#0284c7",
+    "sector": "SETOR_AZUL",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.277576815,
+    "normalizedY": 0.7302091801,
+    "notes": "Sem observação",
+    "humanLocation": "Adesivo Cancela",
+    "responsible": "Marketing",
+    "photos": [
+      {
+        "id": "FOTO-62397B58D5DC4FE3",
+        "fileName": "SIG-20260831-0007_8f891055.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 310711,
+        "sha256": "ca2b8bf287d2fab6ef404a3c99a363ee33eb5e4751b7b4d4471e24da20fbaeb8",
+        "localUri": "https://drive.google.com/file/d/18RjLBUVHEFU6tab1e58t769vMCSuhP6K/preview",
+        "uploadedToS3": true
+      },
+      {
+        "id": "FOTO-2763DE303A6E4E99",
+        "fileName": "SIG-20260831-0007_d23819c9.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 200650,
+        "sha256": "dea69be880b64626a1f538fcb00ddd37c833d4fb7ff52de1617e394085c01f0b",
+        "localUri": "https://drive.google.com/file/d/1lIAI4w1Tw3nJxA0yJ7ECT-9m9jTbvb-M/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-B3462B8EB244484C",
+    "assetCode": "SIG-20260831-0008",
+    "category": "Painel",
+    "categoryColor": "#8b5cf6",
+    "sector": "SETOR_AZUL",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.2978810652,
+    "normalizedY": 0.5430772749,
+    "notes": "Sem observação",
+    "humanLocation": "Casa Loterica",
+    "responsible": "Marketing",
+    "photos": [
+      {
+        "id": "FOTO-A7B68251C5FB45F5",
+        "fileName": "SIG-20260831-0008_28e80ab8.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 197516,
+        "sha256": "0fcaf8e078db06ca41d8f96ce109de9557239b09f54be3d8bd39355dc4a12f60",
+        "localUri": "https://drive.google.com/file/d/1NppX0xnr_p5hwex7TVWiGCIZUMQE-MEG/preview",
+        "uploadedToS3": true
+      },
+      {
+        "id": "FOTO-08AB74C2DD2D48D7",
+        "fileName": "SIG-20260831-0008_6ed27664.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 344380,
+        "sha256": "e969dbacd4326693608e5c557c3a3fa789aaf9c7b065f408d69231e3bbda0006",
+        "localUri": "https://drive.google.com/file/d/1Zw73qNBxJ_HTZq8-7bq5VwrUhcDvuBRO/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-76473FCCE9A94E91",
+    "assetCode": "SIG-20260831-0009",
+    "category": "Metalon & Lona",
+    "categoryColor": "#0284c7",
+    "sector": "SETOR_AZUL",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.2032179189,
+    "normalizedY": 0.5421408544,
+    "notes": "Sem observação",
+    "humanLocation": "Lava Jato GlowCar",
+    "responsible": "Marketing",
+    "photos": [
+      {
+        "id": "FOTO-8EA08CC4C44B465A",
+        "fileName": "SIG-20260831-0009_8ea4e24d.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 242863,
+        "sha256": "8aa476c81f81c883685f11dfe04f20d51a93b982341943b19c86c4d68275656f",
+        "localUri": "https://drive.google.com/file/d/1KzEAOnOcuhS2nnIOkOESV_bQFQ0gvWpP/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-6392C744EF334270",
+    "assetCode": "SIG-20260831-0010",
+    "category": "Adesivo de parede",
+    "categoryColor": "#ec4899",
+    "sector": "SETOR_AZUL",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.3937357675,
+    "normalizedY": 0.5374587518,
+    "notes": "Pague aqui\nSeu ticket de\nestacionamento",
+    "humanLocation": "Cabine Pagamento",
+    "responsible": "Manutenção",
+    "photos": [
+      {
+        "id": "FOTO-C4D4BFA1018046DA",
+        "fileName": "SIG-20260831-0010_1d9d6c77.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 295815,
+        "sha256": "536cfc998ce78e97a31457b809ab8104da96f69fe7c41302ef59576aad97e6fd",
+        "localUri": "https://drive.google.com/file/d/1wlK8piX3aJ88_sIAxhOCWRwaBqTg7QdR/preview",
+        "uploadedToS3": true
+      },
+      {
+        "id": "FOTO-DCFAE8B868324DC4",
+        "fileName": "SIG-20260831-0010_41cf7956.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 217276,
+        "sha256": "fe558fc8d25723aed518143381be5f4c8fa70c16d1f61fa3ff146cea5b2179bf",
+        "localUri": "https://drive.google.com/file/d/12jJQaetXJnaJC7xaRLso65GLAE_DnBvw/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-B5C48FA8D14E4DE7",
+    "assetCode": "SIG-20260831-0011",
+    "category": "Painel",
+    "categoryColor": "#8b5cf6",
+    "sector": "SETOR_AZUL",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.3981690146,
+    "normalizedY": 0.5433489786,
+    "notes": "Sem observação",
+    "humanLocation": "Campanha Bicho de estimação",
+    "responsible": "Marketing",
+    "photos": [
+      {
+        "id": "FOTO-439EA3D5632C462B",
+        "fileName": "SIG-20260831-0011_33174885.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 298534,
+        "sha256": "d058ee405b6c16c289aee58c97dcab04b9876bfd7022c4490c6b0c896b35d089",
+        "localUri": "https://drive.google.com/file/d/1nOlwaNSdyAVeZicILTfQdMR_7jTJsAjH/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-F145FEA562A1465D",
+    "assetCode": "SIG-20260831-0012",
+    "category": "Adesivo de parede",
+    "categoryColor": "#ec4899",
+    "sector": "SETOR_AZUL",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.4044552637,
+    "normalizedY": 0.5432293916,
+    "notes": "Sem observação",
+    "humanLocation": "Loteria Super sorte",
+    "responsible": "Marketing",
+    "photos": [
+      {
+        "id": "FOTO-3EEB7752D0B94965",
+        "fileName": "SIG-20260831-0012_42a483d3.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 260206,
+        "sha256": "44eb339ad20244fba7c7ca35beca7c40c702b2c5a85203e8aa67b09a2a179a11",
+        "localUri": "https://drive.google.com/file/d/1qf75u-adFpfFMNNWnZxSBczpRxGMidXP/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-38EB3182CE6C4086",
+    "assetCode": "SIG-20260831-0013",
+    "category": "Metalon & Lona",
+    "categoryColor": "#0284c7",
+    "sector": "SETOR_AZUL",
+    "status": "ATIVA",
+    "conservationState": "Ruim",
+    "normalizedX": 0.3799749179,
+    "normalizedY": 0.5365739007,
+    "notes": "Suja",
+    "humanLocation": "Placa informativa",
+    "responsible": "Marketing",
+    "photos": [
+      {
+        "id": "FOTO-35AF2F8E9E8849C2",
+        "fileName": "SIG-20260831-0013_1ab9bee5.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 224247,
+        "sha256": "08e3ddd8cea32424ef124788ccaa828fb4e0db5274c90c78050400f423efcac4",
+        "localUri": "https://drive.google.com/file/d/1sj9WVGfMJwS_K7vrLLeoCcUfYnT0GdMo/preview",
+        "uploadedToS3": true
+      },
+      {
+        "id": "FOTO-6881456EAE214E2E",
+        "fileName": "SIG-20260831-0013_af26cd32.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 274967,
+        "sha256": "bed30fbd860d87e165796c5a496ac00740b98ce7ce2aef4b989b05f93328f24b",
+        "localUri": "https://drive.google.com/file/d/1sSwF0GKfmLL2eem-OKy7rGBiU1bdlht_/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-D1A9E913F9EC44F4",
+    "assetCode": "SIG-20260831-0014",
+    "category": "Placa de rua",
+    "categoryColor": "#2563eb",
+    "sector": "SETOR_AZUL",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.1749904434,
+    "normalizedY": 0.6950239805,
+    "notes": "Sem observação",
+    "humanLocation": "Rua 25 de Março",
+    "responsible": "CEOP",
+    "photos": [
+      {
+        "id": "FOTO-31F8E771F6A14857",
+        "fileName": "SIG-20260831-0014_3ebc1466.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 295166,
+        "sha256": "385b928ee2e6934dba4b5a1ad191c1f060a202987ae0cdd71b76b413259264c3",
+        "localUri": "https://drive.google.com/file/d/1XrrV4KYOMKdMUQBjNa85pIfWk12qfVoG/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-1A824D265D9F4A6A",
+    "assetCode": "SIG-20260831-0015",
+    "category": "Adesivo de parede",
+    "categoryColor": "#ec4899",
+    "sector": "SETOR_AZUL",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.1319933116,
+    "normalizedY": 0.6380982754,
+    "notes": "Velho",
+    "humanLocation": "Avenida Dom Manuel",
+    "responsible": "Marketing",
+    "photos": [
+      {
+        "id": "FOTO-302E266C7C454A56",
+        "fileName": "SIG-20260831-0015_4338bbfc.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 284806,
+        "sha256": "909becec9b6ffb0a711d2bc5f806740500206bbe430caf1d060bfbf9cdd84767",
+        "localUri": "https://drive.google.com/file/d/1wCZpUfor80e3fpQbjLZH1C9wEuwkBWUk/preview",
+        "uploadedToS3": true
+      },
+      {
+        "id": "FOTO-3289B600C90B4D37",
+        "fileName": "SIG-20260831-0015_92db3c3e.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 205276,
+        "sha256": "42c02621172092594ab8376ad8e9e573fd258f01d7f09d5c272fb06e4b68d8e4",
+        "localUri": "https://drive.google.com/file/d/18wsSwG7YB04xVJyqnHmJcogA0wR5MZ3S/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-D4BEE5C4ACAA4AA2",
+    "assetCode": "SIG-20260831-0016",
+    "category": "Placa de rua",
+    "categoryColor": "#2563eb",
+    "sector": "SETOR_AZUL",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.152604476,
+    "normalizedY": 0.1988314104,
+    "notes": "Sem observação",
+    "humanLocation": "Avenida Dom Manuel",
+    "responsible": "CEOP",
+    "photos": [
+      {
+        "id": "FOTO-F747F7A2317249CA",
+        "fileName": "SIG-20260831-0016_bf6e631c.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 210184,
+        "sha256": "e367a53175b32252f451b5c97d97c21662abee7bb2004e40838f0f871a487434",
+        "localUri": "https://drive.google.com/file/d/1S0aZSslfNhcFgCcz2kvi4evy5DGdJt5E/preview",
+        "uploadedToS3": true
+      },
+      {
+        "id": "FOTO-E927A0BA8CE940C0",
+        "fileName": "SIG-20260831-0016_28dc6865.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 321392,
+        "sha256": "a6d0d19c7725bba9dfe11cfbf71ba93bebcd1a05ca02bb5b49ebab939215c95a",
+        "localUri": "https://drive.google.com/file/d/1peVvuNrPp4_1_WhjZRf4-U7nre1IDwTH/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-0EDDD0D6471340B5",
+    "assetCode": "SIG-20260831-0017",
+    "category": "Placa de serviço",
+    "categoryColor": "#0d9488",
+    "sector": "SETOR_AZUL",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.1531678221,
+    "normalizedY": 0.1538037753,
+    "notes": "Nome na placa errado",
+    "humanLocation": "Avenida Dom Manuel",
+    "responsible": "CEOP",
+    "photos": [
+      {
+        "id": "FOTO-27124848C695439E",
+        "fileName": "SIG-20260831-0017_c120c3f3.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 195673,
+        "sha256": "83d17d7b2bb497f35f992eec3d74d513b491dba257cd21f00c9f6f4ddf7eda31",
+        "localUri": "https://drive.google.com/file/d/1c_kVSZtClMfK1pGGEOJ38NAvdkXAjzCF/preview",
+        "uploadedToS3": true
+      },
+      {
+        "id": "FOTO-DD441D1074494101",
+        "fileName": "SIG-20260831-0017_a2405db0.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 304584,
+        "sha256": "344cb4168d206fa6e192dd4f7d2e007780ee6a9bd41281c9aaa5d73515b4874d",
+        "localUri": "https://drive.google.com/file/d/1AMHWJ_Fb4IPj9sWEMHqFUgr0N-tM6ugC/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-37ADCB84E0094768",
+    "assetCode": "SIG-20260831-0018",
+    "category": "Totem",
+    "categoryColor": "#f59e0b",
+    "sector": "SETOR_AZUL",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.1512779167,
+    "normalizedY": 0.1304967966,
+    "notes": "Diversos",
+    "humanLocation": "Avenida Dom Manuel",
+    "responsible": "CEOP",
+    "photos": [
+      {
+        "id": "FOTO-97E48532030C4BB4",
+        "fileName": "SIG-20260831-0018_421dd7c9.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 185991,
+        "sha256": "995ee040a4200b2fc128d1e6df5f55b7d2a3fa7462fb92f32346ece4289cfede",
+        "localUri": "https://drive.google.com/file/d/1MOI8PII3nAp5NASkBRbv7-umhfUCefJI/preview",
+        "uploadedToS3": true
+      },
+      {
+        "id": "FOTO-40D8E374510C40FF",
+        "fileName": "SIG-20260831-0018_281986b6.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 304584,
+        "sha256": "344cb4168d206fa6e192dd4f7d2e007780ee6a9bd41281c9aaa5d73515b4874d",
+        "localUri": "https://drive.google.com/file/d/1JvA0FUICel7LU0VL7OuIvkx68LwUqsiT/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-3D7E7FBC634F4274",
+    "assetCode": "SIG-20260831-0019",
+    "category": "Painel",
+    "categoryColor": "#8b5cf6",
+    "sector": "SETOR_AZUL",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.1050845683,
+    "normalizedY": 0.1812513327,
+    "notes": "Sem observações",
+    "humanLocation": "Placa PVC",
+    "responsible": "CEOP",
+    "photos": [
+      {
+        "id": "FOTO-09F2414979F64DBC",
+        "fileName": "SIG-20260831-0019_499de206.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 211102,
+        "sha256": "bd15696c24d070bae8f7888fa74a0796e236ef9709743da7e5ee4a1a49a61160",
+        "localUri": "https://drive.google.com/file/d/1XP2Qhxrzd9rgiuJfwNyQQDZV-YlANBZP/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-5B994514ABEC4CAE",
+    "assetCode": "SIG-20260831-0020",
+    "category": "Placa informativa",
+    "categoryColor": "#ea580c",
+    "sector": "SETOR_AZUL",
+    "status": "ATIVA",
+    "conservationState": "Ruim",
+    "normalizedX": 0.09500811511,
+    "normalizedY": 0.192704423,
+    "notes": "Velha",
+    "humanLocation": "Placa Informativa",
+    "responsible": "Marketing",
+    "photos": [
+      {
+        "id": "FOTO-3D74BFD609B94B82",
+        "fileName": "SIG-20260831-0020_89f67227.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 259555,
+        "sha256": "6e94c270d1e1528075683463e12e4ca80b83f15501735d15d49ee37fd608d261",
+        "localUri": "https://drive.google.com/file/d/1z86e-tRe_Sc4t4gcVUGeKIWoNaOv1ndg/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-5A465709DF03474D",
+    "assetCode": "SIG-20260831-0021",
+    "category": "Totem",
+    "categoryColor": "#f59e0b",
+    "sector": "SETOR_AZUL",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.1271212866,
+    "normalizedY": 0.1076274368,
+    "notes": "Sem observação",
+    "humanLocation": "Avenida Dom Manuel",
+    "responsible": "CEOP",
+    "photos": [
+      {
+        "id": "FOTO-CB9A3BBE580C4A5E",
+        "fileName": "SIG-20260831-0021_9af8944d.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 260693,
+        "sha256": "366abe8a440506c68b480b09600e301b9698bfb108b6687e58a13b8d35c208d1",
+        "localUri": "https://drive.google.com/file/d/1nUivUj_jJrAmOsVPnzc7UCvGKRFrUTvS/preview",
+        "uploadedToS3": true
+      },
+      {
+        "id": "FOTO-EB19779CCDC7490C",
+        "fileName": "SIG-20260831-0021_e44b7dcf.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 197083,
+        "sha256": "e7c10658fc303adb828506890017b5cc35caafcb1de723cd4053dab55d356412",
+        "localUri": "https://drive.google.com/file/d/1jnJped1tqiNU2NpElWb6fZxAiZ7al1xh/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-EDC1D2F19F524C04",
+    "assetCode": "SIG-20260831-0022",
+    "category": "Placa de setor",
+    "categoryColor": "#0284c7",
+    "sector": "SETOR_AZUL",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.1223603421,
+    "normalizedY": 0.07766821414,
+    "notes": "Sem observação",
+    "humanLocation": "Avenida Dom Manuel",
+    "responsible": "Marketing",
+    "photos": [
+      {
+        "id": "FOTO-E7080B21A72B4717",
+        "fileName": "SIG-20260831-0022_4a24591d.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 182663,
+        "sha256": "886852d3a6910d59b4c4a5aac6321f412b1d1d7d501e0f18ef95ad4d5239dbd3",
+        "localUri": "https://drive.google.com/file/d/1eWyWH_OHjIeAmI6YqpkU28A4przcETQb/preview",
+        "uploadedToS3": true
+      },
+      {
+        "id": "FOTO-E0E02520CDF745B9",
+        "fileName": "SIG-20260831-0022_f2620282.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 197083,
+        "sha256": "e7c10658fc303adb828506890017b5cc35caafcb1de723cd4053dab55d356412",
+        "localUri": "https://drive.google.com/file/d/1K5prKcJUyUWdjew46xazkGVbtM4L1iGC/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-089A5A7E9C1B4FED",
+    "assetCode": "SIG-20260831-0023",
+    "category": "Outra",
+    "categoryColor": "#0284c7",
+    "sector": "SETOR_AZUL",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.1576654768,
+    "normalizedY": 0.07590036401,
+    "notes": "Sem observação",
+    "humanLocation": "Avenida Dom Manuel",
+    "responsible": "Marketing",
+    "photos": [
+      {
+        "id": "FOTO-8AFFFB15995A4688",
+        "fileName": "SIG-20260831-0023_e9b03a38.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 244327,
+        "sha256": "b98a0ffbba499eb797a4a5b64fba5c5b1c549276b5aa42076f2d954d1675e54d",
+        "localUri": "https://drive.google.com/file/d/1AqBSkgGrR5jl5NmaouAxTAp-FIKey6aq/preview",
+        "uploadedToS3": true
+      },
+      {
+        "id": "FOTO-F2900C1E6FD64101",
+        "fileName": "SIG-20260831-0023_bf57640c.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 225477,
+        "sha256": "0b8ed6bd55008bc58cbb923acbfba8e88608ccc84986a8ccf7e0d4377c52264f",
+        "localUri": "https://drive.google.com/file/d/1Ze4tPLrcgK7BxOnMKJQGPuseP_hN6jVE/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-11FD5332FAEE4D1A",
+    "assetCode": "SIG-20260831-0024",
+    "category": "Placa de rua",
+    "categoryColor": "#2563eb",
+    "sector": "SETOR_AZUL",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.2339298124,
+    "normalizedY": 0.1982394308,
+    "notes": "Sem observação",
+    "humanLocation": "Rua Coronel Ferraz",
+    "responsible": "CEOP",
+    "photos": [
+      {
+        "id": "FOTO-4356A3D81FCA4654",
+        "fileName": "SIG-20260831-0024_e738e19c.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 210861,
+        "sha256": "4b0bb912ab25d4100aa07f717e16ed88defd7b669fa50276e90d694cc8f39594",
+        "localUri": "https://drive.google.com/file/d/1RaYb6I5-RCUOTTRj_dtzoVXgWkb3RSzs/preview",
+        "uploadedToS3": true
+      },
+      {
+        "id": "FOTO-DC5F10D7F4FA470A",
+        "fileName": "SIG-20260831-0024_38e268fb.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 368574,
+        "sha256": "113ab2bd5de5797aa5c9a4011bf4a07678917d2b6056f3b21849dbc381943d4f",
+        "localUri": "https://drive.google.com/file/d/1h9-EUWGZ8yLy92HsCOEsUz2zPeXMb8ly/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-D41E90A89C8D4A67",
+    "assetCode": "SIG-20260831-0025",
+    "category": "Placa de rua",
+    "categoryColor": "#2563eb",
+    "sector": "SETOR_AZUL",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.2310384159,
+    "normalizedY": 0.6981849571,
+    "notes": "Sem observação",
+    "humanLocation": "Rua Coronel Ferraz",
+    "responsible": "CEOP",
+    "photos": [
+      {
+        "id": "FOTO-FAD726147BBB41E2",
+        "fileName": "SIG-20260831-0025_70f11200.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 206820,
+        "sha256": "e1e33f895a995b4d1affe4e303e3e82a7b852084a16e10884710e277a0568d99",
+        "localUri": "https://drive.google.com/file/d/1qeJZI9nMjcn2ACLKjkatMv2B2ai1mrfe/preview",
+        "uploadedToS3": true
+      },
+      {
+        "id": "FOTO-0F8B75DEF5024DF3",
+        "fileName": "SIG-20260831-0025_9f6bd030.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 377136,
+        "sha256": "cf455bee4ffe68a7b9990dcaa14ae318e2f8b72c880599de730278bf265b090b",
+        "localUri": "https://drive.google.com/file/d/11j5NQdbgpvqpMFFXxZwGy5Vtj8HtvFJO/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-E2197763AC004CBD",
+    "assetCode": "SIG-20260831-0026",
+    "category": "Adesivo de piso",
+    "categoryColor": "#ec4899",
+    "sector": "SETOR_AZUL",
+    "status": "ATIVA",
+    "conservationState": "Ruim",
+    "normalizedX": 0.2252522837,
+    "normalizedY": 0.871267585,
+    "notes": "Sem observação",
+    "humanLocation": "Rua Coronel Ferraz",
+    "responsible": "Marketing",
+    "photos": [
+      {
+        "id": "FOTO-1BB3D8928E874540",
+        "fileName": "SIG-20260831-0026_e4780c5f.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 293504,
+        "sha256": "0b05b3441591e440808ca73909a4a9d41bcc15db5354916b8082566fd33b2016",
+        "localUri": "https://drive.google.com/file/d/1D07b_1rHh0svKS3MJMSWRx_c65rYuo7y/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-B2B2CE5E46A647DA",
+    "assetCode": "SIG-20260831-0027",
+    "category": "Placa de galeria",
+    "categoryColor": "#0284c7",
+    "sector": "SETOR_AZUL",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.3027895356,
+    "normalizedY": 0.9115571857,
+    "notes": "Sem observação",
+    "humanLocation": "Avenida Alberto Nepomuceno",
+    "responsible": "CEOP",
+    "photos": [
+      {
+        "id": "FOTO-C9C8A1FEE482406F",
+        "fileName": "SIG-20260831-0027_f0542c65.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 229861,
+        "sha256": "de7ecb3f5345d23b54f99b590f5aad806f4fe3faa1a9d83814a7e8adcd8ae430",
+        "localUri": "https://drive.google.com/file/d/1HfClJ_anaiySiDs3ZTKPgxJ1wAJigVh_/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-222F85AE9C794B39",
+    "assetCode": "SIG-20260831-0028",
+    "category": "Placa de rua",
+    "categoryColor": "#2563eb",
+    "sector": "SETOR_AZUL",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.2896737632,
+    "normalizedY": 0.6976494292,
+    "notes": "Sem observação",
+    "humanLocation": "Rua São José",
+    "responsible": "CEOP",
+    "photos": [
+      {
+        "id": "FOTO-ACD0D48C14854321",
+        "fileName": "SIG-20260831-0028_4a39227f.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 201855,
+        "sha256": "760a06b3b87aa05a4a6f73bc8cfc05633f5b056411116bd430bbd4d03e9938ac",
+        "localUri": "https://drive.google.com/file/d/1uGHN3HmA8eVDn0ibo4C5BmjiWIyoYmIH/preview",
+        "uploadedToS3": true
+      },
+      {
+        "id": "FOTO-2F8098A1ED504376",
+        "fileName": "SIG-20260831-0028_94b9eea4.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 326724,
+        "sha256": "331f55e23caac8d6ab952e9af7f730c1a5e288395290106d25ce8edeb5cab268",
+        "localUri": "https://drive.google.com/file/d/13fAU01_REvyLFBQMGCZEDTw-kF1lC5Rp/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-C8BF976A7E6C4A7E",
+    "assetCode": "SIG-20260831-0029",
+    "category": "Placa de galeria",
+    "categoryColor": "#0284c7",
+    "sector": "SETOR_AZUL",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.3012580569,
+    "normalizedY": 0.688491455,
+    "notes": "Sem observação",
+    "humanLocation": "Rua São José",
+    "responsible": "CEOP",
+    "photos": [
+      {
+        "id": "FOTO-7F4821B87EAB433D",
+        "fileName": "SIG-20260831-0029_f458062f.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 237170,
+        "sha256": "531ab48eff1428d99e9c15a215c124d97c9dd16c95c6efade2121cba92f7544f",
+        "localUri": "https://drive.google.com/file/d/18Z_SNgdAKsS1wWjLxca_SG67fiGpPv-K/preview",
+        "uploadedToS3": true
+      },
+      {
+        "id": "FOTO-0FB726C4CECF464B",
+        "fileName": "SIG-20260831-0029_6656594c.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 322399,
+        "sha256": "425f349454f05fb78ea5188eabc1483b85240a04054b4acc2f9e402d19546cba",
+        "localUri": "https://drive.google.com/file/d/1Hb5sqUy1BJNZYb0TFXjq_swaCP05CWrQ/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-95B5875806AC4584",
+    "assetCode": "SIG-20260831-0030",
+    "category": "Placa de rua",
+    "categoryColor": "#2563eb",
+    "sector": "SETOR_AZUL",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.2871622415,
+    "normalizedY": 0.4532105621,
+    "notes": "Sem observação",
+    "humanLocation": "Rua São José",
+    "responsible": "CEOP",
+    "photos": [
+      {
+        "id": "FOTO-87EFB6E8A192466F",
+        "fileName": "SIG-20260831-0030_8c63639a.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 185783,
+        "sha256": "4691fa8c923390fd5007d38296bd3ac47fee0c3f3358f9f28c9c3600e6e9791e",
+        "localUri": "https://drive.google.com/file/d/1885Tz83oIk-y9qkWKRzG1gbZW1XIjOOs/preview",
+        "uploadedToS3": true
+      },
+      {
+        "id": "FOTO-F17EA16F98D94240",
+        "fileName": "SIG-20260831-0030_234c0087.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 320224,
+        "sha256": "1fb85f551b925d1bbb65a137752d35ab8dfa3f7e1ca420146a630f5bc88be700",
+        "localUri": "https://drive.google.com/file/d/1isbMx6hBklAUKtvMxDxkakcwlSxtcmm_/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-AA57CE448F2A4CD1",
+    "assetCode": "SIG-20260831-0031",
+    "category": "Placa de rua",
+    "categoryColor": "#2563eb",
+    "sector": "SETOR_AZUL",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.2912998955,
+    "normalizedY": 0.3665068219,
+    "notes": "Sem observação",
+    "humanLocation": "Rua São José",
+    "responsible": "CEOP",
+    "photos": [
+      {
+        "id": "FOTO-5D1C92189D6B459A",
+        "fileName": "SIG-20260831-0031_8c629552.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 222028,
+        "sha256": "dfe3d6064f06143478efe19f052ebe42ea22275ca09aa2d570a69dd52603c766",
+        "localUri": "https://drive.google.com/file/d/1jj7KFckQOPayAvuG3C4j1Y-wu8svQtfi/preview",
+        "uploadedToS3": true
+      },
+      {
+        "id": "FOTO-75CC41D492C74483",
+        "fileName": "SIG-20260831-0031_f1210c19.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 377780,
+        "sha256": "e0fbe983fa196c26d2e2c023a0407c3627430561c5a05c60f0a5bf5041310244",
+        "localUri": "https://drive.google.com/file/d/1Oh_zI-YYyyROjc6FDpifudQ2uJ-r2GBT/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-6A0CF71D974B476F",
+    "assetCode": "SIG-20260831-0032",
+    "category": "Panfleto",
+    "categoryColor": "#0284c7",
+    "sector": "SETOR_AZUL",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.3350146533,
+    "normalizedY": 0.4155485358,
+    "notes": "Sem observação",
+    "humanLocation": "Rua Governador Sampaio",
+    "responsible": "Marketing",
+    "photos": [
+      {
+        "id": "FOTO-46712A76DA494C41",
+        "fileName": "SIG-20260831-0032_1ccf391a.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 189822,
+        "sha256": "8e46b11fb553bdebf05453810a307aafcb9ba21125c9e061139683ea264e59e9",
+        "localUri": "https://drive.google.com/file/d/13wEExAx9AlOMjvGK1bJTYM4HxxZFo8jI/preview",
+        "uploadedToS3": true
+      },
+      {
+        "id": "FOTO-25191ED567D64581",
+        "fileName": "SIG-20260831-0032_59806b64.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 213431,
+        "sha256": "a7d0de2011796b723e6922330fd5cb84b9d6e73eb2bde9145ccea29e12e56d6d",
+        "localUri": "https://drive.google.com/file/d/1kIcBWmRVwnGrARxZoybsUdN68927RxcF/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-A43C1A2DB8DD4D5A",
+    "assetCode": "SIG-20260831-0033",
+    "category": "Placa de rua",
+    "categoryColor": "#2563eb",
+    "sector": "SETOR_AZUL",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.2889940254,
+    "normalizedY": 0.1962259548,
+    "notes": "Sem observação",
+    "humanLocation": "Rua São José",
+    "responsible": "CEOP",
+    "photos": [
+      {
+        "id": "FOTO-F8F94905AA614D19",
+        "fileName": "SIG-20260831-0033_b634ba3a.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 164892,
+        "sha256": "ebddde906505bcfa4be2b72d9957cf36bc3e79b24fe50490c3e08091bb89db33",
+        "localUri": "https://drive.google.com/file/d/1BC4oRyyfjgiUIsvHy7JHvV5z6OFQYi5x/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-637074A20CBD4A35",
+    "assetCode": "SIG-20260831-0034",
+    "category": "Placa de galeria",
+    "categoryColor": "#0284c7",
+    "sector": "SETOR_AZUL",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.3290120576,
+    "normalizedY": 0.07737583368,
+    "notes": "Sem observação",
+    "humanLocation": "Rua Governador Sampaio",
+    "responsible": "CEOP",
+    "photos": [
+      {
+        "id": "FOTO-CDDAA7686C2A4C5A",
+        "fileName": "SIG-20260831-0034_8f6243bc.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 236231,
+        "sha256": "4aefa4114ace35ad366f9aeff92247f875d8660834f446d7f347c34548d46598",
+        "localUri": "https://drive.google.com/file/d/1hPRK9APvR1fz2R7qSpuQdMiTzg8EcjWV/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-2746F3426B0B48DA",
+    "assetCode": "SIG-20260831-0035",
+    "category": "Placa de rua",
+    "categoryColor": "#2563eb",
+    "sector": "SETOR_AZUL",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.3403858054,
+    "normalizedY": 0.1957997414,
+    "notes": "Sem observação",
+    "humanLocation": "Rua Governador Sampaio",
+    "responsible": "CEOP",
+    "photos": [
+      {
+        "id": "FOTO-40AC2F1108B14C04",
+        "fileName": "SIG-20260831-0035_85b56d25.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 211223,
+        "sha256": "3d9f0594133c213534fd8ce0e05bcff0ccf236da0156fc11ed05396405ca2626",
+        "localUri": "https://drive.google.com/file/d/1Gc69dAoZNvZnfbE2PMdlVAjYlkLwzMwe/preview",
+        "uploadedToS3": true
+      },
+      {
+        "id": "FOTO-090F83CBA8D74276",
+        "fileName": "SIG-20260831-0035_572d407c.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 206031,
+        "sha256": "69c7fab685275bcd9066860b08ac1807106ada447208ab32cc1849f927dab38e",
+        "localUri": "https://drive.google.com/file/d/1qNsQDWotkCAFT08ocRr63OhIsraLTWiA/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-FB47E32041B441DA",
+    "assetCode": "SIG-20260831-0036",
+    "category": "Adesivo de parede",
+    "categoryColor": "#ec4899",
+    "sector": "SETOR_AMARELO",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.1833909356,
+    "normalizedY": 0.195914099,
+    "notes": "Sem observação",
+    "humanLocation": "Rua 25 de Março",
+    "responsible": "Marketing",
+    "photos": [
+      {
+        "id": "FOTO-BF2296BC732747FC",
+        "fileName": "SIG-20260831-0036_fab3ae0f.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 232084,
+        "sha256": "5631a83916482544cc68e4a9fbdef2d980be59ca6836c6368fa3219454e51d07",
+        "localUri": "https://drive.google.com/file/d/1pWNicq0gLOPyDtHw6JrVWOVk-H-kSIDS/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-909816F9A2E14B3D",
+    "assetCode": "SIG-20260831-0037",
+    "category": "Placa de serviço",
+    "categoryColor": "#0d9488",
+    "sector": "SETOR_AMARELO",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.1659395495,
+    "normalizedY": 0.1943949437,
+    "notes": "Sem observação",
+    "humanLocation": "Rua 25 de Março",
+    "responsible": "CEOP",
+    "photos": [
+      {
+        "id": "FOTO-B10B3565792245D8",
+        "fileName": "SIG-20260831-0037_5c28db97.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 193916,
+        "sha256": "e4360b7f90d3b8124c7c40e3e722ddb8bbba93d40cd6a65c4bc82ce18d88f73c",
+        "localUri": "https://drive.google.com/file/d/1Qcb4tTganQFR39856vOHunlosWUzqyvP/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-9937783C7B01404E",
+    "assetCode": "SIG-20260831-0038",
+    "category": "Placa de serviço",
+    "categoryColor": "#0d9488",
+    "sector": "SETOR_AMARELO",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.1498305776,
+    "normalizedY": 0.2086370382,
+    "notes": "Sem observação",
+    "humanLocation": "Rua 25 de Março",
+    "responsible": "CEOP",
+    "photos": [
+      {
+        "id": "FOTO-2B7EC580C350403F",
+        "fileName": "SIG-20260831-0038_6e6304c7.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 270546,
+        "sha256": "3d264d7dc2faa23361538fbfdeeecd1b344da1834687542c47d2da95232e2c24",
+        "localUri": "https://drive.google.com/file/d/15HHaq1sG5HHW10KzDPlFinp_RT64JCVm/preview",
+        "uploadedToS3": true
+      },
+      {
+        "id": "FOTO-2799F16417BC4CC8",
+        "fileName": "SIG-20260831-0038_235c5764.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 219648,
+        "sha256": "6462a85c38e7d4687028956664a66ae9b39847905c6d2b177cbecc26e86b7efb",
+        "localUri": "https://drive.google.com/file/d/1C9GTZIS1VBEFg4tz24_fbXzEc6YQ0lbs/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-78E2CDAB9A744025",
+    "assetCode": "SIG-20260831-0039",
+    "category": "Banner",
+    "categoryColor": "#0284c7",
+    "sector": "SETOR_AMARELO",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.1493831062,
+    "normalizedY": 0.2253477609,
+    "notes": "Sem observação",
+    "humanLocation": "Rua 25 de Março",
+    "responsible": "Marketing",
+    "photos": [
+      {
+        "id": "FOTO-739AF4A8EF9F4DC7",
+        "fileName": "SIG-20260831-0039_ce58961b.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 293629,
+        "sha256": "60a2372426850c609de6d5447d0d1a33599b6d4da2e8d6b708eb14dfd42b03ad",
+        "localUri": "https://drive.google.com/file/d/1OILgGn6x-suFSBSqUU51zl_zoyHsLt-f/preview",
+        "uploadedToS3": true
+      },
+      {
+        "id": "FOTO-51B055A860B14380",
+        "fileName": "SIG-20260831-0039_bf659758.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 201042,
+        "sha256": "879edfa8f5ca17ab3807269c074b3dd51e1bdb0e0333e76f4cf5323f97abbbf4",
+        "localUri": "https://drive.google.com/file/d/1rjwa0UbpSVm4-f9DDuhhhuhu8wPXD_4X/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  },
+  {
+    "id": "SIG-1B1BB102D9484749",
+    "assetCode": "SIG-20260831-0040",
+    "category": "Placa de rua",
+    "categoryColor": "#2563eb",
+    "sector": "SETOR_AMARELO",
+    "status": "ATIVA",
+    "conservationState": "Boa",
+    "normalizedX": 0.6786067393,
+    "normalizedY": 0.8847667054,
+    "notes": "Sem observação",
+    "humanLocation": "Rua José Avelino",
+    "responsible": "CEOP",
+    "photos": [
+      {
+        "id": "FOTO-30640A771E424E38",
+        "fileName": "SIG-20260831-0040_3452c24b.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 290739,
+        "sha256": "23932b9e027902c25fa516e1cd2f13c0b026aa91cb7d7fbb1356002a9b4aa0b5",
+        "localUri": "https://drive.google.com/file/d/1sdWyTENkwuK2-O_hJpe5k0sQosx0pmmd/preview",
+        "uploadedToS3": true
+      },
+      {
+        "id": "FOTO-B7E78DA39EB347CB",
+        "fileName": "SIG-20260831-0040_9bdd9306.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": 180015,
+        "sha256": "7f28e2997c500c24db2cdb57ba984f9e86e8013b679fbaf66e36a18ec58405c2",
+        "localUri": "https://drive.google.com/file/d/1IgSwMgW52hMtVQrk6II1j5-YTJAqqUbx/preview",
+        "uploadedToS3": true
+      }
+    ],
+    "entityType": "SINALIZACAO"
+  }
+]

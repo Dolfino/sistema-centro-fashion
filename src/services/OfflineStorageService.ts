@@ -1,6 +1,7 @@
 import { Platform } from 'react-native';
 import { SignagePin } from '../components/InteractiveMallMap';
 import { OutboxItem } from '../components/FilaOutboxModal';
+import sinalizacoesProducaoRaw from '../data/sinalizacoes_producao.json';
 
 export const STORAGE_KEYS = {
   PINS: 'sinalizacao_mall_pins',
@@ -150,17 +151,21 @@ export class OfflineStorageService {
   }
 
   /**
-   * Carrega os pins salvos no storage real. Se virgem, inicializa com a baseline de 5 pins.
+   * Carrega os pins salvos no storage real, enriquecidos com todo o catálogo oficial de sinalizações.
    */
   public static loadPins(): SignagePin[] {
+    const prodList = (sinalizacoesProducaoRaw || []) as unknown as SignagePin[];
     try {
       const data = this.getItem(STORAGE_KEYS.PINS);
       if (data) {
         const parsed = JSON.parse(data);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          const hasOcorrencia = parsed.some((p) => p.entityType === 'OCORRENCIA');
-          if (!hasOcorrencia && initialDefaultPins.length > 5) {
-            const merged = [...parsed, initialDefaultPins[5], initialDefaultPins[6]];
+          // Identificar se faltam os pins oficiais de produção (ex: os 48 do Setor Azul)
+          const existingCodes = new Set(parsed.map((p: SignagePin) => p.assetCode || p.id));
+          const missingProdPins = prodList.filter((p) => !existingCodes.has(p.assetCode) && !existingCodes.has(p.id));
+
+          if (missingProdPins.length > 0) {
+            const merged = [...parsed, ...missingProdPins];
             this.savePins(merged);
             return merged;
           }
@@ -170,9 +175,15 @@ export class OfflineStorageService {
     } catch (e) {
       console.warn('[STORAGE] Erro ao ler pins do storage real:', e);
     }
-    // Inicialização virgem
-    this.savePins(initialDefaultPins);
-    return initialDefaultPins;
+    // Inicialização virgem com catálogo oficial + baseline
+    const combinedBaseline: SignagePin[] = [...prodList];
+    initialDefaultPins.forEach((init) => {
+      if (!combinedBaseline.some((p) => p.assetCode === init.assetCode)) {
+        combinedBaseline.push(init);
+      }
+    });
+    this.savePins(combinedBaseline);
+    return combinedBaseline;
   }
 
   public static savePins(pins: SignagePin[]): void {
