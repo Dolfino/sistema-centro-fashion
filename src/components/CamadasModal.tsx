@@ -1485,6 +1485,8 @@ const styles = StyleSheet.create({
   legendaLista: {
     gap: 10,
     marginBottom: 14,
+    position: 'relative',
+    zIndex: 100,
   },
   legendaRow: {
     flexDirection: 'row',
@@ -1494,7 +1496,8 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   legendaRowActive: {
-    zIndex: 9999,
+    position: 'relative',
+    zIndex: 1000,
   },
   legendaColorSquare: {
     width: 22,
@@ -1502,12 +1505,20 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     borderWidth: 1,
     borderColor: '#E2E8F0',
+    cursor: 'pointer' as any,
   },
   colorPickerPopover: {
     position: 'absolute',
     top: 28,
     left: 0,
-    zIndex: 99999,
+    backgroundColor: '#ffffff',
+    borderRadius: 8,
+    zIndex: 999999,
+    elevation: 40,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.25,
+    shadowRadius: 16,
   },
   colorPickerBackdrop: {
     position: 'fixed' as any,
@@ -1527,6 +1538,8 @@ const styles = StyleSheet.create({
     fontSize: 12,
     lineHeight: 18,
     color: '#64748B',
+    position: 'relative',
+    zIndex: 1,
   },
 
   // Presets Corporativos (Imagens 3 e 4)

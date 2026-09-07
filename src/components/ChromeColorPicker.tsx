@@ -256,9 +256,29 @@ export const ChromeColorPicker: React.FC<ChromeColorPickerProps> = ({
         } as any)}
       >
         {/* Camada branca gradiente horizontal */}
-        <View style={styles.satValWhiteOverlay} pointerEvents="none" />
+        <View
+          style={[
+            styles.satValWhiteOverlay,
+            Platform.OS === 'web'
+              ? ({
+                  backgroundImage: 'linear-gradient(to right, #ffffff, rgba(255, 255, 255, 0))',
+                } as any)
+              : null,
+          ]}
+          pointerEvents="none"
+        />
         {/* Camada preta gradiente vertical */}
-        <View style={styles.satValBlackOverlay} pointerEvents="none" />
+        <View
+          style={[
+            styles.satValBlackOverlay,
+            Platform.OS === 'web'
+              ? ({
+                  backgroundImage: 'linear-gradient(to top, #000000, rgba(0, 0, 0, 0))',
+                } as any)
+              : null,
+          ]}
+          pointerEvents="none"
+        />
 
         {/* Anel indicador de seleção */}
         <View
@@ -308,7 +328,18 @@ export const ChromeColorPicker: React.FC<ChromeColorPickerProps> = ({
             onTouchMove: (e: any) => handleHueMove(e),
           } as any)}
         >
-          <View style={styles.hueBarGradient} pointerEvents="none" />
+          <View
+            style={[
+              styles.hueBarGradient,
+              Platform.OS === 'web'
+                ? ({
+                    backgroundImage:
+                      'linear-gradient(to right, #ff0000 0%, #ffff00 17%, #00ff00 33%, #00ffff 50%, #0000ff 67%, #ff00ff 83%, #ff0000 100%)',
+                  } as any)
+                : null,
+            ]}
+            pointerEvents="none"
+          />
           <View
             pointerEvents="none"
             style={[
@@ -385,18 +416,18 @@ export const ChromeColorPicker: React.FC<ChromeColorPickerProps> = ({
 
 const styles = StyleSheet.create({
   pickerContainer: {
-    width: 228,
+    width: 236,
     backgroundColor: '#ffffff',
     borderRadius: 8,
     padding: 10,
     borderWidth: 1,
     borderColor: '#e2e8f0',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.18,
-    shadowRadius: 12,
-    elevation: 20,
-    zIndex: 9999,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.25,
+    shadowRadius: 16,
+    elevation: 30,
+    zIndex: 999999,
   },
   satValArea: {
     width: '100%',
