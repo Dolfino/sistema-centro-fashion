@@ -220,6 +220,20 @@ export default function LegacyMainShellScreen() {
     });
   }, []);
 
+  const [corReferencia, setCorReferencia] = useState<string>(() => {
+    if (Platform.OS === 'web' && typeof window !== 'undefined' && window.localStorage) {
+      return window.localStorage.getItem('sinalizacao_mall_cor_referencia') || '#38bdf8';
+    }
+    return '#38bdf8';
+  });
+
+  const handleUpdateCorReferencia = useCallback((novaCor: string) => {
+    setCorReferencia(novaCor);
+    if (Platform.OS === 'web' && typeof window !== 'undefined' && window.localStorage) {
+      window.localStorage.setItem('sinalizacao_mall_cor_referencia', novaCor);
+    }
+  }, []);
+
   // Estados do Fluxo de Posicionamento e Cadastro (UI-3)
   const [positioningMode, setPositioningMode] = useState<boolean>(false);
   const [draftPin, setDraftPin] = useState<{ normalizedX: number; normalizedY: number } | null>(null);
@@ -1477,6 +1491,7 @@ export default function LegacyMainShellScreen() {
             campanhaAdesoesMap={campanhaAdesoesMap}
             resetTrigger={mapResetTrigger}
             showLojasBoxes={showLojas || filterConservation === 'LOJAS_BOXES'}
+            corReferencia={corReferencia}
             onSelectLoja={handleSelectLojaRealSearchResult}
             onMapClick={handleMapClick}
           />
@@ -1536,6 +1551,8 @@ export default function LegacyMainShellScreen() {
         campanhaAtivaId={campanhaAtivaId}
         onSelectCampanha={(id) => setCampanhaAtivaId(id)}
         onFilterChange={handleCamadasFilterChange}
+        corReferencia={corReferencia}
+        onUpdateCorReferencia={handleUpdateCorReferencia}
       />
 
       <FormPanelModal

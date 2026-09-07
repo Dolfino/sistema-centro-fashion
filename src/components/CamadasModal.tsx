@@ -69,6 +69,8 @@ interface CamadasModalProps {
     conservacao: string;
     condicao: string;
   }) => void;
+  corReferencia?: string;
+  onUpdateCorReferencia?: (cor: string) => void;
 }
 
 const PRESETS_CORPORATIVOS_INICIAIS: PresetCorporativoItem[] = [
@@ -126,6 +128,8 @@ export const CamadasModal: React.FC<CamadasModalProps> = ({
   campanhaAtivaId = null,
   onSelectCampanha,
   onFilterChange,
+  corReferencia = '#38bdf8',
+  onUpdateCorReferencia,
 }) => {
   const { width: windowWidth } = useWindowDimensions();
   const isMobile = windowWidth < 700;
@@ -166,6 +170,26 @@ export const CamadasModal: React.FC<CamadasModalProps> = ({
       window.localStorage.setItem('sinalizacao_mall_legenda_cores', JSON.stringify(legendaCores));
     }
   }, [legendaCores]);
+
+  const [corReferenciaLocal, setCorReferenciaLocal] = useState<string>(() => {
+    if (corReferencia) return corReferencia;
+    if (Platform.OS === 'web' && typeof window !== 'undefined' && window.localStorage) {
+      return window.localStorage.getItem('sinalizacao_mall_cor_referencia') || '#38bdf8';
+    }
+    return '#38bdf8';
+  });
+
+  useEffect(() => {
+    if (corReferencia) {
+      setCorReferenciaLocal(corReferencia);
+    }
+  }, [corReferencia]);
+
+  useEffect(() => {
+    if (Platform.OS === 'web' && typeof window !== 'undefined' && window.localStorage) {
+      window.localStorage.setItem('sinalizacao_mall_cor_referencia', corReferenciaLocal);
+    }
+  }, [corReferenciaLocal]);
 
   // Presets Corporativos e Pessoais
   const [presetsCorp, setPresetsCorp] = useState<PresetCorporativoItem[]>(() => {
@@ -619,7 +643,7 @@ export const CamadasModal: React.FC<CamadasModalProps> = ({
                         width: 5,
                         height: 5,
                         borderRadius: 2.5,
-                        backgroundColor: '#38bdf8',
+                        backgroundColor: corReferenciaLocal,
                       }}
                     />
                   </View>
@@ -914,14 +938,85 @@ export const CamadasModal: React.FC<CamadasModalProps> = ({
                   onPress={() => {
                     setColorPickerTargetId(null);
                     setLegendaCores(LEGENDA_SINALIZACOES_PADRAO);
+                    setCorReferenciaLocal('#38bdf8');
+                    if (onUpdateCorReferencia) onUpdateCorReferencia('#38bdf8');
                   }}
                 >
                   <Text style={styles.btnRestaurarCoresText}>Restaurar cores</Text>
                 </TouchableOpacity>
               </View>
 
-              {/* Lista com as 6 categorias das fotos */}
+              {/* Lista com as categorias das fotos + Referências */}
               <View style={styles.legendaLista}>
+                {/* Item para Referências (Ponto Central / Miolo) */}
+                {(() => {
+                  const isPickerRefOpen = colorPickerTargetId === 'cat-ref-central';
+                  return (
+                    <View
+                      key="cat-ref-central"
+                      style={[styles.legendaRow, isPickerRefOpen && styles.legendaRowActive]}
+                    >
+                      <TouchableOpacity
+                        id="cor-btn-cat-ref-central"
+                        style={[
+                          styles.legendaColorSquare,
+                          { backgroundColor: corReferenciaLocal, cursor: 'pointer' as any },
+                        ]}
+                        onPress={() => setColorPickerTargetId(isPickerRefOpen ? null : 'cat-ref-central')}
+                        activeOpacity={0.8}
+                      />
+                      <View
+                        style={{
+                          width: 14,
+                          height: 14,
+                          borderRadius: 7,
+                          backgroundColor: '#10144d',
+                          borderColor: '#ffffff',
+                          borderWidth: 1.5,
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <View
+                          style={{
+                            width: 5,
+                            height: 5,
+                            borderRadius: 2.5,
+                            backgroundColor: corReferenciaLocal,
+                          }}
+                        />
+                      </View>
+                      <Text style={styles.legendaCatNome}>Referências (Ponto Central)</Text>
+                      <View style={styles.compactBadgePill}>
+                        <Text style={styles.compactBadgeText}>{totalReferenciasCount}</Text>
+                      </View>
+
+                      {/* Popover do Seletor de Cores para o Miolo da Referência */}
+                      {isPickerRefOpen && (
+                        <>
+                          {Platform.OS === 'web' && (
+                            <TouchableOpacity
+                              style={styles.colorPickerBackdrop}
+                              onPress={() => setColorPickerTargetId(null)}
+                              activeOpacity={1}
+                            />
+                          )}
+                          <View style={styles.colorPickerPopover}>
+                            <ChromeColorPicker
+                              color={corReferenciaLocal}
+                              onChange={(newHex) => {
+                                setCorReferenciaLocal(newHex);
+                                if (onUpdateCorReferencia) onUpdateCorReferencia(newHex);
+                              }}
+                              onClose={() => setColorPickerTargetId(null)}
+                            />
+                          </View>
+                        </>
+                      )}
+                    </View>
+                  );
+                })()}
+
                 {legendaCores.map((cat) => {
                   const isPickerOpen = colorPickerTargetId === cat.id;
                   return (

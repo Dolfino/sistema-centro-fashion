@@ -77,6 +77,7 @@ interface InteractiveMallMapProps {
   campanhaAdesoesMap?: Record<string, { status: string; cor: string; label: string }>;
   resetTrigger?: number;
   showLojasBoxes?: boolean;
+  corReferencia?: string;
   onSelectLoja?: (loja: LojaProducaoItem) => void;
   onMapClick?: (coords: {
     normalizedX: number;
@@ -181,13 +182,22 @@ const BoxDotMarker: React.FC<{
   );
 };
 
-// Marcador circular de Referência Cartográfica Oficial (#10144d com anel branco e balão escuro)
+// Marcador circular de Referência Cartográfica Oficial (#10144d com anel branco e balão escuro exibido no hover)
 const CartographicReferenceMarker: React.FC<{
   refItem: PontoReferenciaOficial;
   size?: number;
-}> = ({ refItem, size = 18 }) => {
+  centerColor?: string;
+}> = ({ refItem, size = 18, centerColor = '#38bdf8' }) => {
+  const [isHovered, setIsHovered] = useState<boolean>(false);
+
   return (
-    <View style={{ alignItems: 'center', justifyContent: 'center', overflow: 'visible' }}>
+    <View
+      style={{ alignItems: 'center', justifyContent: 'center', overflow: 'visible' }}
+      {...({
+        onMouseEnter: () => setIsHovered(true),
+        onMouseLeave: () => setIsHovered(false),
+      } as any)}
+    >
       <View
         style={{
           width: size,
@@ -210,12 +220,12 @@ const CartographicReferenceMarker: React.FC<{
             width: Math.max(4, Math.round(size * 0.36)),
             height: Math.max(4, Math.round(size * 0.36)),
             borderRadius: Math.max(2, Math.round(size * 0.18)),
-            backgroundColor: '#38bdf8',
+            backgroundColor: centerColor,
           }}
         />
       </View>
-      {/* Balão de tooltip oficial Centro Fashion (idêntico ao legado) */}
-      {refItem.nome && (
+      {/* Balão de identificação oficial exibido somente ao passar o mouse (hover) */}
+      {isHovered && refItem.nome && (
         <View
           style={{
             position: 'absolute',
@@ -231,10 +241,10 @@ const CartographicReferenceMarker: React.FC<{
             shadowOffset: { width: 0, height: 2 },
             shadowOpacity: 0.5,
             shadowRadius: 4,
-            elevation: 6,
+            elevation: 10,
             whiteSpace: 'nowrap',
             pointerEvents: 'none',
-            zIndex: 60,
+            zIndex: 100,
           } as any}
         >
           <Text
@@ -292,6 +302,7 @@ export const InteractiveMallMap: React.FC<InteractiveMallMapProps> = ({
   campanhaAdesoesMap = {},
   resetTrigger = 0,
   showLojasBoxes = false,
+  corReferencia = '#38bdf8',
   onSelectLoja,
   onMapClick,
 }) => {
@@ -890,7 +901,7 @@ export const InteractiveMallMap: React.FC<InteractiveMallMapProps> = ({
                   },
                 ]}
               >
-                <CartographicReferenceMarker refItem={refItem} size={refSize} />
+                <CartographicReferenceMarker refItem={refItem} size={refSize} centerColor={corReferencia} />
               </TouchableOpacity>
             );
           })}
