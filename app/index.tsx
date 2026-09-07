@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, useWindowDimensions, Platform, TextInput, ScrollView } from 'react-native';
 import { InteractiveMallMap, SignagePin } from '../src/components/InteractiveMallMap';
 import { AppMenuModal } from '../src/components/AppMenuModal';
@@ -202,6 +202,23 @@ export default function LegacyMainShellScreen() {
       return true;
     });
   }, [pinsList, camadasFilters]);
+
+  const handleCamadasFilterChange = useCallback((filters: any) => {
+    setCamadasFilters((prev) => {
+      if (
+        prev.query === filters.query &&
+        prev.tipo === filters.tipo &&
+        prev.finalidade === filters.finalidade &&
+        prev.responsavel === filters.responsavel &&
+        prev.status === filters.status &&
+        prev.conservacao === filters.conservacao &&
+        prev.condicao === filters.condicao
+      ) {
+        return prev;
+      }
+      return filters;
+    });
+  }, []);
 
   // Estados do Fluxo de Posicionamento e Cadastro (UI-3)
   const [positioningMode, setPositioningMode] = useState<boolean>(false);
@@ -1518,7 +1535,7 @@ export default function LegacyMainShellScreen() {
         initialShowCentral={showCentralCamadas}
         campanhaAtivaId={campanhaAtivaId}
         onSelectCampanha={(id) => setCampanhaAtivaId(id)}
-        onFilterChange={(filters) => setCamadasFilters(filters)}
+        onFilterChange={handleCamadasFilterChange}
       />
 
       <FormPanelModal

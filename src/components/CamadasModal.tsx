@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -154,17 +154,25 @@ export const CamadasModal: React.FC<CamadasModalProps> = ({
     setInternalLoj(showLojas);
   }, [showReferencias, showCruzamentos, showLojas]);
 
+  const onFilterChangeRef = useRef(onFilterChange);
+  onFilterChangeRef.current = onFilterChange;
+  const lastFiltersRef = useRef<string>('');
+
   useEffect(() => {
-    if (onFilterChange) {
-      onFilterChange({
-        query: searchQuery,
-        tipo: filtroTipo,
-        finalidade: filtroFinalidade,
-        responsavel: filtroResponsavel,
-        status: filtroStatus,
-        conservacao: filtroConservacao,
-        condicao: filtroCondicao,
-      });
+    const currentKey = `${searchQuery}|${filtroTipo}|${filtroFinalidade}|${filtroResponsavel}|${filtroStatus}|${filtroConservacao}|${filtroCondicao}`;
+    if (lastFiltersRef.current !== currentKey) {
+      lastFiltersRef.current = currentKey;
+      if (onFilterChangeRef.current) {
+        onFilterChangeRef.current({
+          query: searchQuery,
+          tipo: filtroTipo,
+          finalidade: filtroFinalidade,
+          responsavel: filtroResponsavel,
+          status: filtroStatus,
+          conservacao: filtroConservacao,
+          condicao: filtroCondicao,
+        });
+      }
     }
   }, [
     searchQuery,
@@ -174,7 +182,6 @@ export const CamadasModal: React.FC<CamadasModalProps> = ({
     filtroStatus,
     filtroConservacao,
     filtroCondicao,
-    onFilterChange,
   ]);
 
   useEffect(() => {
