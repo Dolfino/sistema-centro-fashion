@@ -174,9 +174,12 @@ export const InteractiveMallMap: React.FC<InteractiveMallMapProps> = ({
     const sx = vw / natW;
     const sy = vh / natH;
     const initialFit = Math.min(sx, sy, 1);
-    const minS = Math.max(0.15, initialFit * 0.6);
     const initialX = (vw - natW * initialFit) / 2;
     const initialY = (vh - natH * initialFit) / 2;
+
+    scaleRef.current = initialFit;
+    translateRef.current = { x: initialX, y: initialY };
+    fitScaleRef.current = initialFit;
 
     setFitScale(initialFit);
     setScale(initialFit);
@@ -206,55 +209,183 @@ export const InteractiveMallMap: React.FC<InteractiveMallMapProps> = ({
     }
   }, [resetTrigger, resetarMapa, viewportDim]);
 
-  // Zoom focado no ponto (mx, my) - Idêntico ao zoomNoPonto do legado
-  const zoomAtPoint = useCallback((mx: number, my: number, newScaleTarget: number) => {
-    const minScale = Math.max(0.12, fitScale * 0.5);
-    const maxScale = 5.0;
-    const ns = Math.min(maxScale, Math.max(minScale, newScaleTarget));
+  // Referências sincronizadas para handlers nativos de touch/wheel sem delay de closure
+  const scaleRef = useRef(scale);
+  const translateRef = useRef(translate);
+  const fitScaleRef = useRef(fitScale);
 
-    setScale((prevScale) => {
-      setTranslate((prevTranslate) => {
-        const wx = (mx - prevTranslate.x) / prevScale;
-        const wy = (my - prevTranslate.y) / prevScale;
-        return {
-          x: mx - wx * ns,
-          y: my - wy * ns,
-        };
-      });
-      return ns;
-    });
+  useEffect(() => {
+    scaleRef.current = scale;
+  }, [scale]);
+
+  useEffect(() => {
+    translateRef.current = translate;
+  }, [translate]);
+
+  useEffect(() => {
+    fitScaleRef.current = fitScale;
   }, [fitScale]);
 
-  // Zoom no centro da viewport (para os botões HUD + e -)
-  const zoomAtCenter = useCallback((factor: number) => {
-    const mx = viewportDim.width / 2;
-    const my = viewportDim.height / 2;
-    zoomAtPoint(mx, my, scale * factor);
-  }, [viewportDim, scale, zoomAtPoint]);
+  // Zoom focado no ponto (mx, my) com scroll do mouse ou pinça - 100% responsivo e instantâneo
+  const zoomAtPoint = useCallback((mx: number, my: number, newScaleTarget: number) => {
+    const minScale = Math.max(0.12, fitScaleRef.current * 0.4);
+    const maxScale = 6.0;
+    const ns = Math.min(maxScale, Math.max(minScale, newScaleTarget));
 
-  // Listener nativo de roda do mouse (wheel) para web
+    const currentScale = scaleRef.current;
+    const currentTranslate = translateRef.current;
+
+    const wx = (mx - currentTranslate.x) / currentScale;
+    const wy = (my - currentTranslate.y) / currentScale;
+
+    const newX = mx - wx * ns;
+    const newY = my - wy * ns;
+
+    scaleRef.current = ns;
+    translateRef.current = { x: newX, y: newY };
+
+    setScale(ns);
+    setTranslate({ x: newX, y: newY });
+  }, []);
+
+  // Listener nativo para web: roda do mouse (wheel) e gestos de toque / pinça (touch / pinch-to-zoom)
   useEffect(() => {
     if (Platform.OS !== 'web') return;
     const node = viewportRef.current as any;
     if (!node) return;
 
+    // Roda do mouse com zoom focalizado
     const onWheel = (e: WheelEvent) => {
       e.preventDefault();
       const rect = node.getBoundingClientRect();
       const mx = e.clientX - rect.left;
       const my = e.clientY - rect.top;
-      // Fator do legado GAS: deltaY < 0 ? 1.12 : 0.89
       const factor = e.deltaY < 0 ? 1.15 : 0.87;
-      zoomAtPoint(mx, my, scale * factor);
+      zoomAtPoint(mx, my, scaleRef.current * factor);
+    };
+
+    // Gerenciamento de Toque Multi-Touch (Pan com 1 dedo e Pinch-to-Zoom com 2 dedos)
+    let touchMode: 'none' | 'pan' | 'pinch' = 'none';
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let touchOriginX = 0;
+    let touchOriginY = 0;
+    let initialPinchDistance = 0;
+    let initialPinchScale = 1;
+    let initialPinchTranslate = { x: 0, y: 0 };
+    let initialPinchMidX = 0;
+    let initialPinchMidY = 0;
+    let touchHasMoved = false;
+
+    const onTouchStart = (e: TouchEvent) => {
+      if (e.touches.length === 1) {
+        const target = e.target as HTMLElement | null;
+        if (target?.closest?.('[data-role="pin"], [id^="pin-marker-"]')) {
+          touchMode = 'none';
+          return;
+        }
+
+        touchMode = 'pan';
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+        touchOriginX = translateRef.current.x;
+        touchOriginY = translateRef.current.y;
+        touchHasMoved = false;
+        setIsPanning(true);
+      } else if (e.touches.length === 2) {
+        e.preventDefault();
+        touchMode = 'pinch';
+        const t1 = e.touches[0];
+        const t2 = e.touches[1];
+        initialPinchDistance = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
+        initialPinchScale = scaleRef.current;
+        initialPinchTranslate = { ...translateRef.current };
+
+        const rect = node.getBoundingClientRect();
+        initialPinchMidX = (t1.clientX + t2.clientX) / 2 - rect.left;
+        initialPinchMidY = (t1.clientY + t2.clientY) / 2 - rect.top;
+        touchHasMoved = true;
+        setIsPanning(true);
+      }
+    };
+
+    const onTouchMove = (e: TouchEvent) => {
+      if (touchMode === 'none') return;
+      e.preventDefault(); // Impede rolagem da página inteira e zoom nativo indesejado do browser
+
+      if (touchMode === 'pan' && e.touches.length === 1) {
+        const clientX = e.touches[0].clientX;
+        const clientY = e.touches[0].clientY;
+        const dx = clientX - touchStartX;
+        const dy = clientY - touchStartY;
+
+        if (Math.hypot(dx, dy) > 4) {
+          touchHasMoved = true;
+        }
+
+        const newX = touchOriginX + dx;
+        const newY = touchOriginY + dy;
+        translateRef.current = { x: newX, y: newY };
+        setTranslate({ x: newX, y: newY });
+      } else if (touchMode === 'pinch' && e.touches.length === 2) {
+        const t1 = e.touches[0];
+        const t2 = e.touches[1];
+        const currentDistance = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
+
+        if (initialPinchDistance > 0) {
+          const factor = currentDistance / initialPinchDistance;
+          const minScale = Math.max(0.12, fitScaleRef.current * 0.4);
+          const maxScale = 6.0;
+          const targetScale = Math.min(maxScale, Math.max(minScale, initialPinchScale * factor));
+
+          const rect = node.getBoundingClientRect();
+          const currentMidX = (t1.clientX + t2.clientX) / 2 - rect.left;
+          const currentMidY = (t1.clientY + t2.clientY) / 2 - rect.top;
+
+          // Ponto no espaço do mapa correspondente ao centro inicial do gesto de pinça
+          const wx = (initialPinchMidX - initialPinchTranslate.x) / initialPinchScale;
+          const wy = (initialPinchMidY - initialPinchTranslate.y) / initialPinchScale;
+
+          const newX = currentMidX - wx * targetScale;
+          const newY = currentMidY - wy * targetScale;
+
+          scaleRef.current = targetScale;
+          translateRef.current = { x: newX, y: newY };
+          setScale(targetScale);
+          setTranslate({ x: newX, y: newY });
+        }
+      }
+    };
+
+    const onTouchEnd = (e: TouchEvent) => {
+      if (e.touches.length === 1) {
+        touchMode = 'pan';
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+        touchOriginX = translateRef.current.x;
+        touchOriginY = translateRef.current.y;
+      } else if (e.touches.length === 0) {
+        touchMode = 'none';
+        setIsPanning(false);
+      }
     };
 
     node.addEventListener('wheel', onWheel, { passive: false });
+    node.addEventListener('touchstart', onTouchStart, { passive: false });
+    node.addEventListener('touchmove', onTouchMove, { passive: false });
+    node.addEventListener('touchend', onTouchEnd, { passive: false });
+    node.addEventListener('touchcancel', onTouchEnd, { passive: false });
+
     return () => {
       node.removeEventListener('wheel', onWheel);
+      node.removeEventListener('touchstart', onTouchStart);
+      node.removeEventListener('touchmove', onTouchMove);
+      node.removeEventListener('touchend', onTouchEnd);
+      node.removeEventListener('touchcancel', onTouchEnd);
     };
-  }, [zoomAtPoint, scale]);
+  }, [zoomAtPoint]);
 
-  // Referência para gerenciamento de arrasto/pan
+  // Referência para gerenciamento de arrasto/pan via mouse
   const pointerState = useRef<{
     isDown: boolean;
     startX: number;
@@ -272,6 +403,8 @@ export const InteractiveMallMap: React.FC<InteractiveMallMapProps> = ({
   });
 
   const handlePointerDown = (e: any) => {
+    // Eventos de touch são tratados nativamente pelo listener multi-touch
+    if (e.pointerType === 'touch' || e.nativeEvent?.pointerType === 'touch') return;
     // Não inicia pan se clicou em botão ou marcador
     if (e.target?.closest?.('[data-role="hud"], [data-role="pin"], [id^="pin-marker-"]')) return;
 
@@ -290,6 +423,7 @@ export const InteractiveMallMap: React.FC<InteractiveMallMapProps> = ({
   };
 
   const handlePointerMove = (e: any) => {
+    if (e.pointerType === 'touch' || e.nativeEvent?.pointerType === 'touch') return;
     if (!pointerState.current.isDown) return;
     const clientX = e.clientX ?? e.nativeEvent?.clientX ?? 0;
     const clientY = e.clientY ?? e.nativeEvent?.clientY ?? 0;
@@ -307,6 +441,7 @@ export const InteractiveMallMap: React.FC<InteractiveMallMapProps> = ({
   };
 
   const handlePointerUp = (e: any) => {
+    if (e.pointerType === 'touch' || e.nativeEvent?.pointerType === 'touch') return;
     const wasMoved = pointerState.current.hasMoved;
     pointerState.current.isDown = false;
     setIsPanning(false);
@@ -522,43 +657,6 @@ export const InteractiveMallMap: React.FC<InteractiveMallMapProps> = ({
           </View>
         </View>
       )}
-
-      {/* HUD de Controles Flutuantes do Mapa (Zoom In, Zoom Out, Recentralizar) */}
-      <View style={styles.mapHud} pointerEvents="box-none">
-        <TouchableOpacity
-          {...({ dataSet: { role: 'hud' } } as any)}
-          style={styles.hudButton}
-          onPress={() => zoomAtCenter(1.25)}
-          activeOpacity={0.8}
-          aria-label="Aumentar zoom"
-        >
-          <Text style={styles.hudButtonText}>+</Text>
-        </TouchableOpacity>
-
-        <View style={styles.hudZoomBadge}>
-          <Text style={styles.hudZoomText}>{zoomPercent}%</Text>
-        </View>
-
-        <TouchableOpacity
-          {...({ dataSet: { role: 'hud' } } as any)}
-          style={styles.hudButton}
-          onPress={() => zoomAtCenter(0.8)}
-          activeOpacity={0.8}
-          aria-label="Diminuir zoom"
-        >
-          <Text style={styles.hudButtonText}>−</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          {...({ dataSet: { role: 'hud' } } as any)}
-          style={[styles.hudButton, styles.hudButtonReset]}
-          onPress={() => resetarMapa(viewportDim.width, viewportDim.height, natural.width, natural.height)}
-          activeOpacity={0.8}
-          aria-label="Centralizar mapa"
-        >
-          <Text style={styles.hudButtonIcon}>⌖</Text>
-        </TouchableOpacity>
-      </View>
     </View>
   );
 };
@@ -621,59 +719,6 @@ const styles = StyleSheet.create({
     height: 6,
     borderRadius: 3,
     backgroundColor: '#FFFFFF',
-  },
-  mapHud: {
-    position: 'absolute',
-    right: 16,
-    bottom: 24,
-    zIndex: 90,
-    backgroundColor: 'rgba(15, 23, 42, 0.85)',
-    borderRadius: 10,
-    padding: 4,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.15)',
-    alignItems: 'center',
-    gap: 4,
-    backdropFilter: 'blur(8px)',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.35,
-    shadowRadius: 8,
-    elevation: 6,
-  } as any,
-  hudButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 8,
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  hudButtonReset: {
-    backgroundColor: 'rgba(14, 165, 233, 0.2)',
-    borderColor: 'rgba(14, 165, 233, 0.4)',
-    borderWidth: 1,
-  },
-  hudButtonText: {
-    color: '#FFFFFF',
-    fontSize: 20,
-    fontWeight: '700',
-    lineHeight: 22,
-  },
-  hudButtonIcon: {
-    color: '#38bdf8',
-    fontSize: 18,
-    fontWeight: '700',
-  },
-  hudZoomBadge: {
-    paddingHorizontal: 4,
-    paddingVertical: 2,
-  },
-  hudZoomText: {
-    color: '#94a3b8',
-    fontSize: 11,
-    fontWeight: '600',
-    textAlign: 'center',
   },
 });
 
