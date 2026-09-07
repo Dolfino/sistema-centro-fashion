@@ -162,6 +162,9 @@ export default function LegacyMainShellScreen() {
   const [camadasOpen, setCamadasOpen] = useState<boolean>(false);
   const [showCentralCamadas, setShowCentralCamadas] = useState<boolean>(false);
   const [showSinalizacoes, setShowSinalizacoes] = useState<boolean>(true);
+  const [showReferencias, setShowReferencias] = useState<boolean>(true);
+  const [showCruzamentos, setShowCruzamentos] = useState<boolean>(true);
+  const [showLojas, setShowLojas] = useState<boolean>(true);
 
   // Estados do Fluxo de Posicionamento e Cadastro (UI-3)
   const [positioningMode, setPositioningMode] = useState<boolean>(false);
@@ -312,6 +315,12 @@ export default function LegacyMainShellScreen() {
       } else if (view === 'fila_zerada') {
         setFilaOutboxOpen(true);
         setOutboxItems((prev) => prev.map((i) => ({ ...i, status: 'CONCLUIDO', errorMessage: null })));
+      } else if (view === 'camadas') {
+        setCamadasOpen(true);
+        setShowCentralCamadas(false);
+      } else if (view === 'central_camadas') {
+        setCamadasOpen(true);
+        setShowCentralCamadas(true);
       } else if (view === 'positioning' || view === 'location_confirm') {
         setPositioningMode(true);
         setDraftPin({ normalizedX: 0.35, normalizedY: 0.45 });
@@ -1406,12 +1415,14 @@ export default function LegacyMainShellScreen() {
             }}
             filterConservation={filterConservation}
             showSinalizacoes={showSinalizacoes}
+            showReferencias={showReferencias}
+            showCruzamentos={showCruzamentos}
             positioningMode={positioningMode}
             draftPin={draftPin}
             campanhaAtivaId={campanhaAtivaId}
             campanhaAdesoesMap={campanhaAdesoesMap}
             resetTrigger={mapResetTrigger}
-            showLojasBoxes={filterConservation === 'LOJAS_BOXES'}
+            showLojasBoxes={showLojas && (filterConservation === 'LOJAS_BOXES' || filterConservation === 'TODOS')}
             onSelectLoja={handleSelectLojaRealSearchResult}
             onMapClick={handleMapClick}
           />
@@ -1451,6 +1462,22 @@ export default function LegacyMainShellScreen() {
         showSinalizacoes={showSinalizacoes}
         onToggleSinalizacoes={(enabled) => setShowSinalizacoes(enabled)}
         totalPinsCount={pinsList.length}
+        showReferencias={showReferencias}
+        onToggleReferencias={(enabled) => setShowReferencias(enabled)}
+        totalReferenciasCount={15}
+        showCruzamentos={showCruzamentos}
+        onToggleCruzamentos={(enabled) => setShowCruzamentos(enabled)}
+        totalCruzamentosCount={13}
+        showLojas={showLojas}
+        onToggleLojas={(enabled) => {
+          setShowLojas(enabled);
+          if (enabled) {
+            setFilterConservation('LOJAS_BOXES');
+          } else if (filterConservation === 'LOJAS_BOXES') {
+            setFilterConservation('TODOS');
+          }
+        }}
+        totalLojasCount={CatalogoProducaoService.buscarPorSetor(selectedMapKey).length || 1352}
         initialShowCentral={showCentralCamadas}
         campanhaAtivaId={campanhaAtivaId}
         onSelectCampanha={(id) => setCampanhaAtivaId(id)}

@@ -63,6 +63,8 @@ interface InteractiveMallMapProps {
   selectedPinId?: string | null;
   onSelectPin?: (pin: SignagePin | null) => void;
   showSinalizacoes?: boolean;
+  showReferencias?: boolean;
+  showCruzamentos?: boolean;
   filterConservation?: string;
   positioningMode?: boolean;
   draftPin?: { normalizedX: number; normalizedY: number } | null;
@@ -180,6 +182,8 @@ export const InteractiveMallMap: React.FC<InteractiveMallMapProps> = ({
   selectedPinId = null,
   onSelectPin,
   showSinalizacoes = true,
+  showReferencias = true,
+  showCruzamentos = true,
   filterConservation = 'TODOS',
   positioningMode = false,
   draftPin = null,

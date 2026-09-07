@@ -1,5 +1,30 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TouchableWithoutFeedback, TextInput, ScrollView, Platform } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  TextInput,
+  ScrollView,
+  Platform,
+  useWindowDimensions,
+} from 'react-native';
+
+export interface PresetCorporativoItem {
+  id: string;
+  nome: string;
+  camadasInfo: string;
+  autor: string;
+  badges: string[];
+  isPadrao: boolean;
+}
+
+export interface PresetPessoalItem {
+  id: string;
+  nome: string;
+  dataCriacao: string;
+}
 
 interface CamadasModalProps {
   visible: boolean;
@@ -7,30 +32,127 @@ interface CamadasModalProps {
   showSinalizacoes: boolean;
   onToggleSinalizacoes: (enabled: boolean) => void;
   totalPinsCount: number;
+  showReferencias?: boolean;
+  onToggleReferencias?: (enabled: boolean) => void;
+  totalReferenciasCount?: number;
+  showCruzamentos?: boolean;
+  onToggleCruzamentos?: (enabled: boolean) => void;
+  totalCruzamentosCount?: number;
+  showLojas?: boolean;
+  onToggleLojas?: (enabled: boolean) => void;
+  totalLojasCount?: number;
   initialShowCentral?: boolean;
   campanhaAtivaId?: string | null;
   onSelectCampanha?: (campanhaId: string | null) => void;
+  onFilterChange?: (filters: {
+    query: string;
+    tipo: string;
+    finalidade: string;
+    responsavel: string;
+    status: string;
+    conservacao: string;
+    condicao: string;
+  }) => void;
 }
+
+const PRESETS_CORPORATIVOS_INICIAIS: PresetCorporativoItem[] = [
+  {
+    id: 'corp-visao-geral',
+    nome: 'Visão Geral Mall',
+    camadasInfo: '3/4 camadas • 0 filtros • Tipo • Todos • davidsilva.centrofashion@gmail.com',
+    autor: 'davidsilva.centrofashion@gmail.com',
+    badges: ['Corporativo', 'Todos', 'Padrão'],
+    isPadrao: true,
+  },
+  {
+    id: 'corp-global-teste-a',
+    nome: 'GLOBAL TESTE A',
+    camadasInfo: '3/4 camadas • 0 filtros • Tipo • Todos • davidsilva.centrofashion@gmail.com',
+    autor: 'davidsilva.centrofashion@gmail.com',
+    badges: ['Corporativo', 'Todos'],
+    isPadrao: false,
+  },
+  {
+    id: 'corp-global-teste-b',
+    nome: 'GLOBAL TESTE B',
+    camadasInfo: '3/4 camadas • 0 filtros • Tipo • Todos • davidsilva.centrofashion@gmail.com',
+    autor: 'davidsilva.centrofashion@gmail.com',
+    badges: ['Corporativo', 'Todos'],
+    isPadrao: false,
+  },
+];
+
+const LEGENDA_SINALIZACOES_PADRAO = [
+  { id: 'cat-placa-info', nome: 'Placa informativa', cor: '#D97706', count: 5 },
+  { id: 'cat-adesivo-piso', nome: 'Adesivo de piso', cor: '#D97706', count: 3 },
+  { id: 'cat-placa-servico', nome: 'Placa de serviço', cor: '#0284C7', count: 2 },
+  { id: 'cat-adesivo-parede', nome: 'Adesivo de parede', cor: '#EA580C', count: 1 },
+  { id: 'cat-painel', nome: 'Painel', cor: '#9333EA', count: 1 },
+  { id: 'cat-placa-rua', nome: 'Placa de rua', cor: '#2563EB', count: 1 },
+];
 
 export const CamadasModal: React.FC<CamadasModalProps> = ({
   visible,
   onClose,
   showSinalizacoes,
   onToggleSinalizacoes,
-  totalPinsCount,
+  totalPinsCount = 17,
+  showReferencias = true,
+  onToggleReferencias,
+  totalReferenciasCount = 15,
+  showCruzamentos = true,
+  onToggleCruzamentos,
+  totalCruzamentosCount = 13,
+  showLojas = true,
+  onToggleLojas,
+  totalLojasCount = 1352,
   initialShowCentral = false,
   campanhaAtivaId = null,
   onSelectCampanha,
+  onFilterChange,
 }) => {
+  const { width: windowWidth } = useWindowDimensions();
+  const isMobile = windowWidth < 700;
+
   const [showCentralCamadas, setShowCentralCamadas] = useState<boolean>(initialShowCentral);
+
+  // Estados locais para visibilidade caso não fornecido por callback
+  const [internalRef, setInternalRef] = useState<boolean>(showReferencias);
+  const [internalCrz, setInternalCrz] = useState<boolean>(showCruzamentos);
+  const [internalLoj, setInternalLoj] = useState<boolean>(showLojas);
+
+  // Filtros
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [statusFilter, setStatusFilter] = useState<string>('');
+  const [filtroTipo, setFiltroTipo] = useState<string>('Todos');
+  const [filtroFinalidade, setFiltroFinalidade] = useState<string>('Todas');
+  const [filtroResponsavel, setFiltroResponsavel] = useState<string>('Todos');
+  const [filtroStatus, setFiltroStatus] = useState<string>('Todos');
+  const [filtroConservacao, setFiltroConservacao] = useState<string>('Todos');
+  const [filtroCondicao, setFiltroCondicao] = useState<string>('Todas');
+
+  // Aparência e Cores
+  const [colorirPor, setColorirPor] = useState<string>('Tipo');
+  const [legendaCores, setLegendaCores] = useState(LEGENDA_SINALIZACOES_PADRAO);
+
+  // Presets Corporativos e Pessoais
+  const [presetsCorp, setPresetsCorp] = useState<PresetCorporativoItem[]>(PRESETS_CORPORATIVOS_INICIAIS);
+  const [nomeNovoPresetCorp, setNomeNovoPresetCorp] = useState<string>('');
+  const [escopoNovoPresetCorp, setEscopoNovoPresetCorp] = useState<string>('Todos os usuários');
+
+  const [minhasVisoes, setMinhasVisoes] = useState<PresetPessoalItem[]>([]);
+  const [nomeMinhaVisao, setNomeMinhaVisao] = useState<string>('');
 
   useEffect(() => {
     if (visible && initialShowCentral) {
       setShowCentralCamadas(true);
     }
   }, [visible, initialShowCentral]);
+
+  useEffect(() => {
+    setInternalRef(showReferencias);
+    setInternalCrz(showCruzamentos);
+    setInternalLoj(showLojas);
+  }, [showReferencias, showCruzamentos, showLojas]);
 
   useEffect(() => {
     if (!visible || Platform.OS !== 'web') return;
@@ -49,7 +171,115 @@ export const CamadasModal: React.FC<CamadasModalProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [visible, showCentralCamadas, onClose]);
 
+  const toggleRef = (val: boolean) => {
+    setInternalRef(val);
+    if (onToggleReferencias) onToggleReferencias(val);
+  };
+
+  const toggleCrz = (val: boolean) => {
+    setInternalCrz(val);
+    if (onToggleCruzamentos) onToggleCruzamentos(val);
+  };
+
+  const toggleLoj = (val: boolean) => {
+    setInternalLoj(val);
+    if (onToggleLojas) onToggleLojas(val);
+  };
+
+  const handleLimparFiltros = () => {
+    setSearchQuery('');
+    setFiltroTipo('Todos');
+    setFiltroFinalidade('Todas');
+    setFiltroResponsavel('Todos');
+    setFiltroStatus('Todos');
+    setFiltroConservacao('Todos');
+    setFiltroCondicao('Todas');
+    if (onFilterChange) {
+      onFilterChange({
+        query: '',
+        tipo: 'Todos',
+        finalidade: 'Todas',
+        responsavel: 'Todos',
+        status: 'Todos',
+        conservacao: 'Todos',
+        condicao: 'Todas',
+      });
+    }
+  };
+
+  const handleRestaurarPadraoGeral = () => {
+    onToggleSinalizacoes(true);
+    toggleRef(true);
+    toggleCrz(true);
+    toggleLoj(true);
+    setColorirPor('Tipo');
+    setLegendaCores(LEGENDA_SINALIZACOES_PADRAO);
+    handleLimparFiltros();
+  };
+
+  const handlePublicarPresetCorp = () => {
+    if (!nomeNovoPresetCorp.trim()) return;
+    const novo: PresetCorporativoItem = {
+      id: `corp-${Date.now()}`,
+      nome: nomeNovoPresetCorp.trim(),
+      camadasInfo: `${camadasAtivasCount}/4 camadas • 0 filtros • ${colorirPor} • ${escopoNovoPresetCorp} • davidsilva.centrofashion@gmail.com`,
+      autor: 'davidsilva.centrofashion@gmail.com',
+      badges: ['Corporativo', escopoNovoPresetCorp === 'Todos os usuários' ? 'Todos' : escopoNovoPresetCorp],
+      isPadrao: false,
+    };
+    setPresetsCorp([novo, ...presetsCorp]);
+    setNomeNovoPresetCorp('');
+  };
+
+  const handleSalvarMinhaVisao = () => {
+    if (!nomeMinhaVisao.trim()) return;
+    const nova: PresetPessoalItem = {
+      id: `vis-${Date.now()}`,
+      nome: nomeMinhaVisao.trim(),
+      dataCriacao: new Date().toLocaleDateString('pt-BR'),
+    };
+    setMinhasVisoes([nova, ...minhasVisoes]);
+    setNomeMinhaVisao('');
+  };
+
+  const handleRemoverMinhaVisao = (id: string) => {
+    setMinhasVisoes(minhasVisoes.filter((v) => v.id !== id));
+  };
+
+  const handleExcluirCorp = (id: string) => {
+    setPresetsCorp(presetsCorp.filter((p) => p.id !== id));
+  };
+
+  const handleTogglePadraoCorp = (id: string) => {
+    setPresetsCorp(
+      presetsCorp.map((p) => {
+        if (p.id === id) {
+          const novoStatus = !p.isPadrao;
+          const badges = novoStatus
+            ? [...p.badges.filter((b) => b !== 'Padrão'), 'Padrão']
+            : p.badges.filter((b) => b !== 'Padrão');
+          return { ...p, isPadrao: novoStatus, badges };
+        }
+        return p;
+      })
+    );
+  };
+
   if (!visible) return null;
+
+  const camadasAtivasCount = [showSinalizacoes, internalRef, internalCrz, internalLoj].filter(Boolean).length;
+
+  const selectWebStyle: any = {
+    width: '100%',
+    padding: '8px 12px',
+    backgroundColor: '#FFFFFF',
+    border: '1px solid #DFE2EA',
+    borderRadius: '10px',
+    fontSize: '13px',
+    color: '#1E293B',
+    outline: 'none',
+    cursor: 'pointer',
+  };
 
   return (
     <View style={styles.overlayContainer}>
@@ -62,306 +292,692 @@ export const CamadasModal: React.FC<CamadasModalProps> = ({
           }
         }}
       >
-        <View id="centralCamadasBackdropS261" style={styles.backdrop} />
+        <View id="camadasBackdrop" style={styles.backdrop} />
       </TouchableWithoutFeedback>
 
+      {/* ========================================================
+          CARD COMPACTO DE CAMADAS (Imagem 1)
+          ======================================================== */}
       {!showCentralCamadas ? (
-        <View id="camadas" style={styles.layersBox}>
-          <View style={styles.layersHead}>
-            <Text style={styles.layersTitle}>Camadas</Text>
+        <View id="camadas" style={[styles.compactCard, isMobile && styles.compactCardMobile]}>
+          <View style={styles.compactHeader}>
+            <Text style={styles.compactTitle}>Camadas</Text>
             <TouchableOpacity
-              id="fecharCamadasS22516"
-              style={styles.closeBtn}
+              id="fecharCamadasBtn"
+              style={styles.compactCloseBtn}
               onPress={onClose}
               aria-label="Fechar camadas"
             >
-              <Text style={styles.closeBtnText}>×</Text>
+              <Text style={styles.compactCloseBtnText}>✕</Text>
             </TouchableOpacity>
           </View>
 
-          <View style={styles.layersList}>
+          <View style={styles.compactList}>
+            {/* Camada 1: Sinalizações */}
             <TouchableOpacity
-              id="toggleSinalizacoes"
-              style={styles.layerRow}
+              id="toggleSinalizacoesCompact"
+              style={styles.compactRow}
               activeOpacity={0.8}
               onPress={() => onToggleSinalizacoes(!showSinalizacoes)}
             >
-              <View style={[styles.checkbox, showSinalizacoes && styles.checkboxChecked]}>
-                {showSinalizacoes && <Text style={styles.checkboxCheckmark}>✓</Text>}
+              <View style={[styles.checkboxRosa, showSinalizacoes && styles.checkboxRosaChecked]}>
+                {showSinalizacoes && <Text style={styles.checkmarkWhite}>✓</Text>}
               </View>
-              <Text style={styles.layerLabel}>Sinalizações</Text>
-              <View style={styles.layerBadge}>
-                <Text style={styles.layerBadgeText}>{totalPinsCount}</Text>
+              <Text style={styles.compactLabel}>Sinalizações</Text>
+              <View style={styles.compactBadgePill}>
+                <Text style={styles.compactBadgeText}>{totalPinsCount}</Text>
               </View>
             </TouchableOpacity>
 
-            <View style={styles.layerRowDisabled}>
-              <View style={[styles.checkbox, styles.checkboxChecked]} />
-              <Text style={styles.layerLabel}>Referências</Text>
-              <View style={styles.layerBadgeMuted}>
-                <Text style={styles.layerBadgeText}>0</Text>
+            {/* Camada 2: Referências */}
+            <TouchableOpacity
+              id="toggleReferenciasCompact"
+              style={styles.compactRow}
+              activeOpacity={0.8}
+              onPress={() => toggleRef(!internalRef)}
+            >
+              <View style={[styles.checkboxRosa, internalRef && styles.checkboxRosaChecked]}>
+                {internalRef && <Text style={styles.checkmarkWhite}>✓</Text>}
               </View>
-            </View>
+              <Text style={styles.compactLabel}>Referências</Text>
+              <View style={styles.compactBadgePill}>
+                <Text style={styles.compactBadgeText}>{totalReferenciasCount}</Text>
+              </View>
+            </TouchableOpacity>
 
-            <View style={styles.layerRowDisabled}>
-              <View style={[styles.checkbox, styles.checkboxChecked]} />
-              <Text style={styles.layerLabel}>Cruzamentos</Text>
-              <View style={styles.layerBadgeMuted}>
-                <Text style={styles.layerBadgeText}>0</Text>
+            {/* Camada 3: Cruzamentos */}
+            <TouchableOpacity
+              id="toggleCruzamentosCompact"
+              style={styles.compactRow}
+              activeOpacity={0.8}
+              onPress={() => toggleCrz(!internalCrz)}
+            >
+              <View style={[styles.checkboxRosa, internalCrz && styles.checkboxRosaChecked]}>
+                {internalCrz && <Text style={styles.checkmarkWhite}>✓</Text>}
               </View>
-            </View>
+              <Text style={styles.compactLabel}>Cruzamentos</Text>
+              <View style={styles.compactBadgePill}>
+                <Text style={styles.compactBadgeText}>{totalCruzamentosCount}</Text>
+              </View>
+            </TouchableOpacity>
 
-            <View style={styles.layerRowDisabled}>
-              <View style={[styles.checkbox, styles.checkboxChecked]} />
-              <Text style={styles.layerLabel}>Lojas</Text>
-              <View style={styles.layerBadgeMuted}>
-                <Text style={styles.layerBadgeText}>0</Text>
+            {/* Camada 4: Lojas */}
+            <TouchableOpacity
+              id="toggleLojasCompact"
+              style={styles.compactRow}
+              activeOpacity={0.8}
+              onPress={() => toggleLoj(!internalLoj)}
+            >
+              <View style={[styles.checkboxRosa, internalLoj && styles.checkboxRosaChecked]}>
+                {internalLoj && <Text style={styles.checkmarkWhite}>✓</Text>}
               </View>
-            </View>
+              <Text style={styles.compactLabel}>Lojas</Text>
+              <View style={styles.compactBadgePill}>
+                <Text style={styles.compactBadgeText}>{totalLojasCount}</Text>
+              </View>
+            </TouchableOpacity>
           </View>
 
-          <View style={styles.layersFooter}>
+          <View style={styles.compactFooter}>
             <TouchableOpacity
-              id="gerenciarCamadasS261"
-              style={styles.manageBtn}
+              id="gerenciarCamadasBtn"
+              style={styles.btnGerenciarCamadas}
               onPress={() => setShowCentralCamadas(true)}
             >
-              <Text style={styles.manageBtnText}>Gerenciar camadas</Text>
+              <Text style={styles.btnGerenciarCamadasText}>Gerenciar camadas</Text>
             </TouchableOpacity>
           </View>
         </View>
       ) : (
-        <View id="centralCamadasS261" style={styles.centerBox}>
-          <View style={styles.centerHead}>
-            <View>
-              <Text style={styles.centerVersionTag}>S26.6</Text>
-              <Text style={styles.centerTitle}>Central de Camadas</Text>
-              <Text style={styles.centerSubtitle}>
+        /* ========================================================
+           MODAL COMPLETO: CENTRAL DE CAMADAS (Imagens 2, 3 e 4)
+           ======================================================== */
+        <View id="centralCamadasS261" style={[styles.centralModalBox, isMobile && styles.centralModalBoxMobile]}>
+          {/* Header Superior Fixo */}
+          <View style={styles.centralHeader}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.centralEyebrow}>S26.6</Text>
+              <Text style={styles.centralTitle}>Central de Camadas</Text>
+              <Text style={styles.centralSubtitle}>
                 Visibilidade, pesquisa, filtros, simbologia e presets
               </Text>
             </View>
             <TouchableOpacity
-              id="fecharCentralCamadasS261"
-              style={styles.closeBtn}
+              id="fecharCentralCamadasBtn"
+              style={styles.centralCloseBtn}
               onPress={() => setShowCentralCamadas(false)}
             >
-              <Text style={styles.closeBtnText}>×</Text>
+              <Text style={styles.centralCloseBtnText}>✕</Text>
             </TouchableOpacity>
           </View>
 
-          <ScrollView style={styles.centerBody} contentContainerStyle={styles.centerBodyContent}>
-            {/* Seção 1: Visibilidade */}
+          {/* Corpo com Scroll Vertical */}
+          <ScrollView
+            style={styles.centralScrollBody}
+            contentContainerStyle={styles.centralScrollContent}
+            showsVerticalScrollIndicator={true}
+          >
+            {/* ==========================================
+                CARD 1: VISIBILIDADE (Imagem 2)
+                ========================================== */}
             <View style={styles.sectionCard}>
-              <View style={styles.sectionTitleRow}>
+              <View style={styles.sectionHeaderRow}>
                 <View>
-                  <Text style={styles.sectionTitle}>Visibilidade</Text>
-                  <Text style={styles.sectionDesc}>Escolha o que deve aparecer no mapa.</Text>
+                  <Text style={styles.sectionMainTitle}>Visibilidade</Text>
+                  <Text style={styles.sectionSubtitle}>Escolha o que deve aparecer no mapa.</Text>
                 </View>
-                <View style={styles.activePill}>
-                  <Text style={styles.activePillText}>
-                    {showSinalizacoes ? '4 ativas' : '3 ativas'}
-                  </Text>
+                <View style={styles.ativasBadgePill}>
+                  <Text style={styles.ativasBadgeText}>{camadasAtivasCount} ativas</Text>
                 </View>
               </View>
 
-              <TouchableOpacity
-                id="toggleCentralSinalizacoes"
-                style={styles.centerRow}
-                onPress={() => onToggleSinalizacoes(!showSinalizacoes)}
-              >
-                <View style={[styles.checkbox, showSinalizacoes && styles.checkboxChecked]}>
-                  {showSinalizacoes && <Text style={styles.checkboxCheckmark}>✓</Text>}
-                </View>
-                <Text style={styles.dotIconSig}>●</Text>
-                <View style={styles.centerRowMeta}>
-                  <Text style={styles.centerRowTitle}>Sinalizações</Text>
-                  <Text style={styles.centerRowDesc}>Ativos SIG posicionados no mapa</Text>
-                </View>
-                <Text style={styles.centerRowCount}>{totalPinsCount}</Text>
-              </TouchableOpacity>
+              <View style={styles.visibilidadeList}>
+                {/* Linha 1: Sinalizações */}
+                <TouchableOpacity
+                  style={styles.visibilidadeRow}
+                  activeOpacity={0.7}
+                  onPress={() => onToggleSinalizacoes(!showSinalizacoes)}
+                >
+                  <View style={[styles.checkboxRosa, showSinalizacoes && styles.checkboxRosaChecked]}>
+                    {showSinalizacoes && <Text style={styles.checkmarkWhite}>✓</Text>}
+                  </View>
+                  <View style={[styles.dotSinalizacao, { backgroundColor: '#E11D48' }]} />
+                  <View style={styles.visibilidadeTextCol}>
+                    <Text style={styles.visibilidadeNome}>Sinalizações</Text>
+                    <Text style={styles.visibilidadeDesc}>Ativos SIG posicionados no mapa</Text>
+                  </View>
+                  <View style={styles.compactBadgePill}>
+                    <Text style={styles.compactBadgeText}>{totalPinsCount}</Text>
+                  </View>
+                </TouchableOpacity>
+
+                {/* Linha 2: Referências */}
+                <TouchableOpacity
+                  style={styles.visibilidadeRow}
+                  activeOpacity={0.7}
+                  onPress={() => toggleRef(!internalRef)}
+                >
+                  <View style={[styles.checkboxRosa, internalRef && styles.checkboxRosaChecked]}>
+                    {internalRef && <Text style={styles.checkmarkWhite}>✓</Text>}
+                  </View>
+                  <View style={[styles.dotSinalizacao, { backgroundColor: '#1E3A8A' }]} />
+                  <View style={styles.visibilidadeTextCol}>
+                    <Text style={styles.visibilidadeNome}>Referências</Text>
+                    <Text style={styles.visibilidadeDesc}>Pontos de referência cartográfica</Text>
+                  </View>
+                  <View style={styles.compactBadgePill}>
+                    <Text style={styles.compactBadgeText}>{totalReferenciasCount}</Text>
+                  </View>
+                </TouchableOpacity>
+
+                {/* Linha 3: Cruzamentos */}
+                <TouchableOpacity
+                  style={styles.visibilidadeRow}
+                  activeOpacity={0.7}
+                  onPress={() => toggleCrz(!internalCrz)}
+                >
+                  <View style={[styles.checkboxRosa, internalCrz && styles.checkboxRosaChecked]}>
+                    {internalCrz && <Text style={styles.checkmarkWhite}>✓</Text>}
+                  </View>
+                  <View style={[styles.dotSinalizacao, { backgroundColor: '#D946EF' }]} />
+                  <View style={styles.visibilidadeTextCol}>
+                    <Text style={styles.visibilidadeNome}>Cruzamentos</Text>
+                    <Text style={styles.visibilidadeDesc}>Interseções e pontos de circulação</Text>
+                  </View>
+                  <View style={styles.compactBadgePill}>
+                    <Text style={styles.compactBadgeText}>{totalCruzamentosCount}</Text>
+                  </View>
+                </TouchableOpacity>
+
+                {/* Linha 4: Lojas */}
+                <TouchableOpacity
+                  style={styles.visibilidadeRow}
+                  activeOpacity={0.7}
+                  onPress={() => toggleLoj(!internalLoj)}
+                >
+                  <View style={[styles.checkboxRosa, internalLoj && styles.checkboxRosaChecked]}>
+                    {internalLoj && <Text style={styles.checkmarkWhite}>✓</Text>}
+                  </View>
+                  <View style={[styles.dotSinalizacao, { backgroundColor: '#64748B' }]} />
+                  <View style={styles.visibilidadeTextCol}>
+                    <Text style={styles.visibilidadeNome}>Lojas</Text>
+                    <Text style={styles.visibilidadeDesc}>Lojas/LUCs disponíveis na planta</Text>
+                  </View>
+                  <View style={styles.compactBadgePill}>
+                    <Text style={styles.compactBadgeText}>{totalLojasCount}</Text>
+                  </View>
+                </TouchableOpacity>
+              </View>
             </View>
 
-            {/* Seção 2: Pesquisar sinalizações */}
+            {/* ==========================================
+                CARD 2: PESQUISAR SINALIZAÇÕES (Imagem 2)
+                ========================================== */}
             <View style={styles.sectionCard}>
-              <Text style={styles.sectionTitle}>Pesquisar sinalizações</Text>
-              <Text style={styles.sectionDesc}>
+              <Text style={styles.sectionMainTitle}>Pesquisar sinalizações</Text>
+              <Text style={styles.sectionSubtitle}>
                 Busca local nos dados já carregados, inclusive offline.
               </Text>
-              <View style={styles.searchWrap}>
+              <View style={styles.searchContainer}>
+                <Text style={styles.searchIcon}>🔍</Text>
                 <TextInput
-                  id="buscaCamadasS262"
-                  style={styles.searchInput}
-                  placeholder="Protocolo, título, rua, loja, responsável…"
+                  id="buscaCamadasInput"
+                  style={styles.searchInputField}
+                  placeholder="Protocolo, título, rua, loja, responsável..."
+                  placeholderTextColor="#94A3B8"
                   value={searchQuery}
                   onChangeText={setSearchQuery}
                 />
               </View>
             </View>
 
-            {/* Seção 3: Filtros de sinalizações */}
+            {/* ==========================================
+                CARD 3: FILTROS DE SINALIZAÇÕES (Imagem 2)
+                ========================================== */}
             <View style={styles.sectionCard}>
-              <Text style={styles.sectionTitle}>Filtros de sinalizações</Text>
-              <Text style={styles.sectionDesc}>Combine critérios para reduzir os pins exibidos.</Text>
-              <View style={styles.filterGrid}>
-                <View style={styles.filterGroup}>
-                  <Text style={styles.filterLabel}>Status</Text>
+              <Text style={styles.sectionMainTitle}>Filtros de sinalizações</Text>
+              <Text style={styles.sectionSubtitle}>
+                Combine critérios para reduzir os pins exibidos no mapa.
+              </Text>
+
+              <View style={styles.gridFiltros}>
+                {/* Tipo */}
+                <View style={styles.filtroItem}>
+                  <Text style={styles.filtroLabel}>Tipo</Text>
                   {Platform.OS === 'web' ? (
                     <select
-                      id="filtroStatusS262"
-                      value={statusFilter}
-                      onChange={(e) => setStatusFilter(e.target.value)}
-                      style={{
-                        padding: 8,
-                        borderRadius: 8,
-                        borderWidth: 1,
-                        borderColor: '#DFE2EA',
-                        fontSize: 13,
-                      }}
+                      id="filtroTipoSelect"
+                      value={filtroTipo}
+                      onChange={(e) => setFiltroTipo(e.target.value)}
+                      style={selectWebStyle}
                     >
-                      <option value="">Todos</option>
+                      <option value="Todos">Todos</option>
+                      <option value="Placa informativa">Placa informativa</option>
+                      <option value="Adesivo de piso">Adesivo de piso</option>
+                      <option value="Placa de serviço">Placa de serviço</option>
+                      <option value="Adesivo de parede">Adesivo de parede</option>
+                      <option value="Painel">Painel</option>
+                      <option value="Placa de rua">Placa de rua</option>
+                    </select>
+                  ) : (
+                    <Text style={styles.fallbackText}>{filtroTipo}</Text>
+                  )}
+                </View>
+
+                {/* Finalidade */}
+                <View style={styles.filtroItem}>
+                  <Text style={styles.filtroLabel}>Finalidade</Text>
+                  {Platform.OS === 'web' ? (
+                    <select
+                      id="filtroFinalidadeSelect"
+                      value={filtroFinalidade}
+                      onChange={(e) => setFiltroFinalidade(e.target.value)}
+                      style={selectWebStyle}
+                    >
+                      <option value="Todas">Todas</option>
+                      <option value="Orientação">Orientação</option>
+                      <option value="Segurança">Segurança</option>
+                      <option value="Comercial">Comercial</option>
+                      <option value="Operacional">Operacional</option>
+                    </select>
+                  ) : (
+                    <Text style={styles.fallbackText}>{filtroFinalidade}</Text>
+                  )}
+                </View>
+
+                {/* Responsável */}
+                <View style={styles.filtroItem}>
+                  <Text style={styles.filtroLabel}>Responsável</Text>
+                  {Platform.OS === 'web' ? (
+                    <select
+                      id="filtroResponsavelSelect"
+                      value={filtroResponsavel}
+                      onChange={(e) => setFiltroResponsavel(e.target.value)}
+                      style={selectWebStyle}
+                    >
+                      <option value="Todos">Todos</option>
+                      <option value="Davidsilva • Operações">Davidsilva • Operações</option>
+                      <option value="Fiscal de Ronda">Fiscal de Ronda</option>
+                      <option value="CEOP • Manutenção">CEOP • Manutenção</option>
+                      <option value="Limpeza • Equipe Operacional">Limpeza • Equipe Operacional</option>
+                    </select>
+                  ) : (
+                    <Text style={styles.fallbackText}>{filtroResponsavel}</Text>
+                  )}
+                </View>
+
+                {/* Status */}
+                <View style={styles.filtroItem}>
+                  <Text style={styles.filtroLabel}>Status</Text>
+                  {Platform.OS === 'web' ? (
+                    <select
+                      id="filtroStatusSelect"
+                      value={filtroStatus}
+                      onChange={(e) => setFiltroStatus(e.target.value)}
+                      style={selectWebStyle}
+                    >
+                      <option value="Todos">Todos</option>
                       <option value="ATIVA">Ativa</option>
                       <option value="MANUTENCAO">Manutenção</option>
                       <option value="SUBSTITUIR">Substituir</option>
+                      <option value="CONCLUIDA">Concluída</option>
                     </select>
                   ) : (
-                    <Text style={styles.filterFallbackText}>Todos</Text>
+                    <Text style={styles.fallbackText}>{filtroStatus}</Text>
+                  )}
+                </View>
+
+                {/* Estado de conservação */}
+                <View style={styles.filtroItem}>
+                  <Text style={styles.filtroLabel}>Estado de conservação</Text>
+                  {Platform.OS === 'web' ? (
+                    <select
+                      id="filtroConservacaoSelect"
+                      value={filtroConservacao}
+                      onChange={(e) => setFiltroConservacao(e.target.value)}
+                      style={selectWebStyle}
+                    >
+                      <option value="Todos">Todos</option>
+                      <option value="Ótima">Ótima</option>
+                      <option value="Boa">Boa</option>
+                      <option value="Regular">Regular</option>
+                      <option value="Danificada">Danificada</option>
+                    </select>
+                  ) : (
+                    <Text style={styles.fallbackText}>{filtroConservacao}</Text>
+                  )}
+                </View>
+
+                {/* Condição */}
+                <View style={styles.filtroItem}>
+                  <Text style={styles.filtroLabel}>Condição</Text>
+                  {Platform.OS === 'web' ? (
+                    <select
+                      id="filtroCondicaoSelect"
+                      value={filtroCondicao}
+                      onChange={(e) => setFiltroCondicao(e.target.value)}
+                      style={selectWebStyle}
+                    >
+                      <option value="Todas">Todas</option>
+                      <option value="Adequada">Adequada</option>
+                      <option value="Inadequada">Inadequada</option>
+                      <option value="Obsoleta">Obsoleta</option>
+                    </select>
+                  ) : (
+                    <Text style={styles.fallbackText}>{filtroCondicao}</Text>
                   )}
                 </View>
               </View>
+
+              {/* Resumo de itens visíveis + Botão Limpar Filtros */}
+              <View style={styles.filtrosSummaryRow}>
+                <View>
+                  <Text style={styles.filtrosSummaryTitle}>{totalPinsCount} de {totalPinsCount}</Text>
+                  <Text style={styles.filtrosSummarySub}>sinalizações visíveis</Text>
+                </View>
+                <TouchableOpacity
+                  id="limparFiltrosBtn"
+                  style={styles.btnLimparFiltros}
+                  onPress={handleLimparFiltros}
+                >
+                  <Text style={styles.btnLimparFiltrosText}>Limpar filtros</Text>
+                </TouchableOpacity>
+              </View>
             </View>
 
-            {/* Seção 4: Simbologia e Cores */}
+            {/* ==========================================
+                CARD 4: APARÊNCIA DAS SINALIZAÇÕES (Imagem 3)
+                ========================================== */}
             <View style={styles.sectionCard}>
-              <Text style={styles.sectionTitle}>Aparência e Simbologia (Coloração do Mapa)</Text>
-              <Text style={styles.sectionDesc}>
-                Alterne entre o mapa operacional e as camadas temáticas de campanhas comerciais.
+              <View style={styles.sectionHeaderRow}>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.sectionMainTitle}>Aparência das sinalizações</Text>
+                  <Text style={styles.sectionSubtitle}>
+                    Escolha como os pins devem ser coloridos. A configuração é somente visual.
+                  </Text>
+                </View>
+                <View style={styles.tipoBadgePill}>
+                  <Text style={styles.tipoBadgeText}>Tipo</Text>
+                </View>
+              </View>
+
+              {/* Colorir por */}
+              <View style={{ marginBottom: 16 }}>
+                <Text style={styles.filtroLabel}>Colorir por</Text>
+                {Platform.OS === 'web' ? (
+                  <select
+                    id="colorirPorSelect"
+                    value={colorirPor}
+                    onChange={(e) => setColorirPor(e.target.value)}
+                    style={selectWebStyle}
+                  >
+                    <option value="Tipo">Tipo</option>
+                    <option value="Status">Status</option>
+                    <option value="Finalidade">Finalidade</option>
+                    <option value="Responsável">Responsável</option>
+                    <option value="Conservação">Estado de conservação</option>
+                  </select>
+                ) : (
+                  <Text style={styles.fallbackText}>{colorirPor}</Text>
+                )}
+              </View>
+
+              {/* Bloco da Legenda */}
+              <View style={styles.legendaHeaderRow}>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.legendaTitle}>Legenda</Text>
+                  <Text style={styles.legendaSub}>Somente categorias presentes na visão corrente.</Text>
+                </View>
+                <TouchableOpacity
+                  id="restaurarCoresBtn"
+                  style={styles.btnRestaurarCores}
+                  onPress={() => setLegendaCores(LEGENDA_SINALIZACOES_PADRAO)}
+                >
+                  <Text style={styles.btnRestaurarCoresText}>Restaurar cores</Text>
+                </TouchableOpacity>
+              </View>
+
+              {/* Lista com as 6 categorias das fotos */}
+              <View style={styles.legendaLista}>
+                {legendaCores.map((cat) => (
+                  <View key={cat.id} style={styles.legendaRow}>
+                    <View style={[styles.legendaColorSquare, { backgroundColor: cat.cor }]} />
+                    <View style={[styles.dotSinalizacao, { backgroundColor: cat.cor }]} />
+                    <Text style={styles.legendaCatNome}>{cat.nome}</Text>
+                    <View style={styles.compactBadgePill}>
+                      <Text style={styles.compactBadgeText}>{cat.count}</Text>
+                    </View>
+                  </View>
+                ))}
+              </View>
+
+              <Text style={styles.legendaNota}>
+                As cores desta seção não alteram a cor física cadastrada no SIG e continuam disponíveis offline neste navegador.
+              </Text>
+            </View>
+
+            {/* ==========================================
+                CARD 5: VISUALIZAÇÕES CORPORATIVAS (Imagens 3 e 4)
+                ========================================== */}
+            <View style={styles.sectionCard}>
+              <Text style={styles.sectionMainTitle}>Visualizações corporativas</Text>
+              <Text style={styles.sectionSubtitle}>
+                Presets publicados pela Administração para todos ou para um perfil específico.
               </Text>
 
-              {/* Botões de Modo */}
-              <View style={{ flexDirection: 'row', gap: 10, marginVertical: 10 }}>
-                <TouchableOpacity
-                  style={[
-                    styles.btnSecondary,
-                    !campanhaAtivaId && { backgroundColor: '#0284c7', borderColor: '#38bdf8' },
-                  ]}
-                  onPress={() => onSelectCampanha && onSelectCampanha(null)}
-                >
-                  <Text style={[styles.btnSecondaryText, !campanhaAtivaId && { color: '#fff', fontWeight: '800' }]}>
-                    Padrão Operacional
-                  </Text>
-                </TouchableOpacity>
+              {/* Formulário de Publicação */}
+              <View style={styles.formPublicarCorp}>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.filtroLabel}>Nome</Text>
+                  <TextInput
+                    id="nomePresetCorpInput"
+                    style={styles.inputCorpNome}
+                    placeholder="Ex.: Visão C"
+                    placeholderTextColor="#94A3B8"
+                    value={nomeNovoPresetCorp}
+                    onChangeText={setNomeNovoPresetCorp}
+                  />
+                </View>
+
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.filtroLabel}>Escopo</Text>
+                  {Platform.OS === 'web' ? (
+                    <select
+                      id="escopoPresetCorpSelect"
+                      value={escopoNovoPresetCorp}
+                      onChange={(e) => setEscopoNovoPresetCorp(e.target.value)}
+                      style={selectWebStyle}
+                    >
+                      <option value="Todos os usuários">Todos os usuários</option>
+                      <option value="Operações">Operações</option>
+                      <option value="Administração">Administração</option>
+                      <option value="Segurança">Segurança</option>
+                    </select>
+                  ) : (
+                    <Text style={styles.fallbackText}>{escopoNovoPresetCorp}</Text>
+                  )}
+                </View>
 
                 <TouchableOpacity
-                  style={[
-                    styles.btnSecondary,
-                    campanhaAtivaId && { backgroundColor: '#0284c7', borderColor: '#38bdf8' },
-                  ]}
-                  onPress={() => onSelectCampanha && onSelectCampanha('CAMP-001')}
+                  id="publicarVisaoCorpBtn"
+                  style={styles.btnPublicarCorp}
+                  onPress={handlePublicarPresetCorp}
                 >
-                  <Text style={[styles.btnSecondaryText, campanhaAtivaId && { color: '#fff', fontWeight: '800' }]}>
-                    📢 Camada de Campanha
-                  </Text>
+                  <Text style={styles.btnPublicarCorpText}>Publicar visão atual</Text>
                 </TouchableOpacity>
               </View>
 
-              {campanhaAtivaId ? (
-                <View style={{ marginTop: 8, padding: 10, backgroundColor: '#0f172a', borderRadius: 8, borderWidth: 1, borderColor: '#334155' }}>
-                  <Text style={{ fontSize: 12, color: '#38bdf8', fontWeight: '700', marginBottom: 8 }}>
-                    Selecione a Campanha para Colorir o Mapa:
-                  </Text>
-                  <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 10 }}>
-                    {[
-                      { id: 'CAMP-001', label: 'Bazar Centro Fashion' },
-                      { id: 'CAMP-002', label: 'Black Friday 2026' },
-                      { id: 'CAMP-003', label: 'Liquida Jeans' },
-                      { id: 'CAMP-004', label: 'Festival Moda Praia' },
-                    ].map((c) => (
+              {/* Status e Contador */}
+              <View style={styles.corpDisponiveisRow}>
+                <Text style={styles.corpDisponiveisText}>
+                  {presetsCorp.length} visualizações corporativas disponíveis.
+                </Text>
+                <TouchableOpacity
+                  id="atualizarPresetsCorpBtn"
+                  style={styles.btnAtualizarCorp}
+                  onPress={() => setPresetsCorp(PRESETS_CORPORATIVOS_INICIAIS)}
+                >
+                  <Text style={styles.btnAtualizarCorpText}>Atualizar</Text>
+                </TouchableOpacity>
+              </View>
+
+              {/* Lista dos 3 Presets Corporativos Oficiais */}
+              <View style={styles.presetsList}>
+                {presetsCorp.map((preset) => (
+                  <View key={preset.id} style={styles.presetCard}>
+                    <Text style={styles.presetTitle}>{preset.nome}</Text>
+                    <Text style={styles.presetMetaText}>{preset.camadasInfo}</Text>
+
+                    {/* Badges */}
+                    <View style={styles.presetBadgesRow}>
+                      {preset.badges.map((b, i) => (
+                        <View
+                          key={i}
+                          style={[
+                            styles.badgeGeral,
+                            b === 'Padrão' ? styles.badgeRosaPadrao : styles.badgeCinza,
+                          ]}
+                        >
+                          <Text
+                            style={[
+                              styles.badgeGeralText,
+                              b === 'Padrão' ? styles.badgeRosaPadraoText : styles.badgeCinzaText,
+                            ]}
+                          >
+                            {b}
+                          </Text>
+                        </View>
+                      ))}
+                    </View>
+
+                    {/* Ações */}
+                    <View style={styles.presetActionsRow}>
                       <TouchableOpacity
-                        key={c.id}
-                        style={{
-                          paddingHorizontal: 10,
-                          paddingVertical: 5,
-                          borderRadius: 6,
-                          backgroundColor: campanhaAtivaId === c.id ? '#0284c7' : '#1e293b',
-                          borderWidth: 1,
-                          borderColor: campanhaAtivaId === c.id ? '#38bdf8' : '#334155',
+                        style={styles.btnPresetAplicar}
+                        onPress={() => {
+                          onToggleSinalizacoes(true);
+                          toggleRef(true);
+                          toggleCrz(true);
+                          setShowCentralCamadas(false);
                         }}
-                        onPress={() => onSelectCampanha && onSelectCampanha(c.id)}
                       >
-                        <Text style={{ fontSize: 11, color: campanhaAtivaId === c.id ? '#fff' : '#94a3b8', fontWeight: '600' }}>
-                          {c.label}
+                        <Text style={styles.btnPresetAplicarText}>Aplicar</Text>
+                      </TouchableOpacity>
+
+                      <TouchableOpacity style={styles.btnPresetAtualizar}>
+                        <Text style={styles.btnPresetAtualizarText}>Atualizar</Text>
+                      </TouchableOpacity>
+
+                      <TouchableOpacity
+                        style={styles.btnPresetPadrao}
+                        onPress={() => handleTogglePadraoCorp(preset.id)}
+                      >
+                        <Text style={styles.btnPresetPadraoText}>
+                          {preset.isPadrao ? 'Remover padrão' : 'Padrão'}
                         </Text>
                       </TouchableOpacity>
-                    ))}
-                  </View>
 
-                  <Text style={{ fontSize: 11, color: '#64748b', marginBottom: 6 }}>Legenda de Cores no Mapa:</Text>
-                  <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                      <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: '#10b981' }} />
-                      <Text style={{ fontSize: 11, color: '#94a3b8' }}>Confirmada</Text>
-                    </View>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                      <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: '#f59e0b' }} />
-                      <Text style={{ fontSize: 11, color: '#94a3b8' }}>Interessada</Text>
-                    </View>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                      <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: '#3b82f6' }} />
-                      <Text style={{ fontSize: 11, color: '#94a3b8' }}>Contatada</Text>
-                    </View>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                      <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: '#ef4444' }} />
-                      <Text style={{ fontSize: 11, color: '#94a3b8' }}>Recusada</Text>
+                      <TouchableOpacity
+                        style={styles.btnPresetExcluir}
+                        onPress={() => handleExcluirCorp(preset.id)}
+                      >
+                        <Text style={styles.btnPresetExcluirText}>Excluir</Text>
+                      </TouchableOpacity>
                     </View>
                   </View>
-                </View>
-              ) : (
-                <View style={styles.symbolGrid}>
-                  <View style={styles.symbolBadgeGreen}>
-                    <Text style={styles.symbolText}>Ativa (#12823B)</Text>
-                  </View>
-                  <View style={styles.symbolBadgeOrange}>
-                    <Text style={styles.symbolText}>Manutenção (#E08B00)</Text>
-                  </View>
-                  <View style={styles.symbolBadgeRed}>
-                    <Text style={styles.symbolText}>Substituir (#D94841)</Text>
-                  </View>
-                </View>
-              )}
+                ))}
+              </View>
+
+              <Text style={styles.corpNotaPrecedencia}>
+                Padrão por perfil tem precedência sobre padrão global. O padrão corporativo é aplicado automaticamente e prevalece sobre o padrão pessoal local na abertura.
+              </Text>
             </View>
 
-            {/* Seção 5: Visualizações Corporativas & Presets Pessoais */}
+            {/* ==========================================
+                CARD 6: MINHAS VISUALIZAÇÕES (Imagem 4)
+                ========================================== */}
             <View style={styles.sectionCard}>
-              <View style={styles.sectionTitleRow}>
-                <View>
-                  <Text style={styles.sectionTitle}>Visualizações Corporativas & Presets</Text>
-                  <Text style={styles.sectionDesc}>Presets publicados pela Administração ou privados.</Text>
+              <Text style={styles.sectionMainTitle}>Minhas visualizações</Text>
+              <Text style={styles.sectionSubtitle}>
+                Presets pessoais salvos somente neste navegador e disponíveis offline.
+              </Text>
+
+              <View style={styles.formMinhaVisao}>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.filtroLabel}>Nome da visualização</Text>
+                  <TextInput
+                    id="nomeMinhaVisaoInput"
+                    style={styles.inputCorpNome}
+                    placeholder="Ex.: Visão Manutenção"
+                    placeholderTextColor="#94A3B8"
+                    value={nomeMinhaVisao}
+                    onChangeText={setNomeMinhaVisao}
+                  />
                 </View>
-                <View style={styles.corpBadge}>
-                  <Text style={styles.corpBadgeText}>S26.6 Corporativo</Text>
-                </View>
+
+                <TouchableOpacity
+                  id="salvarMinhaVisaoBtn"
+                  style={styles.btnSalvarMinhaVisao}
+                  onPress={handleSalvarMinhaVisao}
+                >
+                  <Text style={styles.btnSalvarMinhaVisaoText}>Salvar visualização</Text>
+                </TouchableOpacity>
               </View>
-              <Text style={styles.presetNoteText}>
-                Padrão por perfil tem precedência sobre padrão global e é aplicado automaticamente.
+
+              {minhasVisoes.length === 0 ? (
+                <View style={styles.emptyMinhasVisoes}>
+                  <Text style={styles.emptyTitle}>Nenhuma visualização salva.</Text>
+                  <Text style={styles.emptySub}>
+                    Salve a visão atual para reutilizar filtros, camadas e cores com um clique.
+                  </Text>
+                </View>
+              ) : (
+                <View style={styles.presetsList}>
+                  {minhasVisoes.map((v) => (
+                    <View key={v.id} style={styles.presetCard}>
+                      <Text style={styles.presetTitle}>{v.nome}</Text>
+                      <Text style={styles.presetMetaText}>Criado em {v.dataCriacao} • Privado</Text>
+                      <View style={styles.presetActionsRow}>
+                        <TouchableOpacity
+                          style={styles.btnPresetAplicar}
+                          onPress={() => setShowCentralCamadas(false)}
+                        >
+                          <Text style={styles.btnPresetAplicarText}>Aplicar</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          style={styles.btnPresetExcluir}
+                          onPress={() => handleRemoverMinhaVisao(v.id)}
+                        >
+                          <Text style={styles.btnPresetExcluirText}>Excluir</Text>
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                  ))}
+                </View>
+              )}
+
+              <Text style={styles.corpNotaPrecedencia}>
+                Presets pessoais continuam privados deste navegador. Quando existir um padrão corporativo publicado, ele terá precedência na abertura da aplicação.
               </Text>
             </View>
           </ScrollView>
 
-          <View style={styles.centerFooter}>
+          {/* Rodapé Fixo */}
+          <View style={styles.centralFooter}>
             <TouchableOpacity
-              id="restaurarCamadasPadraoS261"
-              style={styles.btnSecondary}
-              onPress={() => onToggleSinalizacoes(true)}
+              id="restaurarPadraoGlobalBtn"
+              style={styles.btnFooterRestaurar}
+              onPress={handleRestaurarPadraoGeral}
             >
-              <Text style={styles.btnSecondaryText}>Restaurar padrão</Text>
+              <Text style={styles.btnFooterRestaurarText}>Restaurar padrão</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              id="verMapaS261"
-              style={styles.btnPrimary}
+              id="verMapaCentralBtn"
+              style={styles.btnFooterVerMapa}
               onPress={() => setShowCentralCamadas(false)}
             >
-              <Text style={styles.btnPrimaryText}>Ver mapa</Text>
+              <Text style={styles.btnFooterVerMapaText}>Ver mapa</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -385,350 +1001,656 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(16, 18, 40, 0.45)',
+    backgroundColor: 'rgba(15, 23, 42, 0.45)',
   },
-  layersBox: {
+
+  // Card Compacto (Imagem 1)
+  compactCard: {
     position: 'absolute',
-    top: 130,
-    left: 20,
-    width: 280,
-    maxWidth: '90%',
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#DFE2EA',
-    borderRadius: 14,
-    padding: 14,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.18,
-    shadowRadius: 24,
-    elevation: 6,
-    zIndex: 210,
-  },
-  layersHead: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingBottom: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F0F2F7',
-    marginBottom: 10,
-  },
-  layersTitle: {
-    fontSize: 15,
-    fontWeight: 'bold',
-    color: '#171B68',
-  },
-  closeBtn: {
-    width: 30,
-    height: 30,
-    borderRadius: 8,
-    backgroundColor: '#F4F5F8',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  closeBtnText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#676A7A',
-    marginTop: -2,
-  },
-  layersList: {
-    gap: 8,
-  },
-  layerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    paddingVertical: 6,
-  },
-  layerRowDisabled: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    paddingVertical: 6,
-    opacity: 0.6,
-  },
-  checkbox: {
-    width: 18,
-    height: 18,
-    borderRadius: 4,
-    borderWidth: 1.5,
-    borderColor: '#CFD4DF',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#FFFFFF',
-  },
-  checkboxChecked: {
-    backgroundColor: '#171B68',
-    borderColor: '#171B68',
-  },
-  checkboxCheckmark: {
-    color: '#FFFFFF',
-    fontSize: 11,
-    fontWeight: 'bold',
-    marginTop: -2,
-  },
-  layerLabel: {
-    flex: 1,
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#20233A',
-  },
-  layerBadge: {
-    backgroundColor: '#171B68',
-    borderRadius: 999,
-    paddingHorizontal: 7,
-    paddingVertical: 2,
-  },
-  layerBadgeMuted: {
-    backgroundColor: '#E8EBF2',
-    borderRadius: 999,
-    paddingHorizontal: 7,
-    paddingVertical: 2,
-  },
-  layerBadgeText: {
-    color: '#FFFFFF',
-    fontSize: 11,
-    fontWeight: 'bold',
-  },
-  layersFooter: {
-    marginTop: 12,
-    paddingTop: 10,
-    borderTopWidth: 1,
-    borderTopColor: '#F0F2F7',
-  },
-  manageBtn: {
-    backgroundColor: '#F4F5F8',
-    borderWidth: 1,
-    borderColor: '#DFE2EA',
-    borderRadius: 8,
-    paddingVertical: 8,
-    alignItems: 'center',
-  },
-  manageBtnText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#171B68',
-  },
-  centerBox: {
-    position: 'absolute',
-    top: 40,
-    alignSelf: 'center',
-    width: 680,
+    top: 140,
+    left: 24,
+    width: 310,
     maxWidth: '92%',
-    maxHeight: '88%',
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: '#DFE2EA',
+    borderColor: '#E2E8F0',
     borderRadius: 20,
     padding: 20,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 16 },
-    shadowOpacity: 0.28,
-    shadowRadius: 40,
-    elevation: 10,
-    zIndex: 220,
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.18,
+    shadowRadius: 28,
+    elevation: 8,
+    zIndex: 210,
   },
-  centerHead: {
+  compactCardMobile: {
+    top: 'auto',
+    bottom: 20,
+    left: 14,
+    right: 14,
+    width: 'auto',
+  },
+  compactHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    paddingBottom: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F0F2F7',
+    alignItems: 'center',
+    marginBottom: 16,
   },
-  centerVersionTag: {
-    fontSize: 11,
-    fontWeight: 'bold',
-    color: '#F50087',
+  compactTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#0F172A',
+    letterSpacing: -0.3,
   },
-  centerTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#171B68',
-  },
-  centerSubtitle: {
-    fontSize: 12,
-    color: '#676A7A',
-    marginTop: 2,
-  },
-  centerBody: {
-    maxHeight: 520,
-    marginVertical: 12,
-  },
-  centerBodyContent: {
-    gap: 16,
-  },
-  sectionCard: {
-    backgroundColor: '#F8F9FC',
-    borderWidth: 1,
-    borderColor: '#E8EBF2',
+  compactCloseBtn: {
+    width: 36,
+    height: 36,
     borderRadius: 12,
-    padding: 14,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  sectionTitleRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 10,
+  compactCloseBtnText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#0F172A',
   },
-  sectionTitle: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#171B68',
+  compactList: {
+    gap: 14,
+    marginBottom: 20,
   },
-  sectionDesc: {
-    fontSize: 12,
-    color: '#676A7A',
-    marginBottom: 10,
-  },
-  activePill: {
-    backgroundColor: '#EBF4FF',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 999,
-  },
-  activePillText: {
-    fontSize: 11,
-    fontWeight: 'bold',
-    color: '#171B68',
-  },
-  centerRow: {
+  compactRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
-    paddingVertical: 8,
+    gap: 14,
+  },
+  checkboxRosa: {
+    width: 22,
+    height: 22,
+    borderRadius: 6,
+    borderWidth: 1.5,
+    borderColor: '#CBD5E1',
+    alignItems: 'center',
+    justifyContent: 'center',
     backgroundColor: '#FFFFFF',
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#DFE2EA',
   },
-  dotIconSig: {
-    fontSize: 16,
-    color: '#12823b',
+  checkboxRosaChecked: {
+    backgroundColor: '#E11D48',
+    borderColor: '#E11D48',
   },
-  centerRowMeta: {
-    flex: 1,
-  },
-  centerRowTitle: {
+  checkmarkWhite: {
+    color: '#FFFFFF',
     fontSize: 13,
-    fontWeight: 'bold',
-    color: '#20233A',
+    fontWeight: '900',
+    marginTop: -2,
   },
-  centerRowDesc: {
-    fontSize: 11,
-    color: '#676A7A',
+  compactLabel: {
+    flex: 1,
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#0F172A',
   },
-  centerRowCount: {
-    fontSize: 12,
-    fontWeight: 'bold',
+  compactBadgePill: {
+    backgroundColor: '#F1F5F9',
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+  },
+  compactBadgeText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#475569',
+  },
+  compactFooter: {
+    borderTopWidth: 1,
+    borderTopColor: '#F1F5F9',
+    paddingTop: 16,
+  },
+  btnGerenciarCamadas: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 12,
+    paddingVertical: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  btnGerenciarCamadasText: {
+    fontSize: 15,
+    fontWeight: '700',
     color: '#171B68',
   },
-  searchWrap: {
+
+  // Central de Camadas Modal (Imagens 2, 3 e 4)
+  centralModalBox: {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: [{ translateX: -260 }, { translateY: -380 }],
+    width: 520,
+    maxWidth: '94%',
+    height: 760,
+    maxHeight: '92%',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 18 },
+    shadowOpacity: 0.25,
+    shadowRadius: 36,
+    elevation: 12,
+    zIndex: 220,
+    overflow: 'hidden',
+  },
+  centralModalBoxMobile: {
+    top: 10,
+    bottom: 10,
+    left: 10,
+    right: 10,
+    transform: [],
+    width: 'auto',
+    height: 'auto',
+    borderRadius: 18,
+  },
+  centralHeader: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    paddingHorizontal: 22,
+    paddingTop: 20,
+    paddingBottom: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F5F9',
+    backgroundColor: '#FFFFFF',
+  },
+  centralEyebrow: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#64748B',
+    marginBottom: 2,
+  },
+  centralTitle: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#0F172A',
+    letterSpacing: -0.4,
+  },
+  centralSubtitle: {
+    fontSize: 13,
+    color: '#64748B',
+    marginTop: 2,
+  },
+  centralCloseBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  centralCloseBtnText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#0F172A',
+  },
+  centralScrollBody: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+  },
+  centralScrollContent: {
+    padding: 18,
+    gap: 16,
+  },
+
+  // Cards de Seção
+  sectionCard: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
+    borderRadius: 16,
+    padding: 18,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
+  },
+  sectionHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 12,
+  },
+  sectionMainTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#0F172A',
+  },
+  sectionSubtitle: {
+    fontSize: 13,
+    color: '#64748B',
+    marginTop: 2,
+    marginBottom: 10,
+  },
+  ativasBadgePill: {
+    backgroundColor: '#FDF2F8',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 999,
+  },
+  ativasBadgeText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#DB2777',
+  },
+
+  // Linhas de Visibilidade
+  visibilidadeList: {
+    gap: 14,
+    marginTop: 4,
+  },
+  visibilidadeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  dotSinalizacao: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+  },
+  visibilidadeTextCol: {
+    flex: 1,
+  },
+  visibilidadeNome: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#0F172A',
+  },
+  visibilidadeDesc: {
+    fontSize: 12,
+    color: '#64748B',
+    marginTop: 1,
+  },
+
+  // Pesquisa
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    gap: 8,
+  },
+  searchIcon: {
+    fontSize: 14,
+  },
+  searchInputField: {
+    flex: 1,
+    fontSize: 14,
+    color: '#0F172A',
+  },
+
+  // Grid Filtros
+  gridFiltros: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+    marginBottom: 16,
+  },
+  filtroItem: {
+    width: '48%',
+    minWidth: 180,
+  },
+  filtroLabel: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#334155',
+    marginBottom: 6,
+  },
+  fallbackText: {
+    fontSize: 13,
+    color: '#0F172A',
+  },
+  filtrosSummaryRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#F1F5F9',
+  },
+  filtrosSummaryTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#0F172A',
+  },
+  filtrosSummarySub: {
+    fontSize: 12,
+    color: '#64748B',
+  },
+  btnLimparFiltros: {
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+  },
+  btnLimparFiltrosText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#334155',
+  },
+
+  // Aparência e Legenda (Imagem 3)
+  tipoBadgePill: {
+    backgroundColor: '#FDF2F8',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 999,
+  },
+  tipoBadgeText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#DB2777',
+  },
+  legendaHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 4,
+    marginBottom: 12,
+  },
+  legendaTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#0F172A',
+  },
+  legendaSub: {
+    fontSize: 12,
+    color: '#64748B',
+  },
+  btnRestaurarCores: {
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    backgroundColor: '#FFFFFF',
+  },
+  btnRestaurarCoresText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#171B68',
+  },
+  legendaLista: {
+    gap: 10,
+    marginBottom: 14,
+  },
+  legendaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  legendaColorSquare: {
+    width: 22,
+    height: 22,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  legendaCatNome: {
+    flex: 1,
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#0F172A',
+  },
+  legendaNota: {
+    fontSize: 12,
+    lineHeight: 18,
+    color: '#64748B',
+  },
+
+  // Presets Corporativos (Imagens 3 e 4)
+  formPublicarCorp: {
+    gap: 10,
+    marginBottom: 16,
+  },
+  inputCorpNome: {
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: '#DFE2EA',
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-  },
-  searchInput: {
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
     fontSize: 13,
-    color: '#20233A',
-    height: 34,
+    color: '#0F172A',
   },
-  filterGrid: {
+  btnPublicarCorp: {
+    backgroundColor: '#E11D48',
+    borderRadius: 10,
+    paddingVertical: 11,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 6,
+  },
+  btnPublicarCorpText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  corpDisponiveisRow: {
     flexDirection: 'row',
-    gap: 12,
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 10,
+    borderTopWidth: 1,
+    borderTopColor: '#F1F5F9',
+    marginBottom: 12,
   },
-  filterGroup: {
-    flex: 1,
+  corpDisponiveisText: {
+    fontSize: 13,
+    color: '#475569',
   },
-  filterLabel: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#20233A',
+  btnAtualizarCorp: {
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    backgroundColor: '#FFFFFF',
+  },
+  btnAtualizarCorpText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#171B68',
+  },
+  presetsList: {
+    gap: 14,
+    marginBottom: 14,
+  },
+  presetCard: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 14,
+    padding: 14,
+  },
+  presetTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#0F172A',
     marginBottom: 4,
   },
-  filterFallbackText: {
-    fontSize: 13,
-    color: '#676A7A',
+  presetMetaText: {
+    fontSize: 12,
+    color: '#64748B',
+    marginBottom: 10,
   },
-  symbolGrid: {
+  presetBadgesRow: {
+    flexDirection: 'row',
+    gap: 6,
+    marginBottom: 12,
+  },
+  badgeGeral: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+  },
+  badgeGeralText: {
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  badgeRosaPadrao: {
+    backgroundColor: '#FDF2F8',
+  },
+  badgeRosaPadraoText: {
+    color: '#DB2777',
+  },
+  badgeCinza: {
+    backgroundColor: '#F1F5F9',
+  },
+  badgeCinzaText: {
+    color: '#475569',
+  },
+  presetActionsRow: {
     flexDirection: 'row',
     gap: 8,
     flexWrap: 'wrap',
   },
-  symbolBadgeGreen: {
-    backgroundColor: '#E8F5E9',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 6,
-  },
-  symbolBadgeOrange: {
-    backgroundColor: '#FFF3E0',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 6,
-  },
-  symbolBadgeRed: {
-    backgroundColor: '#FFEBEE',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 6,
-  },
-  symbolText: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: '#20233A',
-  },
-  corpBadge: {
-    backgroundColor: '#F50087',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 999,
-  },
-  corpBadgeText: {
-    fontSize: 10,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-  },
-  presetNoteText: {
-    fontSize: 11,
-    color: '#676A7A',
-    lineHeight: 16,
-  },
-  centerFooter: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    gap: 10,
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: '#F0F2F7',
-  },
-  btnSecondary: {
+  btnPresetAplicar: {
+    borderWidth: 1,
+    borderColor: '#E11D48',
+    borderRadius: 8,
+    paddingHorizontal: 14,
+    paddingVertical: 6,
     backgroundColor: '#FFFFFF',
+  },
+  btnPresetAplicarText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#E11D48',
+  },
+  btnPresetAtualizar: {
     borderWidth: 1,
     borderColor: '#DFE2EA',
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    backgroundColor: '#FFFFFF',
   },
-  btnSecondaryText: {
+  btnPresetAtualizarText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#171B68',
+  },
+  btnPresetPadrao: {
+    borderWidth: 1,
+    borderColor: '#DFE2EA',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    backgroundColor: '#FFFFFF',
+  },
+  btnPresetPadraoText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#171B68',
+  },
+  btnPresetExcluir: {
+    backgroundColor: '#DC2626',
+    borderRadius: 8,
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+  },
+  btnPresetExcluirText: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#20233A',
+    color: '#FFFFFF',
   },
-  btnPrimary: {
-    backgroundColor: '#F50087',
+  corpNotaPrecedencia: {
+    fontSize: 12,
+    lineHeight: 18,
+    color: '#64748B',
+    marginTop: 6,
+  },
+
+  // Minhas Visualizações (Imagem 4)
+  formMinhaVisao: {
+    gap: 10,
+    marginBottom: 16,
+  },
+  btnSalvarMinhaVisao: {
+    backgroundColor: '#E11D48',
     borderRadius: 10,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
+    paddingVertical: 11,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  btnPrimaryText: {
+  btnSalvarMinhaVisaoText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  emptyMinhasVisoes: {
+    paddingVertical: 16,
+    paddingHorizontal: 10,
+  },
+  emptyTitle: {
     fontSize: 13,
+    color: '#64748B',
+    marginBottom: 4,
+  },
+  emptySub: {
+    fontSize: 13,
+    color: '#64748B',
+  },
+
+  // Rodapé Fixo Inferior
+  centralFooter: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: 12,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#F1F5F9',
+    backgroundColor: '#FFFFFF',
+  },
+  btnFooterRestaurar: {
+    borderWidth: 1,
+    borderColor: '#DFE2EA',
+    borderRadius: 12,
+    paddingHorizontal: 20,
+    paddingVertical: 11,
+    backgroundColor: '#FFFFFF',
+  },
+  btnFooterRestaurarText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#0F172A',
+  },
+  btnFooterVerMapa: {
+    backgroundColor: '#E11D48',
+    borderRadius: 12,
+    paddingHorizontal: 24,
+    paddingVertical: 11,
+    shadowColor: '#E11D48',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  btnFooterVerMapaText: {
+    fontSize: 14,
     fontWeight: '700',
     color: '#FFFFFF',
   },
