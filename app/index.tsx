@@ -22,6 +22,7 @@ import { AgendaModal } from '../src/components/AgendaModal';
 import { RelatoriosSlidesModal } from '../src/components/RelatoriosSlidesModal';
 import { Loja360Modal } from '../src/components/Loja360Modal';
 import { FichaLoja360, Loja360Service } from '../src/services/loja360Service';
+import { CatalogoProducaoService, LojaProducaoItem } from '../src/services/catalogoProducaoService';
 import { CentralGestaoLojistasModal } from '../src/components/CentralGestaoLojistasModal';
 import { FinanceiroRestritoModal } from '../src/components/FinanceiroRestritoModal';
 import { CentralFinanceiraModal } from '../src/components/CentralFinanceiraModal';
@@ -890,7 +891,7 @@ export default function LegacyMainShellScreen() {
     }
   };
 
-  // Resultados de busca rápida
+  // Resultados de busca rápida de sinalizações
   const searchResults = searchTerm.trim()
     ? pinsList.filter(
         (p) =>
@@ -901,9 +902,23 @@ export default function LegacyMainShellScreen() {
       )
     : [];
 
+  // Resultados de busca rápida nas 4.954 lojas reais sincronizadas
+  const lojasSearchResults = searchTerm.trim().length >= 2
+    ? CatalogoProducaoService.pesquisaRapida(searchTerm, 4)
+    : [];
+
   const handleSelectSearchResult = (pin: SignagePin) => {
     setSelectedMapKey(pin.sector);
     setSelectedPin(pin);
+    setSearchTerm('');
+  };
+
+  const handleSelectLojaRealSearchResult = (lojaItem: LojaProducaoItem) => {
+    const ficha = Loja360Service.obterFicha(lojaItem.idLojaMapa || lojaItem.numeroBox);
+    if (ficha) {
+      setLojaSelecionada360(ficha);
+      setLoja360Open(true);
+    }
     setSearchTerm('');
   };
 
@@ -1237,10 +1252,26 @@ export default function LegacyMainShellScreen() {
               </TouchableOpacity>
             )}
 
-            {/* Dropdown de Resultados */}
-            {searchResults.length > 0 && (
+            {/* Dropdown de Resultados Combinados */}
+            {(searchResults.length > 0 || lojasSearchResults.length > 0) && (
               <View id="buscaResultadosDropdown" style={styles.searchResultsDropdown}>
-                {searchResults.slice(0, 5).map((p) => (
+                {/* Lojas Reais do Catálogo */}
+                {lojasSearchResults.map((l) => (
+                  <TouchableOpacity
+                    key={`loja-real-${l.idLojaMapa || l.numeroBox}`}
+                    style={[styles.searchResultItem, { borderLeftWidth: 3, borderLeftColor: '#0284c7' }]}
+                    onPress={() => handleSelectLojaRealSearchResult(l)}
+                  >
+                    <Text style={[styles.searchResultCode, { color: '#0284c7' }]}>Box {l.numeroBox}</Text>
+                    <Text style={styles.searchResultTitle} numberOfLines={1}>
+                      🏪 {l.nomeFantasia} • {l.segmento}
+                    </Text>
+                    <Text style={styles.searchResultSector}>Setor {l.setor}</Text>
+                  </TouchableOpacity>
+                ))}
+
+                {/* Sinalizações */}
+                {searchResults.slice(0, 4).map((p) => (
                   <TouchableOpacity
                     key={p.id}
                     style={styles.searchResultItem}

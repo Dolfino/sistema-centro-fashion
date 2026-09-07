@@ -3,6 +3,8 @@
  * Paridade com Loja360Service.gs e LojaMapaService.gs
  */
 
+import { CatalogoProducaoService } from './catalogoProducaoService';
+
 export interface ContatoLoja {
   id: string;
   nome: string;
@@ -695,6 +697,65 @@ export const Loja360Service = {
    */
   obterFicha(identificador: string): FichaLoja360 | null {
     const idLimpo = identificador.trim().toLowerCase();
+
+    // 1. Consulta prioritária no Catálogo Real de Produção (sincronizado com as planilhas oficiais)
+    const realItem = CatalogoProducaoService.buscarPorIdentificador(identificador);
+    if (realItem) {
+      return {
+        idLojaMapa: realItem.idLojaMapa,
+        idLoja: realItem.idLoja,
+        numeroLoja: realItem.numeroBox,
+        nomeLoja: realItem.nomeFantasia,
+        razaoSocial: realItem.permissionario.razaoSocial || realItem.nomeFantasia,
+        cnpj: realItem.permissionario.documento,
+        tipoUnidade: 'LOJA',
+        segmentoPrincipal: realItem.segmento,
+        statusOperacao: (realItem.statusOperacao as any) || 'ATIVA',
+        setor: `Setor ${realItem.setor} • Piso 1`,
+        corredor: realItem.corredor,
+        ladoCorredor: realItem.lado || 'PADRAO',
+        x: realItem.x,
+        y: realItem.y,
+        contatos: realItem.contato.nome ? [
+          {
+            id: `CONT-${realItem.idLoja || realItem.numeroBox}`,
+            nome: realItem.contato.nome,
+            funcao: realItem.contato.cargo || 'Responsável',
+            tipo: 'COMERCIAL',
+            telefone: realItem.permissionario.telefone || '(85) 3000-0000',
+            whatsapp: realItem.contato.whatsapp || realItem.permissionario.whatsapp || '5585990000000',
+            email: realItem.permissionario.email || '',
+            principal: true,
+          }
+        ] : (realItem.permissionario.nomeFantasia ? [
+          {
+            id: `CONT-${realItem.idLoja || realItem.numeroBox}`,
+            nome: realItem.permissionario.nomeFantasia,
+            funcao: 'Permissionário / Titular',
+            tipo: 'OPERACIONAL',
+            telefone: realItem.permissionario.telefone || '(85) 3000-0000',
+            whatsapp: realItem.permissionario.whatsapp || '5585990000000',
+            email: realItem.permissionario.email || '',
+            principal: true,
+          }
+        ] : []),
+        ocorrencias: [],
+        historicoOcupacoes: [
+          {
+            id: `OCUP-${realItem.idLoja || realItem.numeroBox}`,
+            inicio: '2024-01-01',
+            responsavel: realItem.permissionario.razaoSocial || realItem.nomeFantasia,
+            atual: true,
+          }
+        ],
+        indicadores: {
+          ocorrenciasAbertas: 0,
+          ocorrenciasTotal: 0,
+          taxaResolucao: 100,
+        },
+      };
+    }
+
     const loja = LOJAS_MOCK.find(
       (l) => l.idLojaMapa.toLowerCase() === idLimpo || l.numeroLoja.toLowerCase() === idLimpo
     );

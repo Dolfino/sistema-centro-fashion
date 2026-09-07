@@ -14,3 +14,4 @@ assets/photos/
 android/
 legacy_gas_code/
 __pycache__/
+src/data/sheets_cache/
