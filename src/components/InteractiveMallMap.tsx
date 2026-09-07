@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import {
   View,
   StyleSheet,
@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { LegacyTheme } from '../theme/legacy-theme';
 import { CapturedPhoto } from '../services/mediaService';
+import { CatalogoProducaoService, LojaProducaoItem } from '../services/catalogoProducaoService';
 
 const MAP_IMAGES: Record<string, ImageSourcePropType> = {
   SETOR_AZUL: require('../../assets/maps/SETOR_AZUL.png'),
@@ -67,6 +68,8 @@ interface InteractiveMallMapProps {
   campanhaAtivaId?: string | null;
   campanhaAdesoesMap?: Record<string, { status: string; cor: string; label: string }>;
   resetTrigger?: number;
+  showLojasBoxes?: boolean;
+  onSelectLoja?: (loja: LojaProducaoItem) => void;
   onMapClick?: (coords: {
     normalizedX: number;
     normalizedY: number;
@@ -148,10 +151,24 @@ export const InteractiveMallMap: React.FC<InteractiveMallMapProps> = ({
   campanhaAtivaId = null,
   campanhaAdesoesMap = {},
   resetTrigger = 0,
+  showLojasBoxes = false,
+  onSelectLoja,
   onMapClick,
 }) => {
   const { width: windowWidth, height: windowHeight } = useWindowDimensions();
   const isMobile = windowWidth < 700;
+
+  // Lojas e Boxes reais do setor atual (das 8 planilhas sincronizadas)
+  const lojasSetor = useMemo(() => {
+    if (!showLojasBoxes && filterConservation !== 'LOJAS_BOXES') return [];
+    let setorQuery = 'AZUL';
+    if (selectedMapKey.includes('VERDE')) setorQuery = 'VERDE';
+    else if (selectedMapKey.includes('AMARELO')) setorQuery = 'AMARELO';
+    else if (selectedMapKey.includes('ROXO')) setorQuery = 'ROXO';
+    else if (selectedMapKey.includes('BRANCO')) setorQuery = 'BRANCO';
+
+    return CatalogoProducaoService.buscarPorSetor(setorQuery);
+  }, [selectedMapKey, showLojasBoxes, filterConservation]);
 
   const initialVw = isMobile ? windowWidth - 32 : Math.min(windowWidth - 60, 1460);
   const initialVh = isMobile ? Math.max(460, windowHeight - 150) : Math.max(540, windowHeight - 170);
@@ -631,6 +648,50 @@ export const InteractiveMallMap: React.FC<InteractiveMallMapProps> = ({
                 </TouchableOpacity>
               );
             })}
+        </View>
+      )}
+
+      {/* Camada de Lojas & Boxes Reais das 8 Planilhas Oficiais */}
+      {lojasSetor.length > 0 && (
+        <View style={styles.pinsLayer} pointerEvents="box-none">
+          {lojasSetor.map((loja) => {
+            const pinScreenX = translate.x + loja.x * natural.width * scale;
+            const pinScreenY = translate.y + loja.y * natural.height * scale;
+            const boxWidth = Math.min(22, Math.max(12, Math.round(14 * Math.pow(zoomRatio, 0.3))));
+            const boxHeight = Math.round(boxWidth * 1.35);
+
+            const posX = pinScreenX - boxWidth / 2;
+            const posY = pinScreenY - boxHeight;
+
+            return (
+              <TouchableOpacity
+                key={`box-loja-${loja.idLojaMapa}`}
+                id={`box-marker-${loja.numeroBox}`}
+                {...({ dataSet: { role: 'pin' } } as any)}
+                activeOpacity={0.7}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                onPress={(e) => {
+                  e.stopPropagation();
+                  if (onSelectLoja) onSelectLoja(loja);
+                }}
+                style={[
+                  styles.pinContainer,
+                  {
+                    left: posX,
+                    top: posY,
+                    width: boxWidth,
+                    height: boxHeight,
+                    zIndex: 25,
+                  },
+                ]}
+              >
+                <TeardropPin
+                  color={loja.statusOperacao === 'ATIVA' ? '#10b981' : '#64748b'}
+                  size={boxWidth}
+                />
+              </TouchableOpacity>
+            );
+          })}
         </View>
       )}
 

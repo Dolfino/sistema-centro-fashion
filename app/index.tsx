@@ -1292,6 +1292,7 @@ export default function LegacyMainShellScreen() {
           <View style={styles.rondaFiltersGroup}>
             {[
               { key: 'TODOS', label: 'Todos' },
+              { key: 'LOJAS_BOXES', label: '🏪 Lojas & Boxes' },
               { key: 'ATENCAO', label: '⚠️ Atenção' },
               { key: 'MANUTENCAO', label: '🔧 Manutenção' },
               { key: 'ATIVAS', label: '✓ Ativas' },
@@ -1388,6 +1389,8 @@ export default function LegacyMainShellScreen() {
             campanhaAtivaId={campanhaAtivaId}
             campanhaAdesoesMap={campanhaAdesoesMap}
             resetTrigger={mapResetTrigger}
+            showLojasBoxes={filterConservation === 'LOJAS_BOXES'}
+            onSelectLoja={handleSelectLojaRealSearchResult}
             onMapClick={handleMapClick}
           />
 
