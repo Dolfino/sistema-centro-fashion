@@ -19,6 +19,21 @@ export interface PresetCorporativoItem {
   autor: string;
   badges: string[];
   isPadrao: boolean;
+  camadas?: {
+    sinalizacoes: boolean;
+    referencias: boolean;
+    cruzamentos: boolean;
+    lojas: boolean;
+  };
+  filtros?: {
+    tipo: string;
+    finalidade: string;
+    responsavel: string;
+    status: string;
+    conservacao: string;
+    condicao: string;
+  };
+  colorirPor?: string;
 }
 
 export interface PresetPessoalItem {
@@ -153,9 +168,25 @@ export const CamadasModal: React.FC<CamadasModalProps> = ({
   }, [legendaCores]);
 
   // Presets Corporativos e Pessoais
-  const [presetsCorp, setPresetsCorp] = useState<PresetCorporativoItem[]>(PRESETS_CORPORATIVOS_INICIAIS);
+  const [presetsCorp, setPresetsCorp] = useState<PresetCorporativoItem[]>(() => {
+    if (Platform.OS === 'web' && typeof window !== 'undefined' && window.localStorage) {
+      const saved = window.localStorage.getItem('sinalizacao_mall_presets_corporativos');
+      if (saved) {
+        try {
+          return JSON.parse(saved);
+        } catch {}
+      }
+    }
+    return PRESETS_CORPORATIVOS_INICIAIS;
+  });
   const [nomeNovoPresetCorp, setNomeNovoPresetCorp] = useState<string>('');
   const [escopoNovoPresetCorp, setEscopoNovoPresetCorp] = useState<string>('Todos os usuários');
+
+  useEffect(() => {
+    if (Platform.OS === 'web' && typeof window !== 'undefined' && window.localStorage) {
+      window.localStorage.setItem('sinalizacao_mall_presets_corporativos', JSON.stringify(presetsCorp));
+    }
+  }, [presetsCorp]);
 
   const [minhasVisoes, setMinhasVisoes] = useState<PresetPessoalItem[]>([]);
   const [nomeMinhaVisao, setNomeMinhaVisao] = useState<string>('');
@@ -274,9 +305,72 @@ export const CamadasModal: React.FC<CamadasModalProps> = ({
       autor: 'davidsilva.centrofashion@gmail.com',
       badges: ['Corporativo', escopoNovoPresetCorp === 'Todos os usuários' ? 'Todos' : escopoNovoPresetCorp],
       isPadrao: false,
+      camadas: {
+        sinalizacoes: showSinalizacoes,
+        referencias: internalRef,
+        cruzamentos: internalCrz,
+        lojas: internalLoj,
+      },
+      filtros: {
+        tipo: filtroTipo,
+        finalidade: filtroFinalidade,
+        responsavel: filtroResponsavel,
+        status: filtroStatus,
+        conservacao: filtroConservacao,
+        condicao: filtroCondicao,
+      },
+      colorirPor,
     };
     setPresetsCorp([novo, ...presetsCorp]);
     setNomeNovoPresetCorp('');
+  };
+
+  const handleAtualizarPresetCorp = (id: string) => {
+    setPresetsCorp(
+      presetsCorp.map((p) => {
+        if (p.id === id) {
+          const escopoBadge = p.badges.find((b) => b !== 'Corporativo' && b !== 'Padrão') || 'Todos';
+          return {
+            ...p,
+            camadasInfo: `${camadasAtivasCount}/4 camadas • 0 filtros • ${colorirPor} • ${escopoBadge} • davidsilva.centrofashion@gmail.com`,
+            camadas: {
+              sinalizacoes: showSinalizacoes,
+              referencias: internalRef,
+              cruzamentos: internalCrz,
+              lojas: internalLoj,
+            },
+            filtros: {
+              tipo: filtroTipo,
+              finalidade: filtroFinalidade,
+              responsavel: filtroResponsavel,
+              status: filtroStatus,
+              conservacao: filtroConservacao,
+              condicao: filtroCondicao,
+            },
+            colorirPor,
+          };
+        }
+        return p;
+      })
+    );
+  };
+
+  const handleAplicarPresetCorp = (preset: PresetCorporativoItem) => {
+    if (preset.camadas) {
+      onToggleSinalizacoes(preset.camadas.sinalizacoes);
+      toggleRef(preset.camadas.referencias);
+      toggleCrz(preset.camadas.cruzamentos);
+      toggleLoj(preset.camadas.lojas);
+    } else {
+      onToggleSinalizacoes(true);
+      toggleRef(true);
+      toggleCrz(true);
+      toggleLoj(false);
+    }
+    if (preset.colorirPor) {
+      setColorirPor(preset.colorirPor);
+    }
+    setShowCentralCamadas(false);
   };
 
   const handleSalvarMinhaVisao = () => {
@@ -945,17 +1039,15 @@ export const CamadasModal: React.FC<CamadasModalProps> = ({
                     <View style={styles.presetActionsRow}>
                       <TouchableOpacity
                         style={styles.btnPresetAplicar}
-                        onPress={() => {
-                          onToggleSinalizacoes(true);
-                          toggleRef(true);
-                          toggleCrz(true);
-                          setShowCentralCamadas(false);
-                        }}
+                        onPress={() => handleAplicarPresetCorp(preset)}
                       >
                         <Text style={styles.btnPresetAplicarText}>Aplicar</Text>
                       </TouchableOpacity>
 
-                      <TouchableOpacity style={styles.btnPresetAtualizar}>
+                      <TouchableOpacity
+                        style={styles.btnPresetAtualizar}
+                        onPress={() => handleAtualizarPresetCorp(preset.id)}
+                      >
                         <Text style={styles.btnPresetAtualizarText}>Atualizar</Text>
                       </TouchableOpacity>
 
@@ -964,7 +1056,7 @@ export const CamadasModal: React.FC<CamadasModalProps> = ({
                         onPress={() => handleTogglePadraoCorp(preset.id)}
                       >
                         <Text style={styles.btnPresetPadraoText}>
-                          {preset.isPadrao ? 'Remover padrão' : 'Padrão'}
+                          {preset.isPadrao ? 'Remover padrão' : 'Definir padrão'}
                         </Text>
                       </TouchableOpacity>
 
