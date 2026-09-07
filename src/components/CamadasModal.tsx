@@ -10,6 +10,7 @@ import {
   Platform,
   useWindowDimensions,
 } from 'react-native';
+import { ChromeColorPicker } from './ChromeColorPicker';
 
 export interface PresetCorporativoItem {
   id: string;
@@ -132,7 +133,24 @@ export const CamadasModal: React.FC<CamadasModalProps> = ({
 
   // Aparência e Cores
   const [colorirPor, setColorirPor] = useState<string>('Tipo');
-  const [legendaCores, setLegendaCores] = useState(LEGENDA_SINALIZACOES_PADRAO);
+  const [legendaCores, setLegendaCores] = useState(() => {
+    if (Platform.OS === 'web' && typeof window !== 'undefined' && window.localStorage) {
+      const saved = window.localStorage.getItem('sinalizacao_mall_legenda_cores');
+      if (saved) {
+        try {
+          return JSON.parse(saved);
+        } catch {}
+      }
+    }
+    return LEGENDA_SINALIZACOES_PADRAO;
+  });
+  const [colorPickerTargetId, setColorPickerTargetId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (Platform.OS === 'web' && typeof window !== 'undefined' && window.localStorage) {
+      window.localStorage.setItem('sinalizacao_mall_legenda_cores', JSON.stringify(legendaCores));
+    }
+  }, [legendaCores]);
 
   // Presets Corporativos e Pessoais
   const [presetsCorp, setPresetsCorp] = useState<PresetCorporativoItem[]>(PRESETS_CORPORATIVOS_INICIAIS);
@@ -761,7 +779,10 @@ export const CamadasModal: React.FC<CamadasModalProps> = ({
                 <TouchableOpacity
                   id="restaurarCoresBtn"
                   style={styles.btnRestaurarCores}
-                  onPress={() => setLegendaCores(LEGENDA_SINALIZACOES_PADRAO)}
+                  onPress={() => {
+                    setColorPickerTargetId(null);
+                    setLegendaCores(LEGENDA_SINALIZACOES_PADRAO);
+                  }}
                 >
                   <Text style={styles.btnRestaurarCoresText}>Restaurar cores</Text>
                 </TouchableOpacity>
@@ -769,16 +790,56 @@ export const CamadasModal: React.FC<CamadasModalProps> = ({
 
               {/* Lista com as 6 categorias das fotos */}
               <View style={styles.legendaLista}>
-                {legendaCores.map((cat) => (
-                  <View key={cat.id} style={styles.legendaRow}>
-                    <View style={[styles.legendaColorSquare, { backgroundColor: cat.cor }]} />
-                    <View style={[styles.dotSinalizacao, { backgroundColor: cat.cor }]} />
-                    <Text style={styles.legendaCatNome}>{cat.nome}</Text>
-                    <View style={styles.compactBadgePill}>
-                      <Text style={styles.compactBadgeText}>{cat.count}</Text>
+                {legendaCores.map((cat) => {
+                  const isPickerOpen = colorPickerTargetId === cat.id;
+                  return (
+                    <View
+                      key={cat.id}
+                      style={[styles.legendaRow, isPickerOpen && styles.legendaRowActive]}
+                    >
+                      <TouchableOpacity
+                        id={`cor-btn-${cat.id}`}
+                        style={[
+                          styles.legendaColorSquare,
+                          { backgroundColor: cat.cor, cursor: 'pointer' as any },
+                        ]}
+                        onPress={() => setColorPickerTargetId(isPickerOpen ? null : cat.id)}
+                        activeOpacity={0.8}
+                      />
+                      <View style={[styles.dotSinalizacao, { backgroundColor: cat.cor }]} />
+                      <Text style={styles.legendaCatNome}>{cat.nome}</Text>
+                      <View style={styles.compactBadgePill}>
+                        <Text style={styles.compactBadgeText}>{cat.count}</Text>
+                      </View>
+
+                      {/* Popover do Seletor de Cores (ChromeColorPicker) */}
+                      {isPickerOpen && (
+                        <>
+                          {Platform.OS === 'web' && (
+                            <TouchableOpacity
+                              style={styles.colorPickerBackdrop}
+                              onPress={() => setColorPickerTargetId(null)}
+                              activeOpacity={1}
+                            />
+                          )}
+                          <View style={styles.colorPickerPopover}>
+                            <ChromeColorPicker
+                              color={cat.cor}
+                              onChange={(newHex) => {
+                                setLegendaCores((prev) =>
+                                  prev.map((item) =>
+                                    item.id === cat.id ? { ...item, cor: newHex } : item
+                                  )
+                                );
+                              }}
+                              onClose={() => setColorPickerTargetId(null)}
+                            />
+                          </View>
+                        </>
+                      )}
                     </View>
-                  </View>
-                ))}
+                  );
+                })}
               </View>
 
               <Text style={styles.legendaNota}>
@@ -1429,6 +1490,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
+    position: 'relative',
+    zIndex: 1,
+  },
+  legendaRowActive: {
+    zIndex: 9999,
   },
   legendaColorSquare: {
     width: 22,
@@ -1436,6 +1502,20 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     borderWidth: 1,
     borderColor: '#E2E8F0',
+  },
+  colorPickerPopover: {
+    position: 'absolute',
+    top: 28,
+    left: 0,
+    zIndex: 99999,
+  },
+  colorPickerBackdrop: {
+    position: 'fixed' as any,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 99990,
   },
   legendaCatNome: {
     flex: 1,
