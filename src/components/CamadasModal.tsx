@@ -602,7 +602,27 @@ export const CamadasModal: React.FC<CamadasModalProps> = ({
                   <View style={[styles.checkboxRosa, internalRef && styles.checkboxRosaChecked]}>
                     {internalRef && <Text style={styles.checkmarkWhite}>✓</Text>}
                   </View>
-                  <View style={[styles.dotSinalizacao, { backgroundColor: '#1E3A8A' }]} />
+                  <View
+                    style={{
+                      width: 14,
+                      height: 14,
+                      borderRadius: 7,
+                      backgroundColor: '#10144d',
+                      borderColor: '#ffffff',
+                      borderWidth: 1.5,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <View
+                      style={{
+                        width: 5,
+                        height: 5,
+                        borderRadius: 2.5,
+                        backgroundColor: '#38bdf8',
+                      }}
+                    />
+                  </View>
                   <View style={styles.visibilidadeTextCol}>
                     <Text style={styles.visibilidadeNome}>Referências</Text>
                     <Text style={styles.visibilidadeDesc}>Pontos de referência cartográfica</Text>
@@ -621,7 +641,16 @@ export const CamadasModal: React.FC<CamadasModalProps> = ({
                   <View style={[styles.checkboxRosa, internalCrz && styles.checkboxRosaChecked]}>
                     {internalCrz && <Text style={styles.checkmarkWhite}>✓</Text>}
                   </View>
-                  <View style={[styles.dotSinalizacao, { backgroundColor: '#D946EF' }]} />
+                  <View
+                    style={{
+                      width: 11,
+                      height: 11,
+                      borderRadius: 2,
+                      backgroundColor: '#22c55e',
+                      borderColor: '#15803d',
+                      borderWidth: 1.2,
+                    }}
+                  />
                   <View style={styles.visibilidadeTextCol}>
                     <Text style={styles.visibilidadeNome}>Cruzamentos</Text>
                     <Text style={styles.visibilidadeDesc}>Interseções e pontos de circulação</Text>
@@ -640,7 +669,16 @@ export const CamadasModal: React.FC<CamadasModalProps> = ({
                   <View style={[styles.checkboxRosa, internalLoj && styles.checkboxRosaChecked]}>
                     {internalLoj && <Text style={styles.checkmarkWhite}>✓</Text>}
                   </View>
-                  <View style={[styles.dotSinalizacao, { backgroundColor: '#64748B' }]} />
+                  <View
+                    style={{
+                      width: 11,
+                      height: 11,
+                      borderRadius: 5.5,
+                      backgroundColor: '#38bdf8',
+                      borderColor: '#0284c7',
+                      borderWidth: 1,
+                    }}
+                  />
                   <View style={styles.visibilidadeTextCol}>
                     <Text style={styles.visibilidadeNome}>Lojas</Text>
                     <Text style={styles.visibilidadeDesc}>Lojas/LUCs disponíveis na planta</Text>
