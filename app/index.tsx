@@ -992,11 +992,16 @@ export default function LegacyMainShellScreen() {
             </Text>
           </TouchableOpacity>
 
-          <View style={styles.userBadge}>
+          <TouchableOpacity
+            id="adminUserBadgeBtn"
+            style={styles.userBadge}
+            onPress={() => setAdminModalOpen(true)}
+            activeOpacity={0.7}
+          >
             <Text style={styles.userBadgeText} numberOfLines={1}>
               {isMobile ? 'davidsilva • ADMIN' : 'davidsilva.centrofashion • ADMIN'}
             </Text>
-          </View>
+          </TouchableOpacity>
         </View>
       </View>
 

@@ -91,9 +91,7 @@ export const AppMenuModal: React.FC<AppMenuModalProps> = ({
                 ]}
                 onPress={() => {
                   onSelectMenu(item.id);
-                  if (item.id === 'camadasBtn') {
-                    onClose();
-                  }
+                  onClose();
                 }}
               >
                 <Text style={[styles.menuItemIcon, item.primary && styles.menuItemIconPrimary]}>
