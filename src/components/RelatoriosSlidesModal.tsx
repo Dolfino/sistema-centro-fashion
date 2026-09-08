@@ -40,14 +40,14 @@ export const RelatoriosSlidesModal: React.FC<RelatoriosSlidesModalProps> = ({
 
   // Slides estruturados de acordo com o RelatorioAuditoriaMidiaSlidesService.gs
   const slides = useMemo(() => {
-    const deck: Array<{
+    const deck: {
       id: string;
       tipo: 'CAPA' | 'DIVISORIA' | 'REGISTROS' | 'RESUMO' | 'ENCERRAMENTO';
       titulo?: string;
       subtitulo?: string;
       setor?: string;
       itens?: SignagePin[];
-    }> = [];
+    }[] = [];
 
     // Slide 1: Capa Executiva
     deck.push({

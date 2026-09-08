@@ -33,14 +33,12 @@ export const LevantamentoRegistroModal: React.FC<LevantamentoRegistroModalProps>
   onSalvo,
   onSalvarEProximo,
 }) => {
-  if (!ponto) return null;
-
-  const [situacao, setSituacao] = useState<SituacaoEncontrada>(ponto.situacao || 'EM_OPERACAO');
+  const [situacao, setSituacao] = useState<SituacaoEncontrada>(ponto?.situacao || 'EM_OPERACAO');
   const [resultado, setResultado] = useState<ResultadoCadastro>(
-    ponto.resultado === 'PENDENTE' ? 'CONCLUIDO' : ponto.resultado
+    ponto?.resultado && ponto.resultado !== 'PENDENTE' ? ponto.resultado : 'CONCLUIDO'
   );
-  const [completude, setCompletude] = useState<number>(ponto.percentualCompletude || 100);
-  const [observacao, setObservacao] = useState<string>(ponto.observacao || '');
+  const [completude, setCompletude] = useState<number>(ponto?.percentualCompletude || 100);
+  const [observacao, setObservacao] = useState<string>(ponto?.observacao || '');
   const [salvando, setSalvando] = useState(false);
 
   useEffect(() => {
@@ -51,6 +49,8 @@ export const LevantamentoRegistroModal: React.FC<LevantamentoRegistroModalProps>
       setObservacao(ponto.observacao || '');
     }
   }, [ponto]);
+
+  if (!ponto) return null;
 
   const executarSalvar = (proximo: boolean) => {
     try {

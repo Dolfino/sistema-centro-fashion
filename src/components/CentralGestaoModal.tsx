@@ -8,7 +8,6 @@ import {
   TextInput,
   Image,
   Platform,
-  Dimensions,
 } from 'react-native';
 import { SignagePin } from './InteractiveMallMap';
 
@@ -38,8 +37,6 @@ export const CentralGestaoModal: React.FC<CentralGestaoModalProps> = ({
   const [filterSector, setFilterSector] = useState<string>('TODOS');
   const [filterStatus, setFilterStatus] = useState<string>('TODOS');
   const [filterPriority, setFilterPriority] = useState<string>('TODOS');
-
-  if (!visible) return null;
 
   // Filtragem combinada
   const filteredPins = useMemo(() => {
@@ -83,6 +80,8 @@ export const CentralGestaoModal: React.FC<CentralGestaoModalProps> = ({
     const criticas = pins.filter((p) => p.priority === 'CRITICA' || p.conservationState === 'Danificada').length;
     return { total, ocorrencias, sinalizacoes, emAtendimento, concluidos, criticas };
   }, [pins]);
+
+  if (!visible) return null;
 
   // Exportar para CSV (Compatível com RelatorioExportacaoService.gs)
   const handleExportCSV = () => {

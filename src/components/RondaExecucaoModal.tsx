@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -6,12 +6,11 @@ import {
   TouchableOpacity,
   ScrollView,
   TextInput,
-  Image,
   Platform,
   Alert,
 } from 'react-native';
 import { SignagePin } from './InteractiveMallMap';
-import { CapturedPhoto, mediaService } from '../services/mediaService';
+import { CapturedPhoto } from '../services/mediaService';
 
 interface ChecklistItemModel {
   id: string;

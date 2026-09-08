@@ -21,7 +21,7 @@ export interface OutboxMutation {
 
 export interface SyncPushResponse {
   success: boolean;
-  results?: Array<{ clientMutationId: string; status: string }>;
+  results?: { clientMutationId: string; status: string }[];
   syncedAt?: string;
   error?: string;
 }
@@ -30,14 +30,14 @@ export interface SyncPullResponse {
   timestamp: string;
   changes: {
     signage: {
-      created: Array<Record<string, any>>;
-      updated: Array<Record<string, any>>;
-      deleted: Array<Record<string, any>>;
+      created: Record<string, any>[];
+      updated: Record<string, any>[];
+      deleted: Record<string, any>[];
     };
     inspections: {
-      created: Array<Record<string, any>>;
-      updated: Array<Record<string, any>>;
-      deleted: Array<Record<string, any>>;
+      created: Record<string, any>[];
+      updated: Record<string, any>[];
+      deleted: Record<string, any>[];
     };
   };
 }

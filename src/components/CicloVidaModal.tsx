@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, useWindowDimensions, Platform, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, useWindowDimensions, Platform } from 'react-native';
 import { SignagePin } from './InteractiveMallMap';
 
 interface CicloVidaModalProps {

@@ -12,7 +12,6 @@ import {
 import {
   PontoReferenciaOficial,
   CartografiaService,
-  CORES_PADRAO_TIPOS_REFERENCIA,
   NOMES_PADRAO_TIPOS_REFERENCIA,
 } from '../services/cartografiaService';
 

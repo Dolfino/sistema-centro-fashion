@@ -11,7 +11,6 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import {
   CampanhaService,
-  CampanhaMarketing,
   ParticipacaoLojaCampanha,
   StatusAdesaoCampanha,
   CORES_STATUS_CAMPANHA,

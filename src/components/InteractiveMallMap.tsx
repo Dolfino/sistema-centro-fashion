@@ -11,7 +11,6 @@ import {
   ScrollView,
   Platform,
 } from 'react-native';
-import { LegacyTheme } from '../theme/legacy-theme';
 import { CapturedPhoto } from '../services/mediaService';
 import { CatalogoProducaoService, LojaProducaoItem } from '../services/catalogoProducaoService';
 import {

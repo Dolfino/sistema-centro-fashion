@@ -14,7 +14,6 @@ import { ChromeColorPicker } from './ChromeColorPicker';
 import {
   CartografiaService,
   CORES_PADRAO_TIPOS_REFERENCIA,
-  NOMES_PADRAO_TIPOS_REFERENCIA,
 } from '../services/cartografiaService';
 
 export interface PresetCorporativoItem {

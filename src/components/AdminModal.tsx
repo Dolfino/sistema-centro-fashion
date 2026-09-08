@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
-  Modal,
   StyleSheet,
   TouchableOpacity,
   ScrollView,
@@ -19,8 +18,6 @@ import {
   PontoBackup,
   DiagnosticoSaude,
   PlanoPreventivo,
-  AvisoComunicacao,
-  PapelUsuario,
 } from '../services/adminService';
 
 interface AdminModalProps {

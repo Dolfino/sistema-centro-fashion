@@ -68,6 +68,9 @@ import { CapturedPhoto, mediaService } from '../src/services/mediaService';
 import { LegacyTheme } from '../src/theme/legacy-theme';
 import { seedPins } from '../src/data/seedPins';
 
+import { OfflineStorageService } from '../src/services/OfflineStorageService';
+import { useStorageData, useNetworkStatus, useSyncFlow, useModalFlags } from '../src/hooks';
+
 const initialPins: SignagePin[] = seedPins;
 
 const initialOutboxItems: OutboxItem[] = [
@@ -89,9 +92,6 @@ const initialOutboxItems: OutboxItem[] = [
     timestamp: '2026-08-23 18:25',
   },
 ];
-
-import { OfflineStorageService } from '../src/services/OfflineStorageService';
-import { useStorageData, useNetworkStatus, useSyncFlow, useModalFlags } from '../src/hooks';
 
 export default function LegacyMainShellScreen() {
   const [selectedMapKey, setSelectedMapKey] = useState<string>('SETOR_AZUL');

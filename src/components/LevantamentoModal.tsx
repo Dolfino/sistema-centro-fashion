@@ -8,7 +8,6 @@ import {
   ScrollView,
   TextInput,
   Dimensions,
-  Platform,
 } from 'react-native';
 import {
   getSessaoAtiva,

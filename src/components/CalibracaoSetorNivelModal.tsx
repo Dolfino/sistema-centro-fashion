@@ -5,7 +5,6 @@ import {
   StyleSheet,
   TouchableOpacity,
   TouchableWithoutFeedback,
-  ScrollView,
   Platform,
   useWindowDimensions,
   Image,
