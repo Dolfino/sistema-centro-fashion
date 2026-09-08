@@ -31,29 +31,10 @@ export const CicloVidaModal: React.FC<CicloVidaModalProps> = ({
     onClose();
   };
 
-  const handleDelete = () => {
-    if (Platform.OS === 'web') {
-      if (window.confirm(`Tem certeza que deseja DESATIVAR/EXCLUIR permanentemente o registro ${pin.assetCode}?`)) {
-        onDeletePin(pin.id);
-        onClose();
-      }
-    } else {
-      Alert.alert(
-        'Confirmar Exclusão',
-        `Deseja realmente desativar permanentemente o registro ${pin.assetCode}?`,
-        [
-          { text: 'Cancelar', style: 'cancel' },
-          {
-            text: 'Sim, Excluir',
-            style: 'destructive',
-            onPress: () => {
-              onDeletePin(pin.id);
-              onClose();
-            },
-          },
-        ]
-      );
-    }
+  const handleConfirmDelete = () => {
+    onDeletePin(pin.id);
+    setShowConfirmDelete(false);
+    onClose();
   };
 
   const webSelectStyle = {
@@ -137,13 +118,36 @@ export const CicloVidaModal: React.FC<CicloVidaModalProps> = ({
               Ao excluir o registro, o ativo deixará de constar no inventário ativo do mapa e será arquivado no histórico de descarte.
             </Text>
 
-            <TouchableOpacity
-              id="btnExcluirRegistroS236"
-              style={styles.btnDelete}
-              onPress={handleDelete}
-            >
-              <Text style={styles.btnDeleteText}>🗑️ Excluir / Desativar Registro Definitivamente</Text>
-            </TouchableOpacity>
+            {!showConfirmDelete ? (
+              <TouchableOpacity
+                id="btnExcluirRegistroS236"
+                style={styles.btnDelete}
+                onPress={() => setShowConfirmDelete(true)}
+              >
+                <Text style={styles.btnDeleteText}>🗑️ Excluir / Desativar Registro Definitivamente</Text>
+              </TouchableOpacity>
+            ) : (
+              <View style={styles.confirmDeleteBox}>
+                <Text style={styles.confirmDeleteMsg}>
+                  ⚠️ Tem certeza? O registro <Text style={{ fontWeight: '800' }}>{pin.assetCode}</Text> será removido do mapa imediatamente.
+                </Text>
+                <View style={styles.confirmDeleteRow}>
+                  <TouchableOpacity
+                    id="btnConfirmarExclusaoReal"
+                    style={styles.btnDeleteConfirm}
+                    onPress={handleConfirmDelete}
+                  >
+                    <Text style={styles.btnDeleteConfirmText}>🗑️ Sim, Excluir Definitivamente</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.btnDeleteCancel}
+                    onPress={() => setShowConfirmDelete(false)}
+                  >
+                    <Text style={styles.btnDeleteCancelText}>Cancelar</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
           </View>
         </ScrollView>
 
@@ -325,6 +329,49 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 12,
     fontWeight: '700',
+  },
+  confirmDeleteBox: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
+    padding: 12,
+    borderWidth: 1.5,
+    borderColor: '#EF4444',
+    gap: 10,
+  },
+  confirmDeleteMsg: {
+    fontSize: 12,
+    color: '#991B1B',
+    lineHeight: 18,
+  },
+  confirmDeleteRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    flexWrap: 'wrap',
+  },
+  btnDeleteConfirm: {
+    backgroundColor: '#DC2626',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 6,
+  },
+  btnDeleteConfirmText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  btnDeleteCancel: {
+    backgroundColor: '#F1F5F9',
+    borderWidth: 1,
+    borderColor: '#CBD5E1',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 6,
+  },
+  btnDeleteCancelText: {
+    color: '#475569',
+    fontSize: 12,
+    fontWeight: '600',
   },
   footer: {
     flexDirection: 'row',

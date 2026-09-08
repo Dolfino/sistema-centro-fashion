@@ -7,7 +7,9 @@ import {
   TouchableOpacity,
   ScrollView,
   TextInput,
-  Dimensions,
+  TouchableWithoutFeedback,
+  Platform,
+  useWindowDimensions,
 } from 'react-native';
 import {
   AdminService,
@@ -25,23 +27,51 @@ interface AdminModalProps {
   visible: boolean;
   userRole?: string;
   onClose: () => void;
+  onAbrirCartografia?: () => void;
 }
 
-type TabAdmin =
+export type TabAdmin =
   | 'USUARIOS'
   | 'PERFIS'
   | 'AUDITORIA'
+  | 'ACESSOS'
   | 'BACKUP'
   | 'SAUDE'
+  | 'INVENTARIO'
   | 'PLANOS'
   | 'COMUNICACAO'
-  | 'INTEGRACOES';
+  | 'CARTOGRAFIA';
+
+interface DispositivoSessao {
+  id: string;
+  nome: string;
+  tipo: 'CONFIÁVEL' | 'TEMPORÁRIA';
+  status: 'ATIVA' | 'EXPIRADA' | 'REVOGADA';
+  ref: string;
+  ultimoUso: string;
+  expira: string;
+  criada: string;
+  versao: string;
+}
+
+interface RegraComunicacao {
+  id: string;
+  titulo: string;
+  nivelMinimo: string;
+  cooldown: string;
+  destinatarios: string;
+  escalonamento: string;
+  status: 'ATIVA' | 'INATIVA';
+}
 
 export const AdminModal: React.FC<AdminModalProps> = ({
   visible,
   userRole = 'ADMIN',
   onClose,
+  onAbrirCartografia,
 }) => {
+  const { width: windowWidth, height: windowHeight } = useWindowDimensions();
+
   const [tabAtiva, setTabAtiva] = useState<TabAdmin>('USUARIOS');
   const [usuarios, setUsuarios] = useState<UsuarioSistema[]>([]);
   const [permissoes, setPermissoes] = useState<PermissaoModulo[]>([]);
@@ -49,1322 +79,1450 @@ export const AdminModal: React.FC<AdminModalProps> = ({
   const [backups, setBackups] = useState<PontoBackup[]>([]);
   const [saude, setSaude] = useState<DiagnosticoSaude | null>(null);
   const [planos, setPlanos] = useState<PlanoPreventivo[]>([]);
-  const [avisos, setAvisos] = useState<AvisoComunicacao[]>([]);
-  const [syncEmAndamento, setSyncEmAndamento] = useState(false);
-
-  // Form Novo Aviso
-  const [formAvisoAberto, setFormAvisoAberto] = useState(false);
-  const [novoTituloAviso, setNovoTituloAviso] = useState('');
-  const [novaMsgAviso, setNovaMsgAviso] = useState('');
-  const [prioridadeAviso, setPrioridadeAviso] = useState<'NORMAL' | 'ALTA' | 'URGENTE'>('NORMAL');
-
-  // Form Novo Usuário
-  const [formUsuarioAberto, setFormUsuarioAberto] = useState(false);
-  const [novoNome, setNovoNome] = useState('');
-  const [novoEmail, setNovoEmail] = useState('');
-  const [novoCargo, setNovoCargo] = useState('');
-  const [novoPerfil, setNovoPerfil] = useState<PapelUsuario>('CAMPO');
-
   const [feedbackMsg, setFeedbackMsg] = useState<string | null>(null);
 
-  const carregarDados = () => {
-    setUsuarios(AdminService.obterUsuarios());
-    setPermissoes(AdminService.obterMatrizPermissoes());
-    setLogs(AdminService.obterLogsAuditoria());
-    setBackups(AdminService.obterBackups());
-    setSaude(AdminService.obterDiagnosticoSaude());
-    setPlanos(AdminService.obterPlanosPreventivos());
-    setAvisos(AdminService.obterAvisos());
-  };
+  // Filtros de Acessos & Dispositivos
+  const [buscaDispositivo, setBuscaDispositivo] = useState('');
+  const [filtroStatusDisp, setFiltroStatusDisp] = useState('TODOS');
+  const [filtroTipoDisp, setFiltroTipoDisp] = useState('TODOS');
+
+  // Dispositivos do usuário David
+  const [dispositivos, setDispositivos] = useState<DispositivoSessao[]>([
+    {
+      id: 'disp-1',
+      nome: 'Google Chrome • Linux',
+      tipo: 'CONFIÁVEL',
+      status: 'ATIVA',
+      ref: 'A7DF6D3C14',
+      ultimoUso: '06/09/2026, 21:44:30',
+      expira: '12/09/2026, 13:07:58',
+      criada: '05/09/2026, 13:07:54',
+      versao: 'MVP-3.32.0-SINALIZACAO-S26.10',
+    },
+    {
+      id: 'disp-2',
+      nome: 'Google Chrome • Linux',
+      tipo: 'CONFIÁVEL',
+      status: 'EXPIRADA',
+      ref: '00195C0C36',
+      ultimoUso: '30/08/2026, 17:09:52',
+      expira: '06/09/2026, 16:59:09',
+      criada: '30/08/2026, 16:59:06',
+      versao: 'MVP-3.32.0-SINALIZACAO-S26.10',
+    },
+    {
+      id: 'disp-3',
+      nome: 'Dispositivo identificado',
+      tipo: 'TEMPORÁRIA',
+      status: 'EXPIRADA',
+      ref: '5A35BD6881',
+      ultimoUso: '30/08/2026, 13:25:02',
+      expira: '31/08/2026, 01:25:02',
+      criada: '30/08/2026, 13:25:02',
+      versao: 'MVP-3.32.0-SINALIZACAO-S26.10',
+    },
+    {
+      id: 'disp-4',
+      nome: 'Google Chrome • Android',
+      tipo: 'CONFIÁVEL',
+      status: 'EXPIRADA',
+      ref: '80EE9C3433',
+      ultimoUso: '28/08/2026, 10:40:00',
+      expira: '03/09/2026, 12:18:19',
+      criada: '27/08/2026, 12:18:13',
+      versao: 'MVP-3.31.0-SINALIZACAO-S26.9',
+    },
+  ]);
+
+  // Regras de Comunicação
+  const [automacaoAtiva, setAutomacaoAtiva] = useState(true);
+  const [regrasComunicacao, setRegrasComunicacao] = useState<RegraComunicacao[]>([
+    {
+      id: 'r-1',
+      titulo: 'Críticos — e-mail imediato',
+      nivelMinimo: 'CRÍTICO',
+      cooldown: '24 h',
+      destinatarios: 'davidsilva@centrofashion.com,davidsilva.centrofashion@gmail.com',
+      escalonamento: 'não configurado',
+      status: 'ATIVA',
+    },
+    {
+      id: 'r-2',
+      titulo: 'Altos — e-mail',
+      nivelMinimo: 'ALTO',
+      cooldown: '24 h',
+      destinatarios: 'davidsilva@centrofashion.com,davidsilva.centrofashion@gmail.com',
+      escalonamento: 'davidsilva.centrofashion@gmail.com',
+      status: 'ATIVA',
+    },
+    {
+      id: 'r-3',
+      titulo: 'Médios — resumo operacional',
+      nivelMinimo: 'MEDIO',
+      cooldown: '24 h',
+      destinatarios: 'davidsilva@centrofashion.com,davidsilva.centrofashion@gmail.com',
+      escalonamento: 'não configurado',
+      status: 'ATIVA',
+    },
+  ]);
+
+  // Lista padrão de usuários com paridade ao Google Apps Script
+  const usuariosPadrao = [
+    {
+      id: 'u-1',
+      nome: 'davidsilva.centrofashion',
+      email: 'davidsilva.centrofashion@gmail.com',
+      ultimoAcesso: '07/09/2026 19:20',
+      perfil: 'ADMIN',
+      status: 'ATIVO',
+    },
+    {
+      id: 'u-2',
+      nome: 'David Nascimento da Silva',
+      email: 'centrofashionmarketing@gmail.com',
+      ultimoAcesso: '03/09/2026 19:12',
+      perfil: 'ADMIN',
+      status: 'ATIVO',
+    },
+    {
+      id: 'u-3',
+      nome: 'Wendel',
+      email: 'wendellucas@centrofashion.com',
+      ultimoAcesso: '21/08/2026 15:34',
+      perfil: 'CONSULTA',
+      status: 'ATIVO',
+    },
+    {
+      id: 'u-4',
+      nome: 'Albanir',
+      email: 'albaniramerico@centrofashion.com',
+      ultimoAcesso: '—',
+      perfil: 'CONSULTA',
+      status: 'ATIVO',
+    },
+  ];
 
   useEffect(() => {
     if (visible) {
-      carregarDados();
+      setUsuarios(AdminService.obterUsuarios());
+      setPermissoes(AdminService.obterMatrizPermissoes());
+      setLogs(AdminService.obterLogsAuditoria());
+      setBackups(AdminService.obterBackups());
+      setSaude(AdminService.obterDiagnosticoSaude());
+      setPlanos(AdminService.obterPlanosPreventivos());
     }
   }, [visible]);
 
   if (!visible) return null;
 
-  const handleSalvarUsuario = () => {
-    if (!novoNome.trim() || !novoEmail.trim()) {
-      alert('Preencha nome e e-mail do usuário.');
-      return;
-    }
-    AdminService.salvarUsuario({
-      nome: novoNome,
-      email: novoEmail,
-      cargo: novoCargo || 'Operador',
-      perfil: novoPerfil,
-      ativo: true,
-    });
-    setFormUsuarioAberto(false);
-    setNovoNome('');
-    setNovoEmail('');
-    setNovoCargo('');
-    setUsuarios(AdminService.obterUsuarios());
-    mostrarFeedback('Usuário cadastrado com sucesso!');
-  };
-
-  const handleEnviarAviso = () => {
-    if (!novoTituloAviso.trim() || !novaMsgAviso.trim()) {
-      alert('Preencha o título e o corpo do aviso.');
-      return;
-    }
-    AdminService.enviarAviso({
-      titulo: novoTituloAviso,
-      mensagem: novaMsgAviso,
-      prioridade: prioridadeAviso,
-    });
-    setFormAvisoAberto(false);
-    setNovoTituloAviso('');
-    setNovaMsgAviso('');
-    setAvisos(AdminService.obterAvisos());
-    mostrarFeedback('Comunicado transmitido para a equipe!');
-  };
-
-  const handleBackupAgora = () => {
-    mostrarFeedback('Snapshot manual do PostgreSQL & MinIO S3 gravado com sucesso!');
-  };
-
-  const handleSincronizarPlanilhas = () => {
-    setSyncEmAndamento(true);
-    setTimeout(() => {
-      setSyncEmAndamento(false);
-      mostrarFeedback('Sincronização concluída! 4.954 lojas/boxes, 3.425 permissionários e 14.448 produtos sincronizados.');
-    }, 1200);
-  };
-
-  const mostrarFeedback = (msg: string) => {
+  const mostrarToast = (msg: string) => {
     setFeedbackMsg(msg);
-    setTimeout(() => setFeedbackMsg(null), 4000);
+    setTimeout(() => setFeedbackMsg(null), 3500);
   };
+
+  const handleRevogarDispositivo = (id: string) => {
+    setDispositivos((prev) =>
+      prev.map((d) => (d.id === id ? { ...d, status: 'REVOGADA' } : d))
+    );
+    mostrarToast('Dispositivo revogado com sucesso!');
+  };
+
+  const handleRevogarTodos = () => {
+    setDispositivos((prev) => prev.map((d) => ({ ...d, status: 'REVOGADA' })));
+    mostrarToast('Todas as sessões e dispositivos foram revogados.');
+  };
+
+  const tabsConfig: { key: TabAdmin; label: string }[] = [
+    { key: 'USUARIOS', label: 'Usuários' },
+    { key: 'PERFIS', label: 'Perfis e permissões' },
+    { key: 'AUDITORIA', label: 'Auditoria' },
+    { key: 'ACESSOS', label: 'Acessos e dispositivos' },
+    { key: 'BACKUP', label: 'Backup e integridade' },
+    { key: 'SAUDE', label: 'Saúde operacional' },
+    { key: 'INVENTARIO', label: 'Inventário' },
+    { key: 'PLANOS', label: 'Planos preventivos' },
+    { key: 'COMUNICACAO', label: 'Comunicação' },
+    { key: 'CARTOGRAFIA', label: 'Cartografia' },
+  ];
 
   return (
-    <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
-      <View style={styles.overlay} id="modalAdmin">
-        <View style={styles.container}>
-          {/* Header */}
-          <View style={styles.header}>
-            <View>
-              <View style={styles.badgeRow}>
-                <View style={styles.badgeAdmin}>
-                  <Text style={styles.badgeAdminText}>FASE L5.0 • ADMINISTRAÇÃO GLOBAL</Text>
-                </View>
-                <Text style={styles.headerSubBadge}>Acesso Restrito: Perfil {userRole}</Text>
-              </View>
-              <Text style={styles.headerTitle}>Central de Administração do Mall</Text>
-              <Text style={styles.headerSub}>
-                Governança de usuários, perfis RBAC, auditoria, integridade de dados e infraestrutura
-              </Text>
-            </View>
-            <TouchableOpacity style={styles.closeBtn} onPress={onClose}>
-              <Text style={styles.closeBtnText}>✕</Text>
-            </TouchableOpacity>
+    <View style={styles.modalOverlay}>
+      <TouchableWithoutFeedback onPress={onClose}>
+        <View style={styles.backdrop} />
+      </TouchableWithoutFeedback>
+
+      <View
+        style={[
+          styles.modalContainer,
+          {
+            width: Math.min(windowWidth * 0.96, 1140),
+            height: Math.min(windowHeight * 0.94, 900),
+          },
+        ]}
+      >
+        {/* CABEÇALHO */}
+        <View style={styles.header}>
+          <View>
+            <Text style={styles.headerCode}>S14</Text>
+            <Text style={styles.headerTitle}>Administração e Governança</Text>
+          </View>
+          <TouchableOpacity
+            style={styles.closeBtn}
+            onPress={onClose}
+            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+          >
+            <Text style={styles.closeBtnText}>✕</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* FEEDBACK TOAST */}
+        {feedbackMsg && (
+          <View style={styles.toastBar}>
+            <Text style={styles.toastText}>✓ {feedbackMsg}</Text>
+          </View>
+        )}
+
+        <ScrollView
+          style={styles.scrollBody}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={true}
+        >
+          {/* CARD DO USUÁRIO LOGADO */}
+          <View style={styles.userProfileCard}>
+            <Text style={styles.userProfileName}>davidsilva.centrofashion</Text>
+            <Text style={styles.userProfileSub}>
+              davidsilva.centrofashion@gmail.com • Perfil ADMIN
+            </Text>
           </View>
 
-          {/* Feedback temporário */}
-          {feedbackMsg && (
-            <View style={styles.feedbackBar}>
-              <Text style={styles.feedbackText}>✓ {feedbackMsg}</Text>
+          {/* MENU DE ABAS EM PÍLULAS (2 LINHAS) */}
+          <View style={styles.pillTabsWrapper}>
+            {tabsConfig.map((tab) => {
+              const ativa = tabAtiva === tab.key;
+              return (
+                <TouchableOpacity
+                  key={tab.key}
+                  style={[styles.pillTab, ativa && styles.pillTabAtiva]}
+                  onPress={() => {
+                    if (tab.key === 'CARTOGRAFIA' && onAbrirCartografia) {
+                      onAbrirCartografia();
+                    } else {
+                      setTabAtiva(tab.key);
+                    }
+                  }}
+                  activeOpacity={0.8}
+                >
+                  <Text style={[styles.pillTabText, ativa && styles.pillTabTextAtiva]}>
+                    {tab.label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+
+          {/* ========================================================== */}
+          {/* ABA 1: USUÁRIOS */}
+          {/* ========================================================== */}
+          {tabAtiva === 'USUARIOS' && (
+            <View style={styles.tabContentSection}>
+              <View style={styles.tabActionHeaderRow}>
+                <View style={{ flex: 1 }} />
+                <TouchableOpacity
+                  style={styles.btnMagenta}
+                  onPress={() => mostrarToast('Abrindo formulário de novo usuário...')}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.btnMagentaText}>Novo usuário</Text>
+                </TouchableOpacity>
+              </View>
+
+              <View style={styles.cardsList}>
+                {usuariosPadrao.map((user) => (
+                  <View key={user.id} style={styles.userCard}>
+                    <View style={styles.userCardHeader}>
+                      <View style={{ flex: 1 }}>
+                        <Text style={styles.userCardName}>{user.nome}</Text>
+                        <Text style={styles.userCardEmail}>{user.email}</Text>
+                        <Text style={styles.userCardAcesso}>
+                          Último acesso: {user.ultimoAcesso}
+                        </Text>
+                        <View style={styles.userBadgesRow}>
+                          <View style={styles.badgeCinza}>
+                            <Text style={styles.badgeCinzaText}>{user.perfil}</Text>
+                          </View>
+                          <View style={styles.badgeCinza}>
+                            <Text style={styles.badgeCinzaText}>{user.status}</Text>
+                          </View>
+                        </View>
+                      </View>
+
+                      <TouchableOpacity
+                        style={styles.btnEditarOutline}
+                        onPress={() => mostrarToast(`Editando usuário: ${user.nome}`)}
+                        activeOpacity={0.7}
+                      >
+                        <Text style={styles.btnEditarOutlineText}>Editar</Text>
+                      </TouchableOpacity>
+                    </View>
+
+                    {/* BOTÃO INFERIOR LARGO DEFINIR PIN */}
+                    <TouchableOpacity
+                      style={styles.btnDefinirPin}
+                      onPress={() => mostrarToast(`Definir PIN para ${user.nome}`)}
+                      activeOpacity={0.7}
+                    >
+                      <Text style={styles.btnDefinirPinText}>Definir PIN</Text>
+                    </TouchableOpacity>
+                  </View>
+                ))}
+              </View>
             </View>
           )}
 
-          {/* Abas */}
-          <View style={styles.tabsBar}>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              {[
-                { key: 'USUARIOS', label: '👥 Usuários' },
-                { key: 'PERFIS', label: '🛡️ Perfis RBAC' },
-                { key: 'AUDITORIA', label: '📜 Trilha de Auditoria' },
-                { key: 'BACKUP', label: '💾 Backup & Integridade' },
-                { key: 'SAUDE', label: '🩺 Saúde do Cluster' },
-                { key: 'PLANOS', label: '📅 Planos Preventivos' },
-                { key: 'COMUNICACAO', label: '📢 Comunicação' },
-                { key: 'INTEGRACOES', label: '📊 Planilhas Google (8 Bases)' },
-              ].map((tab) => {
-                const ativa = tabAtiva === tab.key;
-                return (
+          {/* ========================================================== */}
+          {/* ABA 2: PERFIS E PERMISSÕES */}
+          {/* ========================================================== */}
+          {tabAtiva === 'PERFIS' && (
+            <View style={styles.tabContentSection}>
+              <View style={styles.cardsList}>
+                {/* ADMIN */}
+                <View style={styles.perfilCard}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.perfilCardTitle}>ADMIN</Text>
+                    <Text style={styles.perfilCardSub}>Administrador geral</Text>
+                    <View style={styles.perfilTagsRow}>
+                      {[
+                        'Dashboard',
+                        'Relatórios',
+                        'Admin',
+                        'Cadastrar',
+                        'Inspecionar',
+                        'Central',
+                        'Pendências',
+                        'Mapa',
+                        'Editar',
+                      ].map((tag) => (
+                        <View key={tag} style={styles.perfilTagBadge}>
+                          <Text style={styles.perfilTagText}>{tag}</Text>
+                        </View>
+                      ))}
+                    </View>
+                  </View>
                   <TouchableOpacity
-                    key={tab.key}
-                    style={[styles.tabBtn, ativa && styles.tabBtnAtiva]}
-                    onPress={() => setTabAtiva(tab.key as TabAdmin)}
+                    style={styles.btnEditarOutline}
+                    onPress={() => mostrarToast('Editando perfil ADMIN')}
                   >
-                    <Text style={[styles.tabBtnText, ativa && styles.tabBtnTextAtiva]}>
-                      {tab.label}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </ScrollView>
-          </View>
-
-          <ScrollView style={styles.scrollArea} showsVerticalScrollIndicator={false}>
-            {/* ABA 1: USUÁRIOS */}
-            {tabAtiva === 'USUARIOS' && (
-              <View>
-                <View style={styles.sectionHeaderRow}>
-                  <Text style={styles.sectionTitle}>Operadores e Contas Cadastradas ({usuarios.length})</Text>
-                  <TouchableOpacity
-                    style={styles.btnAcaoPrimaria}
-                    onPress={() => setFormUsuarioAberto(!formUsuarioAberto)}
-                  >
-                    <Text style={styles.btnAcaoPrimariaText}>
-                      {formUsuarioAberto ? '✕ Cancelar' : '＋ Novo Usuário'}
-                    </Text>
+                    <Text style={styles.btnEditarOutlineText}>Editar</Text>
                   </TouchableOpacity>
                 </View>
 
-                {formUsuarioAberto && (
-                  <View style={styles.formCard}>
-                    <Text style={styles.formCardTitle}>Cadastrar Novo Operador</Text>
-                    <View style={styles.inputGroupRow}>
-                      <View style={{ flex: 1 }}>
-                        <Text style={styles.inputLabel}>Nome Completo</Text>
-                        <TextInput
-                          style={styles.textInput}
-                          placeholder="Ex: Amanda Silva"
-                          placeholderTextColor="#64748b"
-                          value={novoNome}
-                          onChangeText={setNovoNome}
-                        />
-                      </View>
-                      <View style={{ flex: 1 }}>
-                        <Text style={styles.inputLabel}>E-mail Corporativo</Text>
-                        <TextInput
-                          style={styles.textInput}
-                          placeholder="ex: amanda@centrofashiofortaleza.com.br"
-                          placeholderTextColor="#64748b"
-                          value={novoEmail}
-                          onChangeText={setNovoEmail}
-                        />
-                      </View>
-                    </View>
-
-                    <View style={styles.inputGroupRow}>
-                      <View style={{ flex: 1 }}>
-                        <Text style={styles.inputLabel}>Cargo / Função</Text>
-                        <TextInput
-                          style={styles.textInput}
-                          placeholder="Ex: Auditora Fiscal Júnior"
-                          placeholderTextColor="#64748b"
-                          value={novoCargo}
-                          onChangeText={setNovoCargo}
-                        />
-                      </View>
-                      <View style={{ flex: 1 }}>
-                        <Text style={styles.inputLabel}>Perfil RBAC</Text>
-                        <View style={styles.perfilPickerRow}>
-                          {(['ADMIN', 'GESTAO', 'FINANCEIRO', 'MARKETING', 'CAMPO', 'CONSULTA'] as PapelUsuario[]).map((p) => (
-                            <TouchableOpacity
-                              key={p}
-                              style={[styles.pPill, novoPerfil === p && styles.pPillAtivo]}
-                              onPress={() => setNovoPerfil(p)}
-                            >
-                              <Text style={[styles.pPillText, novoPerfil === p && styles.pPillTextAtivo]}>{p}</Text>
-                            </TouchableOpacity>
-                          ))}
+                {/* GESTOR */}
+                <View style={styles.perfilCard}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.perfilCardTitle}>GESTOR</Text>
+                    <Text style={styles.perfilCardSub}>Gestor operacional</Text>
+                    <View style={styles.perfilTagsRow}>
+                      {[
+                        'Dashboard',
+                        'Relatórios',
+                        'Cadastrar',
+                        'Inspecionar',
+                        'Central',
+                        'Pendências',
+                        'Mapa',
+                        'Editar',
+                      ].map((tag) => (
+                        <View key={tag} style={styles.perfilTagBadge}>
+                          <Text style={styles.perfilTagText}>{tag}</Text>
                         </View>
-                      </View>
+                      ))}
                     </View>
-
-                    <TouchableOpacity style={styles.btnSalvarForm} onPress={handleSalvarUsuario}>
-                      <Text style={styles.btnSalvarFormText}>Confirmar e Salvar Usuário</Text>
-                    </TouchableOpacity>
                   </View>
-                )}
+                  <TouchableOpacity
+                    style={styles.btnEditarOutline}
+                    onPress={() => mostrarToast('Editando perfil GESTOR')}
+                  >
+                    <Text style={styles.btnEditarOutlineText}>Editar</Text>
+                  </TouchableOpacity>
+                </View>
 
-                <View style={styles.gridCartoes}>
-                  {usuarios.map((u) => (
-                    <View key={u.id} style={styles.cardUsuario}>
-                      <View style={styles.cardUsuarioTop}>
-                        <View>
-                          <Text style={styles.usuarioNome}>{u.nome}</Text>
-                          <Text style={styles.usuarioEmail}>{u.email}</Text>
-                          <Text style={styles.usuarioCargo}>{u.cargo}</Text>
+                {/* OPERACIONAL */}
+                <View style={styles.perfilCard}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.perfilCardTitle}>OPERACIONAL</Text>
+                    <Text style={styles.perfilCardSub}>Operação de campo</Text>
+                    <View style={styles.perfilTagsRow}>
+                      {['Cadastrar', 'Inspecionar', 'Pendências', 'Mapa'].map((tag) => (
+                        <View key={tag} style={styles.perfilTagBadge}>
+                          <Text style={styles.perfilTagText}>{tag}</Text>
                         </View>
-                        <View style={[styles.badgePerfil, { borderColor: u.perfil === 'ADMIN' ? '#ef4444' : '#38bdf8' }]}>
-                          <Text style={[styles.badgePerfilText, { color: u.perfil === 'ADMIN' ? '#ef4444' : '#38bdf8' }]}>
-                            {u.perfil}
+                      ))}
+                    </View>
+                  </View>
+                  <TouchableOpacity
+                    style={styles.btnEditarOutline}
+                    onPress={() => mostrarToast('Editando perfil OPERACIONAL')}
+                  >
+                    <Text style={styles.btnEditarOutlineText}>Editar</Text>
+                  </TouchableOpacity>
+                </View>
+
+                {/* CONSULTA */}
+                <View style={styles.perfilCard}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.perfilCardTitle}>CONSULTA</Text>
+                    <Text style={styles.perfilCardSub}>Somente consulta</Text>
+                    <View style={styles.perfilTagsRow}>
+                      {['Mapa'].map((tag) => (
+                        <View key={tag} style={styles.perfilTagBadge}>
+                          <Text style={styles.perfilTagText}>{tag}</Text>
+                        </View>
+                      ))}
+                    </View>
+                  </View>
+                  <TouchableOpacity
+                    style={styles.btnEditarOutline}
+                    onPress={() => mostrarToast('Editando perfil CONSULTA')}
+                  >
+                    <Text style={styles.btnEditarOutlineText}>Editar</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+          )}
+
+          {/* ========================================================== */}
+          {/* ABA 4: ACESSOS E DISPOSITIVOS */}
+          {/* ========================================================== */}
+          {tabAtiva === 'ACESSOS' && (
+            <View style={styles.tabContentSection}>
+              {/* CARD SUPERIOR DE ACESSOS E DISPOSITIVOS */}
+              <View style={styles.acessosHeaderCard}>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.acessosHeaderTitle}>
+                    Acessos e dispositivos confiáveis
+                  </Text>
+                  <Text style={styles.acessosHeaderSub}>
+                    Gerencie sessões do Mall sem expor PINs ou tokens.
+                  </Text>
+                </View>
+                <TouchableOpacity
+                  style={styles.btnOutline}
+                  onPress={() => mostrarToast('Sessões atualizadas')}
+                >
+                  <Text style={styles.btnOutlineText}>Atualizar</Text>
+                </TouchableOpacity>
+              </View>
+
+              {/* 4 CARDS DE MÉTRICAS */}
+              <View style={styles.metricsGrid4}>
+                <View style={styles.metricItemBox}>
+                  <Text style={styles.metricItemNum}>2</Text>
+                  <Text style={styles.metricItemLbl}>Dispositivos confiáveis ativos</Text>
+                </View>
+                <View style={styles.metricItemBox}>
+                  <Text style={styles.metricItemNum}>2</Text>
+                  <Text style={styles.metricItemLbl}>Sessões ativas</Text>
+                </View>
+                <View style={styles.metricItemBox}>
+                  <Text style={styles.metricItemNum}>0</Text>
+                  <Text style={styles.metricItemLbl}>Expiram em 24h</Text>
+                </View>
+                <View style={styles.metricItemBox}>
+                  <Text style={styles.metricItemNum}>4</Text>
+                  <Text style={styles.metricItemLbl}>Usuários com histórico</Text>
+                </View>
+              </View>
+
+              {/* FILTROS */}
+              <View style={styles.filtrosAcessosRow}>
+                <TextInput
+                  style={[styles.filterInput, { flex: 1.6 }]}
+                  placeholder="Buscar usuário, e-mail ou dispositivo..."
+                  placeholderTextColor="#94a3b8"
+                  value={buscaDispositivo}
+                  onChangeText={setBuscaDispositivo}
+                />
+                {Platform.OS === 'web' ? (
+                  <>
+                    <select
+                      value={filtroStatusDisp}
+                      onChange={(e) => setFiltroStatusDisp(e.target.value)}
+                      style={styles.webSelect}
+                    >
+                      <option value="TODOS">Todos os status</option>
+                      <option value="ATIVA">Ativos</option>
+                      <option value="EXPIRADA">Expirados</option>
+                      <option value="REVOGADA">Revogados</option>
+                    </select>
+
+                    <select
+                      value={filtroTipoDisp}
+                      onChange={(e) => setFiltroTipoDisp(e.target.value)}
+                      style={styles.webSelect}
+                    >
+                      <option value="TODOS">Todos os tipos</option>
+                      <option value="CONFIÁVEL">Confiáveis</option>
+                      <option value="TEMPORÁRIA">Temporários</option>
+                    </select>
+                  </>
+                ) : null}
+              </View>
+
+              {/* BLOCO USUÁRIO DAVID */}
+              <View style={styles.userSessoesBox}>
+                <View style={styles.userSessoesHeader}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.userSessoesNome}>David</Text>
+                    <Text style={styles.userSessoesEmail}>
+                      davidnascimentodasilva@gmail.com • Perfil ADMIN
+                    </Text>
+                    <View style={styles.userSessoesBadges}>
+                      <View style={styles.badgePillBlue}>
+                        <Text style={styles.badgePillBlueText}>USUÁRIO ATIVO</Text>
+                      </View>
+                      <View style={styles.badgePillGray}>
+                        <Text style={styles.badgePillGrayText}>1 confiável(is) ativo(s)</Text>
+                      </View>
+                      <View style={styles.badgePillGray}>
+                        <Text style={styles.badgePillGrayText}>1 sessão(ões) ativa(s)</Text>
+                      </View>
+                    </View>
+                  </View>
+
+                  <TouchableOpacity
+                    style={styles.btnRevogarTodos}
+                    onPress={handleRevogarTodos}
+                  >
+                    <Text style={styles.btnRevogarTodosText}>Revogar todos</Text>
+                  </TouchableOpacity>
+                </View>
+
+                {/* LISTA DE DISPOSITIVOS */}
+                <View style={{ gap: 10, marginTop: 14 }}>
+                  {dispositivos.map((disp) => {
+                    const isAtiva = disp.status === 'ATIVA';
+
+                    return (
+                      <View key={disp.id} style={styles.dispCard}>
+                        <View style={styles.dispCardContent}>
+                          <View style={styles.dispCardHeader}>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                              <View
+                                style={[
+                                  styles.dispDiamond,
+                                  isAtiva ? styles.dispDiamondActive : styles.dispDiamondInactive,
+                                ]}
+                              />
+                              <Text style={styles.dispCardNome}>{disp.nome}</Text>
+                              {isAtiva ? (
+                                <View style={styles.badgeStatusGreen}>
+                                  <Text style={styles.badgeStatusGreenText}>ATIVA</Text>
+                                </View>
+                              ) : (
+                                <View style={styles.badgeStatusOrange}>
+                                  <Text style={styles.badgeStatusOrangeText}>EXPIRADA</Text>
+                                </View>
+                              )}
+                            </View>
+
+                            {isAtiva && (
+                              <TouchableOpacity
+                                style={styles.btnRevogarDisp}
+                                onPress={() => handleRevogarDispositivo(disp.id)}
+                              >
+                                <Text style={styles.btnRevogarDispText}>
+                                  Revogar dispositivo
+                                </Text>
+                              </TouchableOpacity>
+                            )}
+                          </View>
+
+                          <Text style={styles.dispCardMeta}>
+                            DISPOSITIVO {disp.tipo} • Ref. {disp.ref}
+                          </Text>
+                          <Text style={styles.dispCardMetaSub}>
+                            Último uso: {disp.ultimoUso} • Expira: {disp.expira}
+                          </Text>
+                          <Text style={styles.dispCardMetaSub}>
+                            Criada: {disp.criada} • {disp.versao}
                           </Text>
                         </View>
                       </View>
-                      <View style={styles.usuarioFooter}>
-                        <Text style={styles.usuarioUltimoAcesso}>Último acesso: {u.ultimoAcesso}</Text>
-                        <View style={[styles.statusDot, { backgroundColor: u.ativo ? '#10b981' : '#64748b' }]} />
-                      </View>
-                    </View>
-                  ))}
+                    );
+                  })}
                 </View>
               </View>
-            )}
+            </View>
+          )}
 
-            {/* ABA 2: PERFIS RBAC */}
-            {tabAtiva === 'PERFIS' && (
-              <View>
-                <Text style={styles.sectionTitle}>Matriz de Papéis e Permissões por Domínio</Text>
-                <Text style={styles.sectionSubtitle}>
-                  Controle estrito de acesso e isolamento de privilégios de dados confidenciais
-                </Text>
+          {/* ========================================================== */}
+          {/* ABA 9: COMUNICAÇÃO */}
+          {/* ========================================================== */}
+          {tabAtiva === 'COMUNICACAO' && (
+            <View style={styles.tabContentSection}>
+              {/* BOTÕES DE TOPO */}
+              <View style={styles.comunicacaoTopActions}>
+                <TouchableOpacity
+                  style={styles.btnMagenta}
+                  onPress={() => mostrarToast('Abrindo formulário de nova regra')}
+                >
+                  <Text style={styles.btnMagentaText}>Nova regra</Text>
+                </TouchableOpacity>
 
-                <View style={styles.matrizContainer}>
-                  {permissoes.map((p) => (
-                    <View key={p.modulo} style={styles.matrizItem}>
-                      <View style={styles.matrizItemHeader}>
-                        <Text style={styles.moduloNome}>{p.modulo}</Text>
-                        <View style={styles.operacoesRow}>
-                          {p.operacoes.map((op) => (
-                            <View key={op} style={styles.opTag}>
-                              <Text style={styles.opTagText}>{op}</Text>
-                            </View>
-                          ))}
-                        </View>
-                      </View>
-                      <Text style={styles.moduloDesc}>{p.descricao}</Text>
-                      <View style={styles.papeisPermitidosRow}>
-                        <Text style={styles.papeisRotulo}>Acesso Autorizado:</Text>
-                        {p.papeisPermitidos.map((papel) => (
-                          <View key={papel} style={styles.papelChip}>
-                            <Text style={styles.papelChipText}>{papel}</Text>
-                          </View>
-                        ))}
-                      </View>
-                    </View>
-                  ))}
-                </View>
+                <TouchableOpacity
+                  style={styles.btnOutline}
+                  onPress={() => mostrarToast('Processando regras de comunicação...')}
+                >
+                  <Text style={styles.btnOutlineText}>Processar agora</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.btnOutline}
+                  onPress={() => mostrarToast('Regras atualizadas')}
+                >
+                  <Text style={styles.btnOutlineText}>Atualizar</Text>
+                </TouchableOpacity>
               </View>
-            )}
 
-            {/* ABA 3: TRILHA DE AUDITORIA */}
-            {tabAtiva === 'AUDITORIA' && (
-              <View>
-                <Text style={styles.sectionTitle}>Extrato Cronológico Imutável de Auditoria</Text>
-                <Text style={styles.sectionSubtitle}>
-                  Trilha append-only sincronizada com o PostgreSQL para conformidade corporativa
-                </Text>
-
-                <View style={styles.tabelaContainer}>
-                  {logs.map((l) => (
-                    <View key={l.id} style={styles.logRow}>
-                      <View style={styles.logTimeCol}>
-                        <Text style={styles.logTime}>{l.timestamp}</Text>
-                        <Text style={styles.logIp}>IP: {l.ipOrigem}</Text>
-                      </View>
-                      <View style={styles.logActionCol}>
-                        <View style={styles.logActionBadge}>
-                          <Text style={styles.logActionText}>{l.acao}</Text>
-                        </View>
-                        <Text style={styles.logEntidade}>Entidade: {l.entidade} ({l.idRegistro || 'N/A'})</Text>
-                        <Text style={styles.logDetalhes}>{l.detalhes}</Text>
-                        <Text style={styles.logOperador}>Operador: {l.operadorNome} ({l.operadorEmail})</Text>
-                      </View>
-                    </View>
-                  ))}
-                </View>
-              </View>
-            )}
-
-            {/* ABA 4: BACKUP & INTEGRIDADE */}
-            {tabAtiva === 'BACKUP' && (
-              <View>
-                <View style={styles.sectionHeaderRow}>
-                  <View>
-                    <Text style={styles.sectionTitle}>Pontos de Recuperação & Snapshots de Segurança</Text>
-                    <Text style={styles.sectionSubtitle}>
-                      Snapshots transacionais do banco de dados e objetos com verificação de integridade
-                    </Text>
-                  </View>
-                  <TouchableOpacity style={styles.btnAcaoPrimaria} onPress={handleBackupAgora}>
-                    <Text style={styles.btnAcaoPrimariaText}>💾 Executar Snapshot Agora</Text>
-                  </TouchableOpacity>
+              {/* CARD AUTOMAÇÃO HORÁRIA */}
+              <View style={styles.automacaoCard}>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.automacaoTitle}>Automação horária</Text>
+                  <Text style={styles.automacaoSub}>
+                    {automacaoAtiva ? 'ATIVA' : 'DESATIVADA'} • execução horária • 1 gatilho(s)
+                  </Text>
                 </View>
 
-                <View style={styles.backupsList}>
-                  {backups.map((b) => (
-                    <View key={b.id} style={styles.cardBackup}>
-                      <View style={styles.cardBackupLeft}>
-                        <Text style={styles.backupId}>{b.id}</Text>
-                        <Text style={styles.backupData}>{b.dataHora} • Tipo: {b.tipo}</Text>
-                        <Text style={styles.backupHash}>Integridade: {b.hashIntegridade}</Text>
-                      </View>
-                      <View style={styles.cardBackupRight}>
-                        <Text style={styles.backupTamanho}>{b.tamanhoMb} MB</Text>
-                        <Text style={styles.backupRegistros}>{b.totalRegistros.toLocaleString('pt-BR')} registros</Text>
-                        <View style={styles.badgeDisponivel}>
-                          <Text style={styles.badgeDisponivelText}>{b.status}</Text>
-                        </View>
-                      </View>
-                    </View>
-                  ))}
-                </View>
-              </View>
-            )}
-
-            {/* ABA 5: SAÚDE DO CLUSTER */}
-            {tabAtiva === 'SAUDE' && saude && (
-              <View>
-                <Text style={styles.sectionTitle}>Diagnóstico & Telemetria do Cluster K3s</Text>
-                <Text style={styles.sectionSubtitle}>
-                  Monitoramento em tempo real dos serviços, banco de dados e armazenamento MinIO
-                </Text>
-
-                <View style={styles.saudeGrid}>
-                  <View style={[styles.cardSaude, { borderColor: '#10b981' }]}>
-                    <Text style={styles.cardSaudeRotulo}>Status Geral da Infraestrutura</Text>
-                    <Text style={[styles.cardSaudeValor, { color: '#10b981' }]}>{saude.statusGeral}</Text>
-                    <Text style={styles.cardSaudeSub}>Uptime Contínuo: {saude.uptimeDias} dias</Text>
-                    <Text style={styles.cardSaudeSub}>{saude.versaoApp}</Text>
-                  </View>
-
-                  <View style={[styles.cardSaude, { borderColor: '#38bdf8' }]}>
-                    <Text style={styles.cardSaudeRotulo}>Cluster K3s (Hostinger VPS)</Text>
-                    <Text style={[styles.cardSaudeValor, { color: '#38bdf8' }]}>
-                      {saude.clusterK3s.podsRunning} / {saude.clusterK3s.podsTotal} Pods
-                    </Text>
-                    <Text style={styles.cardSaudeSub}>CPU: {saude.clusterK3s.consumoCpuPercentual}% em uso</Text>
-                    <Text style={styles.cardSaudeSub}>RAM: {saude.clusterK3s.consumoMemoriaPercentual}% em uso</Text>
-                  </View>
-
-                  <View style={[styles.cardSaude, { borderColor: '#f59e0b' }]}>
-                    <Text style={styles.cardSaudeRotulo}>PostgreSQL & PostGIS</Text>
-                    <Text style={[styles.cardSaudeValor, { color: '#f59e0b' }]}>{saude.bancoPostgres.status}</Text>
-                    <Text style={styles.cardSaudeSub}>Conexões: {saude.bancoPostgres.conexoesAtivas} ativas</Text>
-                    <Text style={styles.cardSaudeSub}>Latência: {saude.bancoPostgres.latenciaMs} ms</Text>
-                  </View>
-
-                  <View style={[styles.cardSaude, { borderColor: '#a855f7' }]}>
-                    <Text style={styles.cardSaudeRotulo}>MinIO S3 Object Storage</Text>
-                    <Text style={[styles.cardSaudeValor, { color: '#a855f7' }]}>{saude.storageMinIO.totalObjetos} fotos</Text>
-                    <Text style={styles.cardSaudeSub}>Espaço: {saude.storageMinIO.espacoOcupadoGb} GB</Text>
-                    <Text style={styles.cardSaudeSub}>Bucket: {saude.storageMinIO.bucketHealth}</Text>
-                  </View>
-                </View>
-              </View>
-            )}
-
-            {/* ABA 6: PLANOS PREVENTIVOS */}
-            {tabAtiva === 'PLANOS' && (
-              <View>
-                <Text style={styles.sectionTitle}>Cronograma de Vistorias & Manutenção Preventiva</Text>
-                <Text style={styles.sectionSubtitle}>
-                  Rotinas sistemáticas de preservação de placas, totens digitais e vitrines do mall
-                </Text>
-
-                <View style={styles.planosList}>
-                  {planos.map((pl) => (
-                    <View key={pl.id} style={styles.cardPlano}>
-                      <View style={styles.cardPlanoTop}>
-                        <View>
-                          <Text style={styles.planoTitulo}>{pl.titulo}</Text>
-                          <Text style={styles.planoSetor}>{pl.setorAlvo} • Periodicidade: {pl.periodicidade}</Text>
-                          <Text style={styles.planoResp}>Responsável: {pl.responsavelEquipe}</Text>
-                        </View>
-                        <View style={styles.planoBadge}>
-                          <Text style={styles.planoBadgeText}>{pl.status}</Text>
-                        </View>
-                      </View>
-                      <View style={styles.planoProgressoBar}>
-                        <View
-                          style={[
-                            styles.planoProgressoFill,
-                            { width: `${(pl.concluidosCiclo / pl.totalPontosAlvo) * 100}%` },
-                          ]}
-                        />
-                      </View>
-                      <View style={styles.planoFooter}>
-                        <Text style={styles.planoProgressoText}>
-                          {pl.concluidosCiclo} de {pl.totalPontosAlvo} pontos concluídos neste ciclo ({Math.round((pl.concluidosCiclo / pl.totalPontosAlvo) * 100)}%)
-                        </Text>
-                        <Text style={styles.planoProx}>Próxima: {pl.proximaExecucao}</Text>
-                      </View>
-                    </View>
-                  ))}
-                </View>
-              </View>
-            )}
-
-            {/* ABA 7: COMUNICAÇÃO OPERACIONAL */}
-            {tabAtiva === 'COMUNICACAO' && (
-              <View>
-                <View style={styles.sectionHeaderRow}>
-                  <View>
-                    <Text style={styles.sectionTitle}>Mural de Avisos & Transmissão Operacional</Text>
-                    <Text style={styles.sectionSubtitle}>
-                      Envio de alertas e diretrizes estratégicas para as equipes em campo e fiscais
-                    </Text>
-                  </View>
+                <View style={styles.automacaoBtnsGroup}>
                   <TouchableOpacity
-                    style={styles.btnAcaoPrimaria}
-                    onPress={() => setFormAvisoAberto(!formAvisoAberto)}
+                    style={[styles.btnOutlineSmall, { opacity: automacaoAtiva ? 0.5 : 1 }]}
+                    disabled={automacaoAtiva}
+                    onPress={() => {
+                      setAutomacaoAtiva(true);
+                      mostrarToast('Automação ativada');
+                    }}
                   >
-                    <Text style={styles.btnAcaoPrimariaText}>
-                      {formAvisoAberto ? '✕ Cancelar' : '📢 Novo Comunicado'}
-                    </Text>
+                    <Text style={styles.btnOutlineSmallText}>Ativar automação</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={styles.btnOutlineSmall}
+                    onPress={() => {
+                      setAutomacaoAtiva(false);
+                      mostrarToast('Automação desativada');
+                    }}
+                  >
+                    <Text style={styles.btnOutlineSmallText}>Desativar</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={styles.btnOutlineSmall}
+                    onPress={() => mostrarToast('Executando teste agora...')}
+                  >
+                    <Text style={styles.btnOutlineSmallText}>Executar teste agora</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={styles.btnOutlineSmall}
+                    onPress={() => mostrarToast('Testando escalonamento...')}
+                  >
+                    <Text style={styles.btnOutlineSmallText}>Testar escalonamento</Text>
                   </TouchableOpacity>
                 </View>
+              </View>
 
-                {formAvisoAberto && (
-                  <View style={styles.formCard}>
-                    <Text style={styles.formCardTitle}>Transmitir Novo Comunicado</Text>
-                    <Text style={styles.inputLabel}>Título do Comunicado</Text>
-                    <TextInput
-                      style={styles.textInput}
-                      placeholder="Ex: Atenção redobrada no Setor Verde..."
-                      placeholderTextColor="#64748b"
-                      value={novoTituloAviso}
-                      onChangeText={setNovoTituloAviso}
-                    />
+              {/* AVISO AMARELO */}
+              <View style={styles.avisoAmareloBox}>
+                <Text style={styles.avisoAmareloText}>
+                  As regras são criadas desativadas. Nenhum e-mail é enviado automaticamente até você ativar uma regra.
+                </Text>
+              </View>
 
-                    <Text style={[styles.inputLabel, { marginTop: 10 }]}>Mensagem para as Equipes</Text>
-                    <TextInput
-                      style={[styles.textInput, { height: 80, textAlignVertical: 'top' }]}
-                      placeholder="Descreva as instruções com clareza..."
-                      placeholderTextColor="#64748b"
-                      multiline
-                      value={novaMsgAviso}
-                      onChangeText={setNovaMsgAviso}
-                    />
+              {/* SEÇÃO REGRAS */}
+              <View style={{ gap: 10, marginTop: 4 }}>
+                <Text style={styles.sectionSubtitleBold}>Regras</Text>
 
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 10 }}>
-                      <Text style={styles.inputLabel}>Prioridade:</Text>
-                      {(['NORMAL', 'ALTA', 'URGENTE'] as const).map((pr) => (
-                        <TouchableOpacity
-                          key={pr}
-                          style={[styles.pPill, prioridadeAviso === pr && styles.pPillAtivo]}
-                          onPress={() => setPrioridadeAviso(pr)}
-                        >
-                          <Text style={[styles.pPillText, prioridadeAviso === pr && styles.pPillTextAtivo]}>{pr}</Text>
-                        </TouchableOpacity>
-                      ))}
+                {regrasComunicacao.map((regra) => (
+                  <View key={regra.id} style={styles.regraCard}>
+                    <View style={{ flex: 1, gap: 3 }}>
+                      <Text style={styles.regraTitle}>{regra.titulo}</Text>
+                      <Text style={styles.regraMeta}>
+                        {regra.status} • nível mínimo {regra.nivelMinimo} • cooldown {regra.cooldown}
+                      </Text>
+                      <Text style={styles.regraMeta}>Destino: {regra.destinatarios}</Text>
+                      <Text style={styles.regraMeta}>
+                        Escalonamento após {regra.nivelMinimo === 'ALTO' ? '6 h → ' : '2 h — '}
+                        {regra.escalonamento}
+                      </Text>
                     </View>
 
-                    <TouchableOpacity style={styles.btnSalvarForm} onPress={handleEnviarAviso}>
-                      <Text style={styles.btnSalvarFormText}>Publicar e Notificar Equipes</Text>
+                    <TouchableOpacity
+                      style={styles.btnEditarOutline}
+                      onPress={() => mostrarToast(`Editando regra: ${regra.titulo}`)}
+                    >
+                      <Text style={styles.btnEditarOutlineText}>Editar</Text>
                     </TouchableOpacity>
                   </View>
-                )}
-
-                <View style={styles.avisosList}>
-                  {avisos.map((av) => (
-                    <View key={av.id} style={styles.cardAviso}>
-                      <View style={styles.cardAvisoTop}>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                          <Text style={styles.avisoTitulo}>{av.titulo}</Text>
-                          <View
-                            style={[
-                              styles.badgePrioridade,
-                              {
-                                borderColor:
-                                  av.prioridade === 'URGENTE'
-                                    ? '#ef4444'
-                                    : av.prioridade === 'ALTA'
-                                    ? '#f59e0b'
-                                    : '#38bdf8',
-                              },
-                            ]}
-                          >
-                            <Text
-                              style={[
-                                styles.badgePrioridadeText,
-                                {
-                                  color:
-                                    av.prioridade === 'URGENTE'
-                                      ? '#ef4444'
-                                      : av.prioridade === 'ALTA'
-                                      ? '#f59e0b'
-                                      : '#38bdf8',
-                                },
-                              ]}
-                            >
-                              {av.prioridade}
-                            </Text>
-                          </View>
-                        </View>
-                        <Text style={styles.avisoData}>{av.dataEnvio}</Text>
-                      </View>
-                      <Text style={styles.avisoMsg}>{av.mensagem}</Text>
-                      <View style={styles.avisoFooter}>
-                        <Text style={styles.avisoAutor}>Por: {av.autor} • Destinatários: {av.destinatarios}</Text>
-                        <Text style={styles.avisoConfirmados}>✓ {av.lidoConfirmadoCount} confirmaram leitura</Text>
-                      </View>
-                    </View>
-                  ))}
-                </View>
+                ))}
               </View>
-            )}
 
-            {/* ABA 8: INTEGRAÇÃO GOOGLE SHEETS */}
-            {tabAtiva === 'INTEGRACOES' && (
-              <View>
-                <View style={styles.sectionHeaderRow}>
-                  <View>
-                    <Text style={styles.sectionTitle}>Integração Oficial • Google Sheets (8 Bases)</Text>
-                    <Text style={styles.sectionSubtitle}>
-                      Sincronização bidirecional com as planilhas oficiais de Gestão de Lojistas do Centro Fashion
+              {/* HISTÓRICO DE ENVIOS */}
+              <View style={{ gap: 10, marginTop: 14 }}>
+                <Text style={styles.sectionSubtitleBold}>Histórico de envios</Text>
+
+                <View style={styles.envioCard}>
+                  <View style={{ flex: 1, gap: 2 }}>
+                    <Text style={styles.envioTitle}>
+                      ESCALONAMENTO • [Mall • ALERTA] SIG-20260814-0007 — Triedo
+                    </Text>
+                    <Text style={styles.envioSub}>
+                      20/08/2026 07:56 • davidsilva.centrofashion@gmail.com
                     </Text>
                   </View>
-                  <TouchableOpacity
-                    style={[styles.btnAcaoPrimaria, syncEmAndamento && { opacity: 0.6 }]}
-                    onPress={handleSincronizarPlanilhas}
-                    disabled={syncEmAndamento}
-                  >
-                    <Text style={styles.btnAcaoPrimariaText}>
-                      {syncEmAndamento ? '⏳ Sincronizando...' : '🔄 Sincronizar Bases'}
+                  <Text style={styles.envioSucessoText}>SUCESSO</Text>
+                </View>
+
+                <View style={styles.envioCard}>
+                  <View style={{ flex: 1, gap: 2 }}>
+                    <Text style={styles.envioTitle}>
+                      ESCALONAMENTO • [Mall • ALERTA] SIG-20260814-0002 — Placa direcional
                     </Text>
-                  </TouchableOpacity>
-                </View>
-
-                {/* Card de Status da Service Account */}
-                <View style={[styles.cardSaude, { borderColor: '#10b981', marginBottom: 16, width: '100%' }]}>
-                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <View style={{ flex: 1, marginRight: 12 }}>
-                      <Text style={styles.cardSaudeRotulo}>Conta de Serviço Google Cloud (IAM)</Text>
-                      <Text style={[styles.cardSaudeValor, { color: '#38bdf8', fontSize: 13, marginVertical: 4 }]}>
-                        cf-mall@gen-lang-client-0372685381.iam.gserviceaccount.com
-                      </Text>
-                      <Text style={styles.cardSaudeSub}>
-                        Status: Autenticado & Ativo • Escopo: spreadsheets.readonly & drive.readonly
-                      </Text>
-                    </View>
-                    <View style={styles.badgeDisponivel}>
-                      <Text style={styles.badgeDisponivelText}>ONLINE</Text>
-                    </View>
+                    <Text style={styles.envioSub}>
+                      20/08/2026 07:50 • davidsilva.centrofashion@gmail.com
+                    </Text>
                   </View>
-                </View>
-
-                {/* KPIs Consolidados */}
-                <View style={[styles.saudeGrid, { marginBottom: 16 }]}>
-                  <View style={[styles.cardSaude, { borderColor: '#38bdf8' }]}>
-                    <Text style={styles.cardSaudeRotulo}>Lojas & Boxes Sincronizados</Text>
-                    <Text style={[styles.cardSaudeValor, { color: '#38bdf8' }]}>4.954</Text>
-                    <Text style={styles.cardSaudeSub}>100% Setores & Cartografia</Text>
-                  </View>
-                  <View style={[styles.cardSaude, { borderColor: '#10b981' }]}>
-                    <Text style={styles.cardSaudeRotulo}>Permissionários Cadastrados</Text>
-                    <Text style={[styles.cardSaudeValor, { color: '#10b981' }]}>3.425</Text>
-                    <Text style={styles.cardSaudeSub}>CPFs/CNPJs & Ficha 360</Text>
-                  </View>
-                  <View style={[styles.cardSaude, { borderColor: '#f59e0b' }]}>
-                    <Text style={styles.cardSaudeRotulo}>Produtos & Itens de Catálogo</Text>
-                    <Text style={[styles.cardSaudeValor, { color: '#f59e0b' }]}>14.448</Text>
-                    <Text style={styles.cardSaudeSub}>Fotos e Mídias Indexadas</Text>
-                  </View>
-                  <View style={[styles.cardSaude, { borderColor: '#a855f7' }]}>
-                    <Text style={styles.cardSaudeRotulo}>Bases Conectadas</Text>
-                    <Text style={[styles.cardSaudeValor, { color: '#a855f7' }]}>8 de 8</Text>
-                    <Text style={styles.cardSaudeSub}>Google Drive API v4</Text>
-                  </View>
-                </View>
-
-                {/* Lista das 8 Planilhas */}
-                <Text style={[styles.sectionTitle, { fontSize: 14, marginBottom: 10 }]}>
-                  Planilhas Integradas (Gestão de Lojistas)
-                </Text>
-
-                <View style={styles.backupsList}>
-                  {[
-                    {
-                      id: '00_CORE_CONTROLE',
-                      nome: '00_CORE_CONTROLE - Gestão de Lojistas',
-                      gid: '1745918143',
-                      sheetId: '1lGPTk1dFNmbb1xinCVxznYdB3e4qRIrlTs18bDh32Rs',
-                      descricao: 'Matriz principal de governança, permissões e status operacional dos boxes',
-                      status: 'SINCRONIZADO',
-                    },
-                    {
-                      id: '01_CARTOGRAFIA_ESPACOS',
-                      nome: '01_CARTOGRAFIA_ESPACOS - Gestão de Lojistas',
-                      gid: '1801',
-                      sheetId: '1alyS3yEI0V1df8s5De1ODhoK1WVOzMFhwxdur04PAm0',
-                      descricao: 'Dimensões dos espaços, polígonos, coordenadas x,y de mapa e corredores',
-                      status: 'SINCRONIZADO',
-                    },
-                    {
-                      id: '02_CADASTRO_360',
-                      nome: '02_CADASTRO_360 - Gestão de Lojistas',
-                      gid: '1305618292',
-                      sheetId: '1pzCRZ2799jKCGWFJETjLz2TjVs2JkIs1iYQV468HZNA',
-                      descricao: 'Ficha Cadastral 360, dados societários dos permissionários, telefones e e-mails',
-                      status: 'SINCRONIZADO',
-                    },
-                    {
-                      id: '03_MIDIA_CATALOGO',
-                      nome: '03_MIDIA_CATALOGO - Gestão de Lojistas',
-                      gid: '464475854',
-                      sheetId: '16sSERnYgCG8iot9iBpAHgO0ZheDyiDT6MtGA9K__8_I',
-                      descricao: 'Catálogo de 14.448 produtos, vitrines, fotos de fachadas e redes sociais',
-                      status: 'SINCRONIZADO',
-                    },
-                    {
-                      id: '04_CAMPANHAS_MARKETING',
-                      nome: '04_CAMPANHAS_MARKETING - Gestão de Lojistas',
-                      gid: '1752924164',
-                      sheetId: '1_mqZpQBMOBOshFykemxCSuKbhj7I0JOkTy_HxV8gT4g',
-                      descricao: 'Adesão dos lojistas a campanhas promocionais e festivais do Centro Fashion',
-                      status: 'SINCRONIZADO',
-                    },
-                    {
-                      id: '05_CAMPO_LEVANTAMENTOS',
-                      nome: '05_CAMPO_LEVANTAMENTOS - Gestão de Lojistas',
-                      gid: '1950590718',
-                      sheetId: '1pe7e_PumhpZGVvEsnZrIxLku6bkmZ6aD5cMtNXEaT4U',
-                      descricao: 'Auditorias de campo in loco, placas danificadas, vistorias e conservação',
-                      status: 'SINCRONIZADO',
-                    },
-                    {
-                      id: '06_FINANCEIRO_CONTRATOS',
-                      nome: '06_FINANCEIRO_CONTRATOS - Gestão de Lojistas',
-                      gid: '0',
-                      sheetId: '17l6jU44d1872s9l0h9D7vM3eC8yL1fT5yU7a0Z9bQc',
-                      descricao: 'Contratos de locação, receitas correntes, inadimplência e conciliações',
-                      status: 'SINCRONIZADO',
-                    },
-                    {
-                      id: '07_BI_ANALISE_SETORIAL',
-                      nome: '07_BI_ANALISE_SETORIAL - Gestão de Lojistas',
-                      gid: '0',
-                      sheetId: '1rT98a0k2LmP4s6oQ8wZ1v9c0yL8k9aP2v4h7n6m8bX',
-                      descricao: 'Indicadores setoriais, taxas de ocupação histórica e análise de fluxo',
-                      status: 'SINCRONIZADO',
-                    },
-                  ].map((item) => (
-                    <View key={item.id} style={styles.cardBackup}>
-                      <View style={styles.cardBackupLeft}>
-                        <Text style={styles.backupId}>{item.nome}</Text>
-                        <Text style={styles.backupData}>{item.descricao}</Text>
-                        <Text style={styles.backupHash}>ID: {item.sheetId} • GID: {item.gid}</Text>
-                      </View>
-                      <View style={styles.cardBackupRight}>
-                        <View style={styles.badgeDisponivel}>
-                          <Text style={styles.badgeDisponivelText}>{item.status}</Text>
-                        </View>
-                      </View>
-                    </View>
-                  ))}
+                  <Text style={styles.envioSucessoText}>SUCESSO</Text>
                 </View>
               </View>
-            )}
-          </ScrollView>
-        </View>
+            </View>
+          )}
+
+          {/* ========================================================== */}
+          {/* DEMAIS ABAS (AUDITORIA, BACKUP, SAÚDE, INVENTÁRIO, PLANOS) */}
+          {/* ========================================================== */}
+          {tabAtiva === 'AUDITORIA' && (
+            <View style={styles.tabContentSection}>
+              <Text style={styles.sectionSubtitleBold}>Trilha de Auditoria do Sistema</Text>
+              <View style={styles.cardsList}>
+                {logs.slice(0, 8).map((log) => (
+                  <View key={log.id} style={styles.logCard}>
+                    <Text style={styles.logDesc}>{log.detalhes || log.acao}</Text>
+                    <Text style={styles.logMeta}>
+                      {log.operadorNome || log.operadorEmail} • {log.timestamp} • IP: {log.ipOrigem}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          )}
+
+          {tabAtiva === 'BACKUP' && (
+            <View style={styles.tabContentSection}>
+              <Text style={styles.sectionSubtitleBold}>Pontos de Backup & Integridade</Text>
+              <View style={styles.cardsList}>
+                {backups.map((b) => (
+                  <View key={b.id} style={styles.backupCard}>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.backupTitulo}>{b.tipo} — {b.id}</Text>
+                      <Text style={styles.backupMeta}>
+                        Data: {b.dataHora} • Tamanho: {b.tamanhoMb} MB • Registros: {b.totalRegistros}
+                      </Text>
+                    </View>
+                    <TouchableOpacity
+                      style={styles.btnOutlineSmall}
+                      onPress={() => mostrarToast(`Restaurando backup: ${b.id}`)}
+                    >
+                      <Text style={styles.btnOutlineSmallText}>Restaurar</Text>
+                    </TouchableOpacity>
+                  </View>
+                ))}
+              </View>
+            </View>
+          )}
+
+          {tabAtiva === 'SAUDE' && saude && (
+            <View style={styles.tabContentSection}>
+              <Text style={styles.sectionSubtitleBold}>Saúde Operacional do Cluster</Text>
+              <View style={styles.metricsGrid4}>
+                <View style={styles.metricItemBox}>
+                  <Text style={styles.metricItemNum}>{saude.statusGeral}</Text>
+                  <Text style={styles.metricItemLbl}>Status do Cluster</Text>
+                </View>
+                <View style={styles.metricItemBox}>
+                  <Text style={styles.metricItemNum}>{saude.bancoPostgres.latenciaMs} ms</Text>
+                  <Text style={styles.metricItemLbl}>Latência Média</Text>
+                </View>
+                <View style={styles.metricItemBox}>
+                  <Text style={styles.metricItemNum}>{saude.clusterK3s.consumoMemoriaPercentual}%</Text>
+                  <Text style={styles.metricItemLbl}>Memória Cluster</Text>
+                </View>
+                <View style={styles.metricItemBox}>
+                  <Text style={styles.metricItemNum}>{saude.bancoPostgres.status}</Text>
+                  <Text style={styles.metricItemLbl}>Banco de Dados</Text>
+                </View>
+              </View>
+            </View>
+          )}
+
+          {tabAtiva === 'PLANOS' && (
+            <View style={styles.tabContentSection}>
+              <Text style={styles.sectionSubtitleBold}>Planos Preventivos</Text>
+              <View style={styles.cardsList}>
+                {planos.map((plano) => (
+                  <View key={plano.id} style={styles.userCard}>
+                    <Text style={styles.userCardName}>{plano.titulo}</Text>
+                    <Text style={styles.userCardEmail}>Setor: {plano.setorAlvo} • Pontos: {plano.totalPontosAlvo}</Text>
+                    <Text style={styles.userCardAcesso}>
+                      Periodicidade: {plano.periodicidade} • Responsável: {plano.responsavelEquipe}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          )}
+
+          {tabAtiva === 'INVENTARIO' && (
+            <View style={styles.tabContentSection}>
+              <Text style={styles.sectionSubtitleBold}>Inventário Geral de Ativos</Text>
+              <Text style={styles.userCardEmail}>
+                Visualização consolidada de todos os pontos notáveis e estruturas físicas de sinalização.
+              </Text>
+            </View>
+          )}
+        </ScrollView>
       </View>
-    </Modal>
+    </View>
   );
 };
 
-const { width, height } = Dimensions.get('window');
-
 const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(15, 23, 42, 0.85)',
+  modalOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(15, 23, 42, 0.65)',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 16,
+    zIndex: 99999,
   },
-  container: {
-    width: Math.min(1120, width - 24),
-    maxHeight: Math.min(860, height - 24),
-    backgroundColor: '#0f172a',
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#334155',
+  backdrop: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  modalContainer: {
+    backgroundColor: '#ffffff',
+    borderRadius: 14,
     overflow: 'hidden',
+    display: 'flex',
+    flexDirection: 'column',
+    elevation: 10,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.5,
+    shadowOpacity: 0.25,
     shadowRadius: 20,
-    elevation: 10,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 24,
-    paddingVertical: 18,
-    backgroundColor: '#1e293b',
+    alignItems: 'flex-start',
+    paddingHorizontal: 22,
+    paddingTop: 16,
+    paddingBottom: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#334155',
+    borderBottomColor: '#f1f5f9',
+    backgroundColor: '#ffffff',
   },
-  badgeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    marginBottom: 4,
-  },
-  badgeAdmin: {
-    backgroundColor: 'rgba(239, 68, 68, 0.2)',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 4,
-    borderWidth: 1,
-    borderColor: '#ef4444',
-  },
-  badgeAdminText: {
-    fontSize: 10,
-    fontWeight: '800',
-    color: '#f87171',
-    letterSpacing: 1,
-  },
-  headerSubBadge: {
-    fontSize: 11,
-    color: '#94a3b8',
+  headerCode: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#64748b',
+    letterSpacing: 0.5,
+    marginBottom: 2,
   },
   headerTitle: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: '#f8fafc',
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#0f172a',
   },
-  headerSub: {
+  closeBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#f1f5f9',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  closeBtnText: {
+    fontSize: 15,
+    fontWeight: 'bold',
+    color: '#475569',
+  },
+  toastBar: {
+    backgroundColor: '#10b981',
+    paddingVertical: 6,
+    paddingHorizontal: 16,
+  },
+  toastText: {
+    color: '#ffffff',
     fontSize: 12,
+    fontWeight: '600',
+  },
+  scrollBody: {
+    flex: 1,
+  },
+  scrollContent: {
+    padding: 20,
+    gap: 14,
+  },
+  userProfileCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    gap: 2,
+  },
+  userProfileName: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#0f172a',
+  },
+  userProfileSub: {
+    fontSize: 12,
+    color: '#64748b',
+  },
+  pillTabsWrapper: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  pillTab: {
+    paddingVertical: 6,
+    paddingHorizontal: 14,
+    borderRadius: 20,
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: '#cbd5e1',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  pillTabAtiva: {
+    backgroundColor: '#ec4899',
+    borderColor: '#ec4899',
+  },
+  pillTabText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#1e293b',
+  },
+  pillTabTextAtiva: {
+    color: '#ffffff',
+    fontWeight: '700',
+  },
+  tabContentSection: {
+    gap: 12,
+    marginTop: 4,
+  },
+  tabActionHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+  },
+  btnMagenta: {
+    backgroundColor: '#ec4899',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 6,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  btnMagentaText: {
+    color: '#ffffff',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  cardsList: {
+    gap: 10,
+  },
+  userCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    padding: 14,
+    gap: 10,
+  },
+  userCardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
+  userCardName: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#0f172a',
+  },
+  userCardEmail: {
+    fontSize: 12,
+    color: '#64748b',
+    marginTop: 1,
+  },
+  userCardAcesso: {
+    fontSize: 11,
     color: '#94a3b8',
     marginTop: 2,
   },
-  closeBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: '#334155',
+  userBadgesRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 6,
+  },
+  badgeCinza: {
+    backgroundColor: '#f1f5f9',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  badgeCinzaText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#475569',
+  },
+  btnEditarOutline: {
+    borderWidth: 1,
+    borderColor: '#cbd5e1',
+    borderRadius: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    backgroundColor: '#ffffff',
+  },
+  btnEditarOutlineText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#1e293b',
+  },
+  btnDefinirPin: {
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    borderRadius: 6,
+    paddingVertical: 7,
+    backgroundColor: '#ffffff',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  closeBtnText: {
-    color: '#cbd5e1',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  feedbackBar: {
-    backgroundColor: 'rgba(16, 185, 129, 0.2)',
-    borderBottomWidth: 1,
-    borderBottomColor: '#10b981',
-    paddingHorizontal: 20,
-    paddingVertical: 8,
-  },
-  feedbackText: {
-    color: '#6ee7b7',
+  btnDefinirPinText: {
     fontSize: 12,
     fontWeight: '700',
+    color: '#0f172a',
   },
-  tabsBar: {
-    backgroundColor: '#131d36',
-    borderBottomWidth: 1,
-    borderBottomColor: '#334155',
-    paddingHorizontal: 16,
-  },
-  tabBtn: {
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    borderBottomWidth: 2,
-    borderBottomColor: 'transparent',
-  },
-  tabBtnAtiva: {
-    borderBottomColor: '#38bdf8',
-  },
-  tabBtnText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#94a3b8',
-  },
-  tabBtnTextAtiva: {
-    color: '#38bdf8',
-    fontWeight: '800',
-  },
-  scrollArea: {
-    padding: 20,
-  },
-  sectionHeaderRow: {
+  perfilCard: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: '#f8fafc',
-  },
-  sectionSubtitle: {
-    fontSize: 12,
-    color: '#94a3b8',
-    marginBottom: 16,
-  },
-  btnAcaoPrimaria: {
-    backgroundColor: '#0284c7',
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#38bdf8',
-  },
-  btnAcaoPrimariaText: {
-    color: '#ffffff',
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  formCard: {
-    backgroundColor: '#1e293b',
-    borderRadius: 12,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: '#38bdf8',
-    marginBottom: 20,
-    gap: 10,
-  },
-  formCardTitle: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#38bdf8',
-    marginBottom: 4,
-  },
-  inputGroupRow: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  inputLabel: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: '#94a3b8',
-    marginBottom: 4,
-  },
-  textInput: {
-    backgroundColor: '#0f172a',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    color: '#f8fafc',
-    fontSize: 13,
-    borderWidth: 1,
-    borderColor: '#334155',
-  },
-  perfilPickerRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 6,
-  },
-  pPill: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
-    backgroundColor: '#0f172a',
-    borderWidth: 1,
-    borderColor: '#334155',
-  },
-  pPillAtivo: {
-    backgroundColor: '#0284c7',
-    borderColor: '#38bdf8',
-  },
-  pPillText: {
-    fontSize: 10,
-    color: '#94a3b8',
-    fontWeight: '700',
-  },
-  pPillTextAtivo: {
-    color: '#ffffff',
-  },
-  btnSalvarForm: {
-    backgroundColor: '#10b981',
-    paddingVertical: 10,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginTop: 6,
-  },
-  btnSalvarFormText: {
-    color: '#ffffff',
-    fontSize: 12,
-    fontWeight: '800',
-  },
-  gridCartoes: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-  },
-  cardUsuario: {
-    flex: 1,
-    minWidth: 300,
-    backgroundColor: '#1e293b',
-    borderRadius: 12,
-    padding: 14,
-    borderWidth: 1,
-    borderColor: '#334155',
-  },
-  cardUsuarioTop: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 10,
-  },
-  usuarioNome: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#f8fafc',
-  },
-  usuarioEmail: {
-    fontSize: 12,
-    color: '#38bdf8',
-    marginTop: 1,
-  },
-  usuarioCargo: {
-    fontSize: 11,
-    color: '#94a3b8',
-    marginTop: 2,
-  },
-  badgePerfil: {
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 6,
-    borderWidth: 1,
-  },
-  badgePerfilText: {
-    fontSize: 10,
-    fontWeight: '800',
-  },
-  usuarioFooter: {
-    flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingTop: 8,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(51, 65, 85, 0.4)',
-  },
-  usuarioUltimoAcesso: {
-    fontSize: 10,
-    color: '#64748b',
-  },
-  statusDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
-  matrizContainer: {
+    backgroundColor: '#ffffff',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    padding: 14,
     gap: 12,
   },
-  matrizItem: {
-    backgroundColor: '#1e293b',
-    borderRadius: 12,
-    padding: 14,
-    borderWidth: 1,
-    borderColor: '#334155',
+  perfilCardTitle: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#0f172a',
   },
-  matrizItemHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+  perfilCardSub: {
+    fontSize: 12,
+    color: '#64748b',
     marginBottom: 6,
   },
-  moduloNome: {
-    fontSize: 14,
-    fontWeight: '800',
-    color: '#f8fafc',
-  },
-  operacoesRow: {
+  perfilTagsRow: {
     flexDirection: 'row',
-    gap: 6,
-  },
-  opTag: {
-    backgroundColor: '#0f172a',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
-    borderWidth: 1,
-    borderColor: '#38bdf8',
-  },
-  opTagText: {
-    fontSize: 9,
-    color: '#38bdf8',
-    fontWeight: '700',
-  },
-  moduloDesc: {
-    fontSize: 12,
-    color: '#94a3b8',
-    marginBottom: 10,
-  },
-  papeisPermitidosRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
     flexWrap: 'wrap',
     gap: 6,
   },
-  papeisRotulo: {
-    fontSize: 11,
-    color: '#64748b',
-    fontWeight: '600',
-  },
-  papelChip: {
-    backgroundColor: '#334155',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 10,
-  },
-  papelChipText: {
-    fontSize: 10,
-    color: '#f8fafc',
-    fontWeight: '700',
-  },
-  tabelaContainer: {
-    gap: 8,
-  },
-  logRow: {
-    backgroundColor: '#1e293b',
-    borderRadius: 10,
-    padding: 12,
-    borderWidth: 1,
-    borderColor: '#334155',
-    flexDirection: 'row',
-    gap: 16,
-  },
-  logTimeCol: {
-    minWidth: 130,
-  },
-  logTime: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: '#38bdf8',
-  },
-  logIp: {
-    fontSize: 10,
-    color: '#64748b',
-    marginTop: 2,
-  },
-  logActionCol: {
-    flex: 1,
-    gap: 2,
-  },
-  logActionBadge: {
-    backgroundColor: 'rgba(56, 189, 248, 0.1)',
-    alignSelf: 'flex-start',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
+  perfilTagBadge: {
+    backgroundColor: '#f1f5f9',
     borderRadius: 4,
-    borderWidth: 1,
-    borderColor: '#38bdf8',
-    marginBottom: 2,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
   },
-  logActionText: {
-    fontSize: 10,
-    fontWeight: '800',
-    color: '#38bdf8',
-  },
-  logEntidade: {
+  perfilTagText: {
     fontSize: 11,
-    color: '#94a3b8',
+    color: '#334155',
+    fontWeight: '500',
   },
-  logDetalhes: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#f8fafc',
-  },
-  logOperador: {
-    fontSize: 10,
-    color: '#64748b',
-    marginTop: 2,
-  },
-  backupsList: {
-    gap: 12,
-  },
-  cardBackup: {
-    backgroundColor: '#1e293b',
-    borderRadius: 12,
-    padding: 14,
-    borderWidth: 1,
-    borderColor: '#334155',
+  acessosHeaderCard: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    backgroundColor: '#f8fafc',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    padding: 14,
   },
-  cardBackupLeft: {
-    gap: 2,
-  },
-  backupId: {
+  acessosHeaderTitle: {
     fontSize: 14,
-    fontWeight: '800',
-    color: '#38bdf8',
+    fontWeight: '700',
+    color: '#0f172a',
   },
-  backupData: {
+  acessosHeaderSub: {
     fontSize: 12,
-    color: '#cbd5e1',
-  },
-  backupHash: {
-    fontSize: 10,
     color: '#64748b',
   },
-  cardBackupRight: {
-    alignItems: 'flex-end',
-    gap: 2,
-  },
-  backupTamanho: {
-    fontSize: 14,
-    fontWeight: '800',
-    color: '#f8fafc',
-  },
-  backupRegistros: {
-    fontSize: 11,
-    color: '#94a3b8',
-  },
-  badgeDisponivel: {
-    backgroundColor: 'rgba(16, 185, 129, 0.2)',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
+  btnOutline: {
     borderWidth: 1,
-    borderColor: '#10b981',
-    marginTop: 2,
+    borderColor: '#cbd5e1',
+    borderRadius: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    backgroundColor: '#ffffff',
   },
-  badgeDisponivelText: {
-    fontSize: 9,
-    fontWeight: '800',
-    color: '#10b981',
-  },
-  saudeGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 14,
-  },
-  cardSaude: {
-    flex: 1,
-    minWidth: 230,
-    backgroundColor: '#1e293b',
-    borderRadius: 12,
-    padding: 16,
-    borderWidth: 1,
-    gap: 4,
-  },
-  cardSaudeRotulo: {
+  btnOutlineText: {
     fontSize: 12,
-    fontWeight: '700',
-    color: '#cbd5e1',
+    fontWeight: '600',
+    color: '#1e293b',
   },
-  cardSaudeValor: {
+  metricsGrid4: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  metricItemBox: {
+    flex: 1,
+    backgroundColor: '#ffffff',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    padding: 12,
+  },
+  metricItemNum: {
     fontSize: 22,
     fontWeight: '800',
-    marginVertical: 4,
+    color: '#0f172a',
   },
-  cardSaudeSub: {
+  metricItemLbl: {
     fontSize: 11,
-    color: '#94a3b8',
+    fontWeight: '600',
+    color: '#64748b',
+    marginTop: 2,
   },
-  planosList: {
-    gap: 12,
+  filtrosAcessosRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
   },
-  cardPlano: {
-    backgroundColor: '#1e293b',
-    borderRadius: 12,
-    padding: 14,
+  filterInput: {
+    height: 36,
     borderWidth: 1,
-    borderColor: '#334155',
+    borderColor: '#cbd5e1',
+    borderRadius: 6,
+    paddingHorizontal: 12,
+    fontSize: 13,
+    color: '#0f172a',
+    backgroundColor: '#ffffff',
   },
-  cardPlanoTop: {
+  webSelect: {
+    height: 36,
+    paddingLeft: 10,
+    paddingRight: 24,
+    fontSize: 12,
+    color: '#0f172a',
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#cbd5e1',
+    backgroundColor: '#ffffff',
+    fontWeight: '500',
+  },
+  userSessoesBox: {
+    backgroundColor: '#ffffff',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    padding: 16,
+  },
+  userSessoesHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f1f5f9',
+    paddingBottom: 10,
   },
-  planoTitulo: {
+  userSessoesNome: {
     fontSize: 14,
-    fontWeight: '800',
-    color: '#f8fafc',
+    fontWeight: '700',
+    color: '#0f172a',
   },
-  planoSetor: {
+  userSessoesEmail: {
     fontSize: 12,
-    color: '#38bdf8',
-    marginTop: 2,
+    color: '#64748b',
   },
-  planoResp: {
-    fontSize: 11,
-    color: '#94a3b8',
+  userSessoesBadges: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 6,
   },
-  planoBadge: {
-    backgroundColor: 'rgba(16, 185, 129, 0.2)',
+  badgePillBlue: {
+    backgroundColor: '#eff6ff',
     paddingHorizontal: 8,
     paddingVertical: 2,
-    borderRadius: 4,
-    borderWidth: 1,
-    borderColor: '#10b981',
-  },
-  planoBadgeText: {
-    fontSize: 10,
-    fontWeight: '800',
-    color: '#10b981',
-  },
-  planoProgressoBar: {
-    height: 6,
-    backgroundColor: '#0f172a',
-    borderRadius: 3,
-    overflow: 'hidden',
-    marginVertical: 8,
-  },
-  planoProgressoFill: {
-    height: '100%',
-    backgroundColor: '#38bdf8',
-    borderRadius: 3,
-  },
-  planoFooter: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  planoProgressoText: {
-    fontSize: 11,
-    color: '#cbd5e1',
-    fontWeight: '600',
-  },
-  planoProx: {
-    fontSize: 11,
-    color: '#64748b',
-  },
-  avisosList: {
-    gap: 12,
-  },
-  cardAviso: {
-    backgroundColor: '#1e293b',
     borderRadius: 12,
-    padding: 14,
-    borderWidth: 1,
-    borderColor: '#334155',
   },
-  cardAvisoTop: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  avisoTitulo: {
-    fontSize: 14,
-    fontWeight: '800',
-    color: '#f8fafc',
-  },
-  badgePrioridade: {
-    paddingHorizontal: 6,
-    paddingVertical: 1,
-    borderRadius: 4,
-    borderWidth: 1,
-  },
-  badgePrioridadeText: {
-    fontSize: 9,
-    fontWeight: '800',
-  },
-  avisoData: {
+  badgePillBlueText: {
     fontSize: 10,
-    color: '#64748b',
+    fontWeight: '700',
+    color: '#2563eb',
   },
-  avisoMsg: {
+  badgePillGray: {
+    backgroundColor: '#f1f5f9',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 12,
+  },
+  badgePillGrayText: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: '#475569',
+  },
+  btnRevogarTodos: {
+    borderWidth: 1,
+    borderColor: '#fecaca',
+    borderRadius: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    backgroundColor: '#ffffff',
+  },
+  btnRevogarTodosText: {
     fontSize: 12,
-    color: '#cbd5e1',
-    lineHeight: 18,
-    marginBottom: 8,
+    fontWeight: '600',
+    color: '#b91c1c',
   },
-  avisoFooter: {
+  dispCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    padding: 12,
+  },
+  dispCardContent: {
+    gap: 3,
+  },
+  dispCardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingTop: 8,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(51, 65, 85, 0.4)',
   },
-  avisoAutor: {
+  dispDiamond: {
+    width: 8,
+    height: 8,
+    transform: [{ rotate: '45deg' }],
+  },
+  dispDiamondActive: {
+    backgroundColor: '#2563eb',
+  },
+  dispDiamondInactive: {
+    backgroundColor: '#94a3b8',
+  },
+  dispCardNome: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#0f172a',
+  },
+  badgeStatusGreen: {
+    backgroundColor: '#dcfce7',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  badgeStatusGreenText: {
     fontSize: 10,
+    fontWeight: '700',
+    color: '#166534',
+  },
+  badgeStatusOrange: {
+    backgroundColor: '#ffedd5',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  badgeStatusOrangeText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#9a3412',
+  },
+  btnRevogarDisp: {
+    borderWidth: 1,
+    borderColor: '#fecaca',
+    borderRadius: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    backgroundColor: '#ffffff',
+  },
+  btnRevogarDispText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#b91c1c',
+  },
+  dispCardMeta: {
+    fontSize: 11,
+    color: '#64748b',
+    fontWeight: '600',
+    marginTop: 2,
+  },
+  dispCardMetaSub: {
+    fontSize: 11,
     color: '#94a3b8',
   },
-  avisoConfirmados: {
-    fontSize: 10,
-    color: '#10b981',
+  comunicacaoTopActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  automacaoCard: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#ffffff',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    padding: 14,
+    gap: 10,
+  },
+  automacaoTitle: {
+    fontSize: 14,
     fontWeight: '700',
+    color: '#0f172a',
+  },
+  automacaoSub: {
+    fontSize: 12,
+    color: '#166534',
+    fontWeight: '600',
+  },
+  automacaoBtnsGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    flexWrap: 'wrap',
+  },
+  btnOutlineSmall: {
+    borderWidth: 1,
+    borderColor: '#cbd5e1',
+    borderRadius: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    backgroundColor: '#ffffff',
+  },
+  btnOutlineSmallText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#1e293b',
+  },
+  avisoAmareloBox: {
+    backgroundColor: '#fefce8',
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#fef08a',
+    padding: 10,
+  },
+  avisoAmareloText: {
+    fontSize: 12,
+    color: '#854d0e',
+  },
+  sectionSubtitleBold: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#0f172a',
+  },
+  regraCard: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#ffffff',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    padding: 14,
+    gap: 10,
+  },
+  regraTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#0f172a',
+  },
+  regraMeta: {
+    fontSize: 11,
+    color: '#64748b',
+  },
+  envioCard: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#ffffff',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    padding: 12,
+  },
+  envioTitle: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#0f172a',
+  },
+  envioSub: {
+    fontSize: 11,
+    color: '#64748b',
+  },
+  envioSucessoText: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: '#166534',
+  },
+  logCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    padding: 10,
+    gap: 2,
+  },
+  logDesc: {
+    fontSize: 13,
+    color: '#0f172a',
+    fontWeight: '600',
+  },
+  logMeta: {
+    fontSize: 11,
+    color: '#64748b',
+  },
+  backupCard: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#ffffff',
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    padding: 12,
+  },
+  backupTitulo: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#0f172a',
+  },
+  backupMeta: {
+    fontSize: 11,
+    color: '#64748b',
   },
 });
+
+export default AdminModal;

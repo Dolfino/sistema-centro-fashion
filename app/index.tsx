@@ -41,8 +41,18 @@ import { AuditoriaVendasEditorModal } from '../src/components/AuditoriaVendasEdi
 import { RegistroAuditoriaVenda } from '../src/services/auditoriaVendasService';
 import { CentralAnaliticaModal } from '../src/components/CentralAnaliticaModal';
 import { AdminModal } from '../src/components/AdminModal';
-import { CentralCartograficaModal } from '../src/components/CentralCartograficaModal';
-import { CartografiaService, CORES_PADRAO_TIPOS_REFERENCIA } from '../src/services/cartografiaService';
+import { CentralCartograficaModal, TabCartografia } from '../src/components/CentralCartograficaModal';
+import { CalibracaoSetorNivelModal } from '../src/components/CalibracaoSetorNivelModal';
+import { AreasOperacionaisNivel0Modal } from '../src/components/AreasOperacionaisNivel0Modal';
+import { ConfiguracoesCadastroModal } from '../src/components/ConfiguracoesCadastroModal';
+import { CentralReferenciasModal } from '../src/components/CentralReferenciasModal';
+import {
+  CartografiaService,
+  CORES_PADRAO_TIPOS_REFERENCIA,
+  PontoReferenciaOficial,
+} from '../src/services/cartografiaService';
+import { GerenciadorReferenciasModal } from '../src/components/GerenciadorReferenciasModal';
+import { ReferenciaCard } from '../src/components/ReferenciaCard';
 import { AtivoMallModal } from '../src/components/AtivoMallModal';
 import { AtivoMidiaPonto } from '../src/services/ativoMallService';
 import { CampanhaCentralModal } from '../src/components/CampanhaCentralModal';
@@ -253,6 +263,59 @@ export default function LegacyMainShellScreen() {
     }
   }, []);
 
+  // Gestão Dinâmica de Referências Cartográficas Oficiais
+  const [referenciasList, setReferenciasList] = useState<PontoReferenciaOficial[]>(() => {
+    return CartografiaService.obterTodasReferenciasOficiais();
+  });
+  const [gerenciadorRefOpen, setGerenciadorRefOpen] = useState<boolean>(false);
+  const [selectedReferencia, setSelectedReferencia] = useState<PontoReferenciaOficial | null>(null);
+  const [editingReferencia, setEditingReferencia] = useState<PontoReferenciaOficial | null>(null);
+
+  const handleSalvarReferencia = useCallback((novaRef: PontoReferenciaOficial) => {
+    const atualizada = CartografiaService.salvarReferenciaOficial(novaRef);
+    setReferenciasList(atualizada);
+    setSelectedReferencia(novaRef);
+    setFormPanelVisible(false);
+    setEditingReferencia(null);
+  }, []);
+
+  const handleExcluirReferencia = useCallback((refId: string) => {
+    const atualizada = CartografiaService.excluirReferenciaOficial(refId);
+    setReferenciasList(atualizada);
+    if (selectedReferencia?.id === refId) {
+      setSelectedReferencia(null);
+    }
+  }, [selectedReferencia]);
+
+  const handleRestaurarPadraoReferencias = useCallback(() => {
+    const padrao = CartografiaService.restaurarReferenciasPadrao();
+    setReferenciasList(padrao);
+    setSelectedReferencia(null);
+  }, []);
+
+  const handleIniciarCriacaoReferencia = useCallback(() => {
+    setEditingPin(null);
+    setEditingReferencia(null);
+    setFormMode('NOVO');
+    setFormPanelVisible(true);
+  }, []);
+
+  const handleEditarReferencia = useCallback((ref: PontoReferenciaOficial) => {
+    setEditingPin(null);
+    setEditingReferencia(ref);
+    setFormMode('EDITAR');
+    setFormPanelVisible(true);
+  }, []);
+
+  const handleFocarReferenciaNoMapa = useCallback((ref: PontoReferenciaOficial) => {
+    const chaveSetor = ref.idMapaSetor.replace('MAP-CFF-N1-', 'SETOR_').replace('MAP-CFF-N2-', 'SETOR_').replace('MAP-CFF-N3-', 'SETOR_');
+    if (chaveSetor) {
+      setSelectedMapKey(chaveSetor);
+    }
+    setSelectedReferencia(ref);
+    setGerenciadorRefOpen(false);
+  }, []);
+
   // Estados do Fluxo de Posicionamento e Cadastro (UI-3)
   const [positioningMode, setPositioningMode] = useState<boolean>(false);
   const [draftPin, setDraftPin] = useState<{ normalizedX: number; normalizedY: number } | null>(null);
@@ -334,9 +397,11 @@ export default function LegacyMainShellScreen() {
   // Central de Administração Global & Governança Cartográfica (Fase L5.0)
   const [adminModalOpen, setAdminModalOpen] = useState<boolean>(false);
   const [centralCartograficaOpen, setCentralCartograficaOpen] = useState<boolean>(false);
-  const [abaCartograficaInicial, setAbaCartograficaInicial] = useState<
-    'CARTOGRAFIA' | 'CALIBRACAO' | 'ESTACIONAMENTO' | 'AREAS_NIVEL_1' | 'SNAPSHOTS'
-  >('CARTOGRAFIA');
+  const [calibracaoModalOpen, setCalibracaoModalOpen] = useState<boolean>(false);
+  const [areasNivel0ModalOpen, setAreasNivel0ModalOpen] = useState<boolean>(false);
+  const [configuracoesCadastroOpen, setConfiguracoesCadastroOpen] = useState<boolean>(false);
+  const [centralReferenciasOpen, setCentralReferenciasOpen] = useState<boolean>(false);
+  const [abaCartograficaInicial, setAbaCartograficaInicial] = useState<TabCartografia>('CARTOGRAFIA');
 
   // Ativos do Mall & Fiscalização de Mídia Física (Paridade Google Apps Script)
   const [ativoMallOpen, setAtivoMallOpen] = useState<boolean>(false);
@@ -441,13 +506,38 @@ export default function LegacyMainShellScreen() {
     }
   }, []);
 
+  const mapGroups = [
+    {
+      label: 'Setores',
+      options: [
+        { key: 'SETOR_AZUL', label: 'Setor Azul • Piso 1' },
+        { key: 'SETOR_VERDE', label: 'Setor Verde • Piso 1' },
+        { key: 'SETOR_BRANCO', label: 'Setor Branco • Piso 2' },
+        { key: 'SETOR_AMARELO', label: 'Setor Amarelo • Piso 2' },
+        { key: 'SETOR_ROXO', label: 'Setor Roxo • Piso 3' },
+      ],
+    },
+    {
+      label: 'Níveis 2025',
+      options: [
+        { key: 'NIVEL_1', label: 'Nível 1 — Azul + Verde' },
+        { key: 'NIVEL_2', label: 'Nível 2 — Amarelo + Branco' },
+        { key: 'NIVEL_3', label: 'Nível 3 — Roxo + Vermelho / Estacionamento' },
+        { key: 'NIVEL_0', label: 'Nível 0 — Subsolo' },
+      ],
+    },
+  ];
+
   const mapsList = [
     { key: 'SETOR_AZUL', label: 'Setor Azul • Piso 1' },
     { key: 'SETOR_VERDE', label: 'Setor Verde • Piso 1' },
-    { key: 'SETOR_AMARELO', label: 'Setor Amarelo • Piso 1' },
-    { key: 'SETOR_ROXO', label: 'Setor Roxo • Piso 1' },
-    { key: 'SETOR_BRANCO', label: 'Setor Branco • Piso 1' },
-    { key: 'NIVEL_1', label: 'Visão Geral • Nível 1' },
+    { key: 'SETOR_BRANCO', label: 'Setor Branco • Piso 2' },
+    { key: 'SETOR_AMARELO', label: 'Setor Amarelo • Piso 2' },
+    { key: 'SETOR_ROXO', label: 'Setor Roxo • Piso 3' },
+    { key: 'NIVEL_1', label: 'Nível 1 — Azul + Verde' },
+    { key: 'NIVEL_2', label: 'Nível 2 — Amarelo + Branco' },
+    { key: 'NIVEL_3', label: 'Nível 3 — Roxo + Vermelho / Estacionamento' },
+    { key: 'NIVEL_0', label: 'Nível 0 — Subsolo' },
   ];
 
   const handleResetView = () => {
@@ -505,15 +595,23 @@ export default function LegacyMainShellScreen() {
       setRelatoriosOpen(true);
     } else if (itemId === 'adminBtnS14' || itemId === 'admin') {
       setAdminModalOpen(true);
+    } else if (itemId === 'configuracoesCadastroBtn' || itemId === 'configuracoesCadastro') {
+      setConfiguracoesCadastroOpen(true);
     } else if (itemId === 'calibracaoBtnS242' || itemId === 'calibrar') {
-      setAbaCartograficaInicial('CALIBRACAO');
+      setCalibracaoModalOpen(true);
+    } else if (itemId === 'areasSubsoloBtn' || itemId === 'subsolo') {
+      setAreasNivel0ModalOpen(true);
+    } else if (itemId === 'areasNivel1BtnS246' || itemId === 'nivel1') {
+      setAbaCartograficaInicial('AREAS_NIVEL_1');
       setCentralCartograficaOpen(true);
     } else if (itemId === 'areaVermelhaBtnS244' || itemId === 'estacionamento') {
       setAbaCartograficaInicial('ESTACIONAMENTO');
       setCentralCartograficaOpen(true);
-    } else if (itemId === 'areasNivel1BtnS246' || itemId === 'nivel1') {
-      setAbaCartograficaInicial('AREAS_NIVEL_1');
+    } else if (itemId === 'torresNucleosBtn' || itemId === 'torres') {
+      setAbaCartograficaInicial('TORRES_NUCLEOS');
       setCentralCartograficaOpen(true);
+    } else if (itemId === 'referenciasBtn' || itemId === 'referencias' || itemId === 'centralReferenciasBtn') {
+      setCentralReferenciasOpen(true);
     } else if (itemId === 'centralCartograficaBtn' || itemId === 'cartografia') {
       setAbaCartograficaInicial('CARTOGRAFIA');
       setCentralCartograficaOpen(true);
@@ -910,14 +1008,18 @@ export default function LegacyMainShellScreen() {
 
   const handleDeletePin = (pinId: string) => {
     setPinsList((prev) => {
-      const nextPins = prev.filter((p) => p.id !== pinId);
+      const nextPins = prev.filter((p) => p.id !== pinId && p.assetCode !== pinId);
       OfflineStorageService.savePins(nextPins);
       return nextPins;
     });
 
-    if (selectedPin?.id === pinId) {
+    if (selectedPin?.id === pinId || selectedPin?.assetCode === pinId) {
       setSelectedPin(null);
     }
+    setCicloVidaModalOpen(false);
+    setCicloVidaPin(null);
+    setFormPanelVisible(false);
+    setEditingPin(null);
 
     const outboxEvent: OutboxItem = {
       clientEventId: `evt_del_${Date.now()}`,
@@ -1151,10 +1253,14 @@ export default function LegacyMainShellScreen() {
                       height: 42,
                     }}
                   >
-                    {mapsList.map((m) => (
-                      <option key={m.key} value={m.key}>
-                        {m.label}
-                      </option>
+                    {mapGroups.map((g) => (
+                      <optgroup key={g.label} label={g.label}>
+                        {g.options.map((m) => (
+                          <option key={m.key} value={m.key}>
+                            {m.label}
+                          </option>
+                        ))}
+                      </optgroup>
                     ))}
                   </select>
                 ) : (
@@ -1225,10 +1331,14 @@ export default function LegacyMainShellScreen() {
                     height: 42,
                   }}
                 >
-                  {mapsList.map((m) => (
-                    <option key={m.key} value={m.key}>
-                      {m.label}
-                    </option>
+                  {mapGroups.map((g) => (
+                    <optgroup key={g.label} label={g.label}>
+                      {g.options.map((m) => (
+                        <option key={m.key} value={m.key}>
+                          {m.label}
+                        </option>
+                      ))}
+                    </optgroup>
                   ))}
                 </select>
               ) : (
@@ -1331,6 +1441,20 @@ export default function LegacyMainShellScreen() {
             >
               <Text style={{ fontSize: 13 }}>🏙️</Text>
               {!isMobile && <Text style={{ color: '#c7d2fe', fontSize: 12, fontWeight: '700' }}>BI Mall</Text>}
+            </TouchableOpacity>
+
+            {/* Botão Gerenciador de Referências Cartográficas */}
+            <TouchableOpacity
+              id="btnGerenciadorReferenciasToolbar"
+              style={[
+                styles.btnCentralizar,
+                { width: 'auto', paddingHorizontal: 10, gap: 4, flexDirection: 'row', backgroundColor: '#064e3b', borderColor: '#10b981' },
+              ]}
+              onPress={() => setGerenciadorRefOpen(true)}
+              aria-label="Gerenciador de Referências"
+            >
+              <Text style={{ fontSize: 13 }}>📍</Text>
+              {!isMobile && <Text style={{ color: '#a7f3d0', fontSize: 12, fontWeight: '700' }}>Referências</Text>}
             </TouchableOpacity>
 
             {/* No Desktop, inclui o botão Menu com texto "Menu" */}
@@ -1498,7 +1622,10 @@ export default function LegacyMainShellScreen() {
             pins={displayedPins}
             selectedPinId={selectedPin?.id}
             onSelectPin={(pin) => {
-              if (!positioningMode) setSelectedPin(pin);
+              if (!positioningMode) {
+                setSelectedPin(pin);
+                setSelectedReferencia(null);
+              }
             }}
             filterConservation={filterConservation}
             showSinalizacoes={showSinalizacoes}
@@ -1512,6 +1639,13 @@ export default function LegacyMainShellScreen() {
             showLojasBoxes={showLojas || filterConservation === 'LOJAS_BOXES'}
             corReferencia={corReferencia}
             coresReferencias={coresReferencias}
+            referenciasCustom={referenciasList}
+            onSelectReferencia={(ref) => {
+              if (!positioningMode) {
+                setSelectedPin(null);
+                setSelectedReferencia(ref);
+              }
+            }}
             onSelectLoja={handleSelectLojaRealSearchResult}
             onMapClick={handleMapClick}
           />
@@ -1522,6 +1656,17 @@ export default function LegacyMainShellScreen() {
               pin={selectedPin}
               onClose={() => setSelectedPin(null)}
               onActionClick={handleActionClick}
+            />
+          )}
+
+          {/* Card da Referência Cartográfica Selecionada */}
+          {!positioningMode && selectedReferencia && (
+            <ReferenciaCard
+              referencia={selectedReferencia}
+              coresReferencias={coresReferencias}
+              onClose={() => setSelectedReferencia(null)}
+              onEditar={handleEditarReferencia}
+              onExcluir={handleExcluirReferencia}
             />
           )}
 
@@ -1543,6 +1688,7 @@ export default function LegacyMainShellScreen() {
         visible={menuOpen}
         onClose={() => setMenuOpen(false)}
         onSelectMenu={handleSelectMenuOption}
+        contextoSetorAtual={mapsList.find((m) => m.key === selectedMapKey)?.label || 'Setor Azul • Piso 1'}
       />
 
       <CamadasModal
@@ -1582,12 +1728,33 @@ export default function LegacyMainShellScreen() {
         visible={formPanelVisible}
         mode={formMode}
         initialPin={editingPin}
+        initialReferencia={editingReferencia}
         confirmedSector={mapsList.find((m) => m.key === selectedMapKey)?.label || 'Setor Azul'}
-        normalizedX={draftPin?.normalizedX || editingPin?.normalizedX || 0.35}
-        normalizedY={draftPin?.normalizedY || editingPin?.normalizedY || 0.45}
+        normalizedX={draftPin?.normalizedX || editingPin?.normalizedX || editingReferencia?.x || 0.35}
+        normalizedY={draftPin?.normalizedY || editingPin?.normalizedY || editingReferencia?.y || 0.45}
         identifiedLocationText={identifiedLocationText}
-        onClose={() => setFormPanelVisible(false)}
+        onClose={() => {
+          setFormPanelVisible(false);
+          setEditingReferencia(null);
+          setEditingPin(null);
+        }}
         onSave={handleSaveForm}
+        onSaveReferencia={handleSalvarReferencia}
+        onDeleteReferencia={handleExcluirReferencia}
+        onDeletePin={handleDeletePin}
+      />
+
+      <GerenciadorReferenciasModal
+        visible={gerenciadorRefOpen}
+        onClose={() => setGerenciadorRefOpen(false)}
+        selectedMapKey={selectedMapKey}
+        referencias={referenciasList}
+        coresReferencias={coresReferencias}
+        onAdicionarNova={handleIniciarCriacaoReferencia}
+        onEditarReferencia={handleEditarReferencia}
+        onExcluirReferencia={handleExcluirReferencia}
+        onFocarNoMapa={handleFocarReferenciaNoMapa}
+        onRestaurarPadrao={handleRestaurarPadraoReferencias}
       />
 
       {/* Modais de Cache e Fila Outbox (UI-4) */}
@@ -2020,6 +2187,39 @@ export default function LegacyMainShellScreen() {
         userRole="ADMIN"
         abaInicial={abaCartograficaInicial}
         onClose={() => setCentralCartograficaOpen(false)}
+      />
+
+      {/* S24.2 Calibração Setor ↔ Nível com mapas lado a lado */}
+      <CalibracaoSetorNivelModal
+        visible={calibracaoModalOpen}
+        onClose={() => setCalibracaoModalOpen(false)}
+        contextoSetor={mapsList.find((m) => m.key === selectedMapKey)?.label}
+      />
+
+      {/* S26.8-D4 Áreas operacionais do Nível 0 */}
+      <AreasOperacionaisNivel0Modal
+        visible={areasNivel0ModalOpen}
+        onClose={() => setAreasNivel0ModalOpen(false)}
+        contextoSetor={mapsList.find((m) => m.key === selectedMapKey)?.label}
+      />
+
+      {/* S26.9-C2 Configurações de cadastro */}
+      <ConfiguracoesCadastroModal
+        visible={configuracoesCadastroOpen}
+        onClose={() => setConfiguracoesCadastroOpen(false)}
+      />
+
+      {/* S26.10-R3 Central de Referências */}
+      <CentralReferenciasModal
+        visible={centralReferenciasOpen}
+        onClose={() => setCentralReferenciasOpen(false)}
+        referencias={referenciasList}
+        onSalvarReferencia={handleSalvarReferencia}
+        onExcluirReferencia={handleExcluirReferencia}
+        onReposicionarNoMapa={(ref) => {
+          const targetKey = CartografiaService.normalizarIdMapaSetor(ref.idMapaSetor);
+          setSelectedMapKey(targetKey);
+        }}
       />
     </View>
   );

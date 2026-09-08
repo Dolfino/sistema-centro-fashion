@@ -29,6 +29,9 @@ const MAP_IMAGES: Record<string, ImageSourcePropType> = {
   SETOR_ROXO: require('../../assets/maps/SETOR_ROXO.png'),
   SETOR_BRANCO: require('../../assets/maps/SETOR_BRANCO.png'),
   NIVEL_1: require('../../assets/maps/CFF_2025_NIVEL_1.png'),
+  NIVEL_2: require('../../assets/maps/CFF_2025_NIVEL_2.png'),
+  NIVEL_3: require('../../assets/maps/CFF_2025_NIVEL_3.png'),
+  NIVEL_0: require('../../assets/maps/Layout Comercial CF Niveis_0.png'),
 };
 
 const NATURAL_DIMENSIONS: Record<string, { width: number; height: number }> = {
@@ -38,6 +41,9 @@ const NATURAL_DIMENSIONS: Record<string, { width: number; height: number }> = {
   SETOR_ROXO: { width: 2339, height: 3307 },
   SETOR_BRANCO: { width: 2339, height: 3307 },
   NIVEL_1: { width: 1853, height: 2620 },
+  NIVEL_2: { width: 1853, height: 2620 },
+  NIVEL_3: { width: 1853, height: 2620 },
+  NIVEL_0: { width: 2339, height: 3307 },
 };
 
 export interface SignagePin {
@@ -81,6 +87,8 @@ interface InteractiveMallMapProps {
   showLojasBoxes?: boolean;
   corReferencia?: string;
   coresReferencias?: Record<string, string>;
+  referenciasCustom?: PontoReferenciaOficial[];
+  onSelectReferencia?: (ref: PontoReferenciaOficial | null) => void;
   onSelectLoja?: (loja: LojaProducaoItem) => void;
   onMapClick?: (coords: {
     normalizedX: number;
@@ -341,6 +349,8 @@ export const InteractiveMallMap: React.FC<InteractiveMallMapProps> = ({
   showLojasBoxes = false,
   corReferencia = '#38bdf8',
   coresReferencias,
+  referenciasCustom,
+  onSelectReferencia,
   onSelectLoja,
   onMapClick,
 }) => {
@@ -390,8 +400,17 @@ export const InteractiveMallMap: React.FC<InteractiveMallMapProps> = ({
   // Referências oficiais do setor corrente (ex: Acesso ao elevador torre 2)
   const referenciasSetor = useMemo(() => {
     if (!showReferencias) return [];
+    if (referenciasCustom && referenciasCustom.length > 0) {
+      if (!selectedMapKey || selectedMapKey === 'TODOS') {
+        return referenciasCustom.filter((r) => r.ativo !== false && r.x > 0 && r.y > 0);
+      }
+      const targetId = CartografiaService.normalizarIdMapaSetor(selectedMapKey);
+      return referenciasCustom.filter(
+        (r) => (r.idMapaSetor === targetId || r.idMapaSetor === selectedMapKey) && r.ativo !== false && r.x > 0 && r.y > 0
+      );
+    }
     return CartografiaService.obterReferenciasOficiais(selectedMapKey);
-  }, [selectedMapKey, showReferencias]);
+  }, [selectedMapKey, showReferencias, referenciasCustom]);
 
   // Cruzamentos oficiais do setor corrente (nós de circulação nas esquinas)
   const cruzamentosSetor = useMemo(() => {
@@ -926,6 +945,7 @@ export const InteractiveMallMap: React.FC<InteractiveMallMapProps> = ({
                   title: tooltipTitle,
                 } as any)}
                 activeOpacity={0.8}
+                onPress={() => onSelectReferencia && onSelectReferencia(refItem)}
                 hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                 style={[
                   styles.pinContainer,

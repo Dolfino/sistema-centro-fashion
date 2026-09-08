@@ -1,37 +1,73 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Platform, useWindowDimensions, Image } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  TextInput,
+  ScrollView,
+  Platform,
+  useWindowDimensions,
+  Image,
+} from 'react-native';
 import { SignagePin } from './InteractiveMallMap';
 import { CapturedPhoto, mediaService } from '../services/mediaService';
+import {
+  PontoReferenciaOficial,
+  CartografiaService,
+  CORES_PADRAO_TIPOS_REFERENCIA,
+  NOMES_PADRAO_TIPOS_REFERENCIA,
+} from '../services/cartografiaService';
 
 interface FormPanelModalProps {
   visible: boolean;
   mode: 'NOVO' | 'EDITAR';
   initialPin?: SignagePin | null;
+  initialReferencia?: PontoReferenciaOficial | null;
+  initialEntityType?: 'SINALIZACAO' | 'OCORRENCIA' | 'REFERENCIA';
   confirmedSector: string;
   normalizedX: number;
   normalizedY: number;
   identifiedLocationText?: string;
   onClose: () => void;
   onSave: (savedPinData: Partial<SignagePin>) => void;
+  onSaveReferencia?: (savedRefData: PontoReferenciaOficial) => void;
+  onDeleteReferencia?: (id: string) => void;
+  onDeletePin?: (id: string) => void;
 }
 
 export const FormPanelModal: React.FC<FormPanelModalProps> = ({
   visible,
   mode,
   initialPin,
+  initialReferencia,
+  initialEntityType = 'SINALIZACAO',
   confirmedSector,
   normalizedX,
   normalizedY,
   identifiedLocationText,
   onClose,
   onSave,
+  onSaveReferencia,
+  onDeleteReferencia,
+  onDeletePin,
 }) => {
   const { width: windowWidth } = useWindowDimensions();
   const isMobile = windowWidth < 700;
 
-  const [entityType, setEntityType] = useState<'SINALIZACAO' | 'OCORRENCIA'>('SINALIZACAO');
+  const [entityType, setEntityType] = useState<'SINALIZACAO' | 'OCORRENCIA' | 'REFERENCIA'>(initialEntityType);
   const [categoriaOcorrencia, setCategoriaOcorrencia] = useState<string>('Manutenção');
   const [prioridade, setPrioridade] = useState<'BAIXA' | 'MEDIA' | 'ALTA' | 'CRITICA'>('MEDIA');
+  const [showConfirmDelete, setShowConfirmDelete] = useState<boolean>(false);
+
+  // Campos de Referência Cartográfica
+  const [nomeReferencia, setNomeReferencia] = useState<string>('');
+  const [tipoReferencia, setTipoReferencia] = useState<string>('QUIOSQUE');
+  const [subtipoReferencia, setSubtipoReferencia] = useState<string>('QUIOSQUE');
+  const [descricaoReferencia, setDescricaoReferencia] = useState<string>('');
+  const [statusReferencia, setStatusReferencia] = useState<string>('VALIDADO');
+  const [ativoReferencia, setAtivoReferencia] = useState<boolean>(true);
 
   const [tipo, setTipo] = useState<string>('Placa informativa');
   const [finalidade, setFinalidade] = useState<string>('Orientação');
@@ -60,7 +96,27 @@ export const FormPanelModal: React.FC<FormPanelModalProps> = ({
   const fileInputRef = useRef<any>(null);
 
   useEffect(() => {
-    if (mode === 'EDITAR' && initialPin) {
+    if (initialReferencia) {
+      setEntityType('REFERENCIA');
+      setNomeReferencia(initialReferencia.nome || '');
+      setTipoReferencia(initialReferencia.tipo || 'QUIOSQUE');
+      setSubtipoReferencia(initialReferencia.subtipo || 'QUIOSQUE');
+      setDescricaoReferencia(initialReferencia.descricao || '');
+      setStatusReferencia(initialReferencia.status || 'VALIDADO');
+      setAtivoReferencia(initialReferencia.ativo !== false);
+    } else if (initialEntityType === 'REFERENCIA') {
+      setEntityType('REFERENCIA');
+      setNomeReferencia(
+        identifiedLocationText
+          ? identifiedLocationText.split('—')[1]?.trim() || 'Nova Referência'
+          : 'Novo Ponto de Referência'
+      );
+      setTipoReferencia('QUIOSQUE');
+      setSubtipoReferencia('QUIOSQUE');
+      setDescricaoReferencia(identifiedLocationText || 'Ponto de referência cartográfica');
+      setStatusReferencia('VALIDADO');
+      setAtivoReferencia(true);
+    } else if (mode === 'EDITAR' && initialPin) {
       setEntityType(initialPin.entityType || 'SINALIZACAO');
       if (initialPin.entityType === 'OCORRENCIA') {
         setCategoriaOcorrencia(initialPin.category || 'Manutenção');
@@ -74,7 +130,7 @@ export const FormPanelModal: React.FC<FormPanelModalProps> = ({
       setResponsavel(initialPin.responsible || 'Davidsilva • Operações');
       setPhotos(initialPin.photos || []);
     } else {
-      setEntityType('SINALIZACAO');
+      setEntityType(initialEntityType);
       setCategoriaOcorrencia('Manutenção');
       setPrioridade('MEDIA');
       setTitulo(
@@ -85,9 +141,20 @@ export const FormPanelModal: React.FC<FormPanelModalProps> = ({
       setDescricao(identifiedLocationText || 'Placa informativa de orientação para visitantes no corredor principal.');
       setPhotos([]);
     }
-  }, [mode, initialPin, visible, identifiedLocationText]);
+  }, [mode, initialPin, initialReferencia, initialEntityType, visible, identifiedLocationText]);
 
-  if (!visible) return null;
+  useEffect(() => {
+    if (!visible || Platform.OS !== 'web') return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [visible, onClose]);
 
   const handleAddPhotoPress = () => {
     if (Platform.OS === 'web' && fileInputRef.current) {
@@ -137,6 +204,28 @@ export const FormPanelModal: React.FC<FormPanelModalProps> = ({
   const currentCatObj = CATEGORIAS_OCORRENCIA.find((c) => c.nome === categoriaOcorrencia) || CATEGORIAS_OCORRENCIA[0];
 
   const handleSubmit = () => {
+    if (entityType === 'REFERENCIA') {
+      if (onSaveReferencia) {
+        const idSetorNormalizado = CartografiaService.normalizarIdMapaSetor(
+          initialReferencia?.idMapaSetor || confirmedSector
+        );
+        onSaveReferencia({
+          id: initialReferencia?.id || `REF-${Date.now()}`,
+          idMapaSetor: idSetorNormalizado,
+          nome: nomeReferencia.trim() || 'Ponto de Referência',
+          tipo: tipoReferencia,
+          subtipo: subtipoReferencia,
+          x: normalizedX,
+          y: normalizedY,
+          descricao: descricaoReferencia || 'Ponto de referência cartográfica',
+          status: statusReferencia,
+          ativo: ativoReferencia,
+        });
+        onClose();
+      }
+      return;
+    }
+
     const isOcorrencia = entityType === 'OCORRENCIA';
     onSave({
       entityType,
@@ -154,13 +243,19 @@ export const FormPanelModal: React.FC<FormPanelModalProps> = ({
       normalizedY,
       photos,
     });
+    onClose();
   };
 
   const pctX = (normalizedX * 100).toFixed(1);
   const pctY = (normalizedY * 100).toFixed(1);
 
+  if (!visible) return null;
+
   return (
     <View style={styles.overlayContainer}>
+      <TouchableWithoutFeedback onPress={onClose}>
+        <View style={styles.backdrop} />
+      </TouchableWithoutFeedback>
       <View id="formPanel" style={[styles.panelBox, isMobile && styles.panelBoxMobile]}>
         {/* Head (.form-head) */}
         <View style={styles.formHead}>
@@ -170,8 +265,12 @@ export const FormPanelModal: React.FC<FormPanelModalProps> = ({
             </Text>
             <Text id="formTituloS237" style={styles.headTitle}>
               {mode === 'EDITAR'
-                ? entityType === 'OCORRENCIA' ? 'Editar ocorrência' : 'Editar sinalização'
-                : entityType === 'OCORRENCIA' ? 'Nova ocorrência operacional' : 'Cadastro de sinalização'}
+                ? entityType === 'REFERENCIA'
+                  ? 'Editar referência cartográfica'
+                  : entityType === 'OCORRENCIA' ? 'Editar ocorrência' : 'Editar sinalização'
+                : entityType === 'REFERENCIA'
+                  ? 'Novo ponto de referência'
+                  : entityType === 'OCORRENCIA' ? 'Nova ocorrência operacional' : 'Cadastro de sinalização'}
             </Text>
           </View>
 
@@ -191,7 +290,7 @@ export const FormPanelModal: React.FC<FormPanelModalProps> = ({
           </Text>
         </View>
 
-        {/* Seletor de Tipo de Entidade (Sinalização vs Ocorrência Geral) */}
+        {/* Seletor de Tipo de Entidade (Sinalização vs Ocorrência vs Referência) */}
         <View style={styles.entitySelectorWrap}>
           <TouchableOpacity
             style={[styles.entityTypeBtn, entityType === 'SINALIZACAO' && styles.entityTypeBtnActive]}
@@ -209,6 +308,24 @@ export const FormPanelModal: React.FC<FormPanelModalProps> = ({
               ⚠️ Ocorrência Operacional
             </Text>
           </TouchableOpacity>
+          <TouchableOpacity
+            id="btnTipoReferencia"
+            style={[styles.entityTypeBtn, entityType === 'REFERENCIA' && styles.entityTypeBtnActive]}
+            onPress={() => {
+              setEntityType('REFERENCIA');
+              if (!nomeReferencia) {
+                setNomeReferencia(
+                  identifiedLocationText
+                    ? identifiedLocationText.split('—')[1]?.trim() || 'Nova Referência'
+                    : 'Ponto de Referência'
+                );
+              }
+            }}
+          >
+            <Text style={[styles.entityTypeBtnText, entityType === 'REFERENCIA' && styles.entityTypeBtnTextActive]}>
+              📍 Referência Cartográfica
+            </Text>
+          </TouchableOpacity>
         </View>
 
         <ScrollView style={styles.formBody} contentContainerStyle={styles.formBodyContent}>
@@ -216,8 +333,161 @@ export const FormPanelModal: React.FC<FormPanelModalProps> = ({
           <input id="editIdRegistroS237" type="hidden" value={initialPin?.id || ''} />
           <input id="editProtocoloS237" type="hidden" value={initialPin?.assetCode || ''} />
 
-          {/* Se for OCORRÊNCIA */}
-          {entityType === 'OCORRENCIA' ? (
+          {/* Se for REFERÊNCIA CARTOGRÁFICA */}
+          {entityType === 'REFERENCIA' ? (
+            <View style={styles.fieldGrid}>
+              <View
+                style={{
+                  width: '100%',
+                  backgroundColor: '#f8fafc',
+                  borderColor: '#cbd5e1',
+                  borderWidth: 1,
+                  borderRadius: 12,
+                  padding: 12,
+                  marginBottom: 16,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                }}
+              >
+                <View
+                  style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: 16,
+                    backgroundColor: '#10144d',
+                    borderColor: '#ffffff',
+                    borderWidth: 2,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginRight: 12,
+                  }}
+                >
+                  <View
+                    style={{
+                      width: 12,
+                      height: 12,
+                      borderRadius: 6,
+                      backgroundColor: CORES_PADRAO_TIPOS_REFERENCIA[tipoReferencia] || '#38bdf8',
+                    }}
+                  />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontSize: 13, fontWeight: '700', color: '#0f172a' }}>
+                    Símbolo Oficial: {NOMES_PADRAO_TIPOS_REFERENCIA[tipoReferencia] || tipoReferencia}
+                  </Text>
+                  <Text style={{ fontSize: 11.5, color: '#64748b' }}>
+                    Marcador com miolo na cor temática configurada no mapa e na Central de Camadas.
+                  </Text>
+                </View>
+              </View>
+
+              <View style={styles.fieldGroupFull}>
+                <Text style={styles.label}>Nome do Ponto de Referência *</Text>
+                <TextInput
+                  id="inputNomeReferencia"
+                  style={styles.textInput}
+                  value={nomeReferencia}
+                  onChangeText={setNomeReferencia}
+                  placeholder="Ex.: Quiosque 3, Elevador Torre 2, Restaurante..."
+                  placeholderTextColor="#94a3b8"
+                />
+              </View>
+
+              <View style={styles.fieldGroup}>
+                <Text style={styles.label}>Tipo da Referência *</Text>
+                {Platform.OS === 'web' ? (
+                  <select
+                    id="selectTipoReferencia"
+                    value={tipoReferencia}
+                    onChange={(e) => {
+                      const novo = e.target.value;
+                      setTipoReferencia(novo);
+                      if (novo === 'QUIOSQUE') setSubtipoReferencia('QUIOSQUE');
+                      else if (novo === 'CIRCULACAO') setSubtipoReferencia('ELEVADOR');
+                      else if (novo === 'ALIMENTACAO') setSubtipoReferencia('RESTAURANTE');
+                      else if (novo === 'SERVICO') setSubtipoReferencia('SANITARIOS');
+                      else if (novo === 'AREA_ESPECIAL') setSubtipoReferencia('EVENTOS');
+                      else if (novo === 'ADMINISTRATIVO') setSubtipoReferencia('GERENCIA_COMERCIAL');
+                      else if (novo === 'APOIO') setSubtipoReferencia('DEPOSITO');
+                    }}
+                    style={webSelectStyle}
+                  >
+                    {Object.entries(NOMES_PADRAO_TIPOS_REFERENCIA).map(([chave, label]) => (
+                      <option key={chave} value={chave}>
+                        {label} ({chave})
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <Text style={styles.fallbackValue}>{tipoReferencia}</Text>
+                )}
+              </View>
+
+              <View style={styles.fieldGroup}>
+                <Text style={styles.label}>Subtipo / Detalhamento</Text>
+                <TextInput
+                  id="inputSubtipoReferencia"
+                  style={styles.textInput}
+                  value={subtipoReferencia}
+                  onChangeText={setSubtipoReferencia}
+                  placeholder="Ex.: QUIOSQUE, ELEVADOR, RESTAURANTE..."
+                  placeholderTextColor="#94a3b8"
+                />
+              </View>
+
+              <View style={styles.fieldGroupFull}>
+                <Text style={styles.label}>Descrição / Ponto Notável</Text>
+                <TextInput
+                  id="inputDescricaoReferencia"
+                  style={[styles.textInput, { height: 70, textAlignVertical: 'top' }]}
+                  value={descricaoReferencia}
+                  onChangeText={setDescricaoReferencia}
+                  placeholder="Ex.: Em frente à esteira rolante, próximo aos sanitários centrais."
+                  placeholderTextColor="#94a3b8"
+                  multiline
+                />
+              </View>
+
+              <View style={styles.fieldGroup}>
+                <Text style={styles.label}>Status de Homologação</Text>
+                {Platform.OS === 'web' ? (
+                  <select
+                    id="selectStatusReferencia"
+                    value={statusReferencia}
+                    onChange={(e) => setStatusReferencia(e.target.value)}
+                    style={webSelectStyle}
+                  >
+                    <option value="VALIDADO">VALIDADO (Homologado)</option>
+                    <option value="SUGERIDO">SUGERIDO (Levantamento)</option>
+                    <option value="PENDENTE">PENDENTE (Aguardando Calibração)</option>
+                  </select>
+                ) : (
+                  <Text style={styles.fallbackValue}>{statusReferencia}</Text>
+                )}
+              </View>
+
+              <View style={styles.fieldGroup}>
+                <Text style={styles.label}>Visibilidade no Mapa</Text>
+                <TouchableOpacity
+                  style={{ flexDirection: 'row', alignItems: 'center', marginTop: 8 }}
+                  onPress={() => setAtivoReferencia(!ativoReferencia)}
+                  activeOpacity={0.8}
+                >
+                  <View
+                    style={[
+                      styles.checkbox,
+                      ativoReferencia && { backgroundColor: '#10b981', borderColor: '#10b981' },
+                    ]}
+                  >
+                    {ativoReferencia && <Text style={styles.checkmark}>✓</Text>}
+                  </View>
+                  <Text style={[styles.checkLabel, { fontWeight: '600' }]}>
+                    {ativoReferencia ? 'Ponto Ativo no Mapa' : 'Ponto Inativo (Oculto)'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          ) : entityType === 'OCORRENCIA' ? (
             <View style={styles.fieldGrid}>
               <View style={styles.fieldGroup}>
                 <Text style={styles.label}>Categoria da Ocorrência *</Text>
@@ -550,13 +820,115 @@ export const FormPanelModal: React.FC<FormPanelModalProps> = ({
 
         {/* Footer Actions */}
         <View style={styles.formActions}>
+          {/* Botão de Excluir Sinalização com confirmação inline */}
+          {mode === 'EDITAR' && entityType !== 'REFERENCIA' && initialPin && onDeletePin && (
+            !showConfirmDelete ? (
+              <TouchableOpacity
+                id="excluirPinBtn"
+                style={[
+                  styles.btnCancel,
+                  {
+                    borderColor: '#ef4444',
+                    backgroundColor: '#fef2f2',
+                    marginRight: 'auto',
+                  },
+                ]}
+                onPress={() => setShowConfirmDelete(true)}
+              >
+                <Text style={{ color: '#dc2626', fontWeight: '700', fontSize: 13 }}>
+                  🗑️ Excluir Registro
+                </Text>
+              </TouchableOpacity>
+            ) : (
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginRight: 'auto' }}>
+                <TouchableOpacity
+                  id="confirmarExclusaoPinBtn"
+                  style={[
+                    styles.btnCancel,
+                    {
+                      borderColor: '#dc2626',
+                      backgroundColor: '#dc2626',
+                    },
+                  ]}
+                  onPress={() => {
+                    onDeletePin(initialPin.id);
+                    setShowConfirmDelete(false);
+                    onClose();
+                  }}
+                >
+                  <Text style={{ color: '#ffffff', fontWeight: '800', fontSize: 12 }}>
+                    ✓ Confirmar Exclusão
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.btnCancel, { paddingHorizontal: 8 }]}
+                  onPress={() => setShowConfirmDelete(false)}
+                >
+                  <Text style={{ color: '#64748b', fontSize: 12 }}>Cancelar</Text>
+                </TouchableOpacity>
+              </View>
+            )
+          )}
+
+          {/* Botão de Excluir Referência */}
+          {mode === 'EDITAR' && entityType === 'REFERENCIA' && initialReferencia && onDeleteReferencia && (
+            !showConfirmDelete ? (
+              <TouchableOpacity
+                id="excluirReferenciaBtn"
+                style={[
+                  styles.btnCancel,
+                  {
+                    borderColor: '#ef4444',
+                    backgroundColor: '#fef2f2',
+                    marginRight: 'auto',
+                  },
+                ]}
+                onPress={() => setShowConfirmDelete(true)}
+              >
+                <Text style={{ color: '#dc2626', fontWeight: '700', fontSize: 13 }}>
+                  🗑️ Excluir Referência
+                </Text>
+              </TouchableOpacity>
+            ) : (
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginRight: 'auto' }}>
+                <TouchableOpacity
+                  id="confirmarExclusaoRefBtn"
+                  style={[
+                    styles.btnCancel,
+                    {
+                      borderColor: '#dc2626',
+                      backgroundColor: '#dc2626',
+                    },
+                  ]}
+                  onPress={() => {
+                    onDeleteReferencia(initialReferencia.id);
+                    setShowConfirmDelete(false);
+                    onClose();
+                  }}
+                >
+                  <Text style={{ color: '#ffffff', fontWeight: '800', fontSize: 12 }}>
+                    ✓ Confirmar Exclusão
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.btnCancel, { paddingHorizontal: 8 }]}
+                  onPress={() => setShowConfirmDelete(false)}
+                >
+                  <Text style={{ color: '#64748b', fontSize: 12 }}>Cancelar</Text>
+                </TouchableOpacity>
+              </View>
+            )
+          )}
+
           <TouchableOpacity id="cancelarForm" style={styles.btnCancel} onPress={onClose}>
             <Text style={styles.btnCancelText}>Cancelar</Text>
           </TouchableOpacity>
 
           <TouchableOpacity id="salvar" style={styles.btnSave} onPress={handleSubmit}>
             <Text style={styles.btnSaveText}>
-              {mode === 'EDITAR' ? 'Salvar alterações' : 'Salvar registro'}
+              {mode === 'EDITAR'
+                ? entityType === 'REFERENCIA' ? 'Salvar referência' : 'Salvar alterações'
+                : entityType === 'REFERENCIA' ? 'Criar referência' : 'Salvar registro'}
             </Text>
           </TouchableOpacity>
         </View>
@@ -585,6 +957,13 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(16, 18, 40, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  backdrop: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
   },
   panelBox: {
     width: 720,

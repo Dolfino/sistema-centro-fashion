@@ -23,16 +23,18 @@ import {
 interface CentralCartograficaModalProps {
   visible: boolean;
   userRole?: string;
-  abaInicial?: 'CARTOGRAFIA' | 'CALIBRACAO' | 'ESTACIONAMENTO' | 'AREAS_NIVEL_1' | 'SNAPSHOTS';
+  abaInicial?: 'CARTOGRAFIA' | 'CALIBRACAO' | 'AREAS_SUBSOLO' | 'AREAS_NIVEL_1' | 'ESTACIONAMENTO' | 'TORRES_NUCLEOS' | 'SNAPSHOTS';
   onClose: () => void;
   onSelecionarPontoMapa?: (x: number, y: number) => void;
 }
 
-type TabCartografia =
+export type TabCartografia =
   | 'CARTOGRAFIA'
   | 'CALIBRACAO'
-  | 'ESTACIONAMENTO'
+  | 'AREAS_SUBSOLO'
   | 'AREAS_NIVEL_1'
+  | 'ESTACIONAMENTO'
+  | 'TORRES_NUCLEOS'
   | 'SNAPSHOTS';
 
 export const CentralCartograficaModal: React.FC<CentralCartograficaModalProps> = ({
@@ -133,10 +135,12 @@ export const CentralCartograficaModal: React.FC<CentralCartograficaModalProps> =
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
               {[
                 { key: 'CARTOGRAFIA', label: '◈ Nós & Corredores (#33)' },
-                { key: 'CALIBRACAO', label: '⌖ Calibrar Níveis (#34)' },
-                { key: 'ESTACIONAMENTO', label: '🚗 Estacionamento Nível 3 (#35)' },
-                { key: 'AREAS_NIVEL_1', label: '🏢 Áreas do Nível 1 (#36)' },
-                { key: 'SNAPSHOTS', label: '📜 Snapshots & Publicação (#37-#42)' },
+                { key: 'CALIBRACAO', label: '✦ Calibração dos níveis' },
+                { key: 'AREAS_SUBSOLO', label: '⌗ Áreas do Subsolo' },
+                { key: 'AREAS_NIVEL_1', label: '🏢 Áreas do Nível 1' },
+                { key: 'ESTACIONAMENTO', label: '▱ Estacionamento / Nível 3' },
+                { key: 'TORRES_NUCLEOS', label: '⇅ Torres / Núcleos verticais' },
+                { key: 'SNAPSHOTS', label: '📜 Snapshots & Publicação' },
               ].map((tab) => {
                 const ativa = tabAtiva === tab.key;
                 return (
@@ -320,6 +324,86 @@ export const CentralCartograficaModal: React.FC<CentralCartograficaModalProps> =
                       <View style={styles.poligonoMiniBox}>
                         <Text style={styles.poligonoMiniText}>
                           {area.poligonoPontos.length} vértices poligonais delimitados no PostGIS
+                        </Text>
+                      </View>
+                    </View>
+                  ))}
+                </View>
+              </View>
+            )}
+
+            {/* ABA: ÁREAS DO SUBSOLO (NÍVEL 0) */}
+            {tabAtiva === 'AREAS_SUBSOLO' && (
+              <View>
+                <Text style={styles.sectionTitle}>Áreas do Subsolo (Nível 0)</Text>
+                <Text style={styles.sectionSubtitle}>
+                  Estacionamento, circulação, acessos operacionais e área externa do Nível 0
+                </Text>
+
+                <View style={styles.areaEspecialCard}>
+                  <View style={styles.areaEspecialHeader}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                      <View style={[styles.corDot, { backgroundColor: '#6366f1' }]} />
+                      <Text style={styles.areaEspecialNome}>Subsolo • Circulação, Doca e Logística (Nível 0)</Text>
+                    </View>
+                    <View style={styles.badgeAtivo}>
+                      <Text style={styles.badgeAtivoText}>OPERACIONAL</Text>
+                    </View>
+                  </View>
+
+                  <View style={styles.areaEspecialMetrics}>
+                    <View style={styles.metricItem}>
+                      <Text style={styles.metricVal}>420</Text>
+                      <Text style={styles.metricLabel}>Vagas de Carro / Vans</Text>
+                    </View>
+                    <View style={styles.metricItem}>
+                      <Text style={styles.metricVal}>32 Baias</Text>
+                      <Text style={styles.metricLabel}>Ônibus de Excursão</Text>
+                    </View>
+                    <View style={styles.metricItem}>
+                      <Text style={styles.metricVal}>18.200 m²</Text>
+                      <Text style={styles.metricLabel}>Área Total Estimada</Text>
+                    </View>
+                  </View>
+
+                  <View style={styles.poligonoCoordsBox}>
+                    <Text style={styles.poligonoCoordsTitle}>Polígonos & Acessos de Circulação do Subsolo:</Text>
+                    <Text style={styles.poligonoCoordsText}>
+                      POLYGON(((0.02 0.08), (0.98 0.08), (0.98 0.94), (0.02 0.94), (0.02 0.08))) • Acesso Rampa Sul / Acesso Docas
+                    </Text>
+                  </View>
+                </View>
+              </View>
+            )}
+
+            {/* ABA: TORRES E NÚCLEOS VERTICAIS */}
+            {tabAtiva === 'TORRES_NUCLEOS' && (
+              <View>
+                <Text style={styles.sectionTitle}>Torres / Núcleos Verticais</Text>
+                <Text style={styles.sectionSubtitle}>
+                  Identidades físicas e polígonos verticais independentes em N0, N1, N2 e N3
+                </Text>
+
+                <View style={styles.gridCards}>
+                  {[
+                    { id: 'TORRE-1', nome: 'Torre 1 — Praça Principal', cor: '#3b82f6', pisos: 'N0, N1, N2, N3', elevadores: 4 },
+                    { id: 'TORRE-2', nome: 'Torre 2 — Caixa Eletrônico / Roxo', cor: '#8b5cf6', pisos: 'N0, N1, N2, N3', elevadores: 3 },
+                    { id: 'TORRE-3', nome: 'Torre 3 — Estacionamento / Amarelo', cor: '#f59e0b', pisos: 'N1, N2, N3', elevadores: 2 },
+                    { id: 'TORRE-4', nome: 'Torre 4 — Hotel & Acesso Rápido', cor: '#10b981', pisos: 'N0, N1, N2', elevadores: 3 },
+                    { id: 'TORRE-5', nome: 'Torre 5 — Logística & CDM', cor: '#ec4899', pisos: 'N0, N1, N2, N3', elevadores: 2 },
+                  ].map((torre) => (
+                    <View key={torre.id} style={styles.cardArea}>
+                      <View style={styles.cardAreaHeader}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                          <View style={[styles.corDot, { backgroundColor: torre.cor }]} />
+                          <Text style={styles.areaNome}>{torre.nome}</Text>
+                        </View>
+                        <Text style={styles.areaTipo}>{torre.id}</Text>
+                      </View>
+                      <Text style={styles.areaMetragem}>Conexão vertical: {torre.pisos}</Text>
+                      <View style={styles.poligonoMiniBox}>
+                        <Text style={styles.poligonoMiniText}>
+                          {torre.elevadores} elevadores / escadas rolantes integrados com georreferência
                         </Text>
                       </View>
                     </View>

@@ -30,14 +30,17 @@ export interface PontoReferenciaOficial {
   descricao: string;
   status: string;
   ativo: boolean;
+  confirmada?: boolean;
+  localizacaoTexto?: string;
 }
 
 export const CORES_PADRAO_TIPOS_REFERENCIA: Record<string, string> = {
   CIRCULACAO: '#38bdf8',    // Azul celeste (esteiras, escadas, elevadores)
   SERVICO: '#10b981',       // Verde esmeralda (saúde, lotérica, bancos, sanitários)
   ALIMENTACAO: '#f59e0b',   // Âmbar dourado (restaurante, lanchonetes)
-  AREA_ESPECIAL: '#ec4899', // Rosa vibrante (área de eventos)
-  ADMINISTRATIVO: '#8b5cf6',// Roxo (gerência comercial, adm)
+  QUIOSQUE: '#ec4899',      // Rosa vibrante (quiosques, bombonieres, ilhas)
+  AREA_ESPECIAL: '#8b5cf6', // Roxo (área de eventos)
+  ADMINISTRATIVO: '#6366f1',// Índigo (gerência comercial, adm)
   APOIO: '#64748b',         // Ardósia / Cinza azulado (depósitos, baús)
   OUTRO: '#06b6d4',         // Ciano (geral)
 };
@@ -46,6 +49,7 @@ export const NOMES_PADRAO_TIPOS_REFERENCIA: Record<string, string> = {
   CIRCULACAO: 'Circulação',
   SERVICO: 'Serviços',
   ALIMENTACAO: 'Alimentação',
+  QUIOSQUE: 'Quiosque',
   AREA_ESPECIAL: 'Área Especial',
   ADMINISTRATIVO: 'Administrativo',
   APOIO: 'Apoio Operacional',
@@ -250,14 +254,81 @@ export class CartografiaService {
     if (key.includes('ROXO')) return 'MAP-CFF-N3-ROXO';
     if (key.includes('VERMELHO')) return 'MAP-CFF-N3-VERMELHO';
     if (key.includes('NIVEL_1')) return 'PLA-CFF-N1-2025';
+    if (key.includes('NIVEL_2')) return 'PLA-CFF-N2-2025';
+    if (key.includes('NIVEL_3')) return 'PLA-CFF-N3-2025';
+    if (key.includes('NIVEL_0')) return 'PLA-CFF-N0-2025';
     return key;
   }
 
+  private static STORAGE_KEY_REFERENCIAS = 'cff_cartografia_referencias_custom';
+
   /**
-   * Retorna os pontos de referência oficiais cadastrados na planilha/base cartográfica
+   * Retorna todas as referências oficiais cadastradas (unindo base original e edições locais salvas)
+   */
+  static obterTodasReferenciasOficiais(): PontoReferenciaOficial[] {
+    const rawList = (cartografiaDataRaw.referencias || []) as PontoReferenciaOficial[];
+    if (typeof window !== 'undefined' && window.localStorage) {
+      const saved = window.localStorage.getItem(CartografiaService.STORAGE_KEY_REFERENCIAS);
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            return parsed;
+          }
+        } catch {}
+      }
+    }
+    return rawList;
+  }
+
+  /**
+   * Salva uma referência (criação ou edição) persistindo no localStorage
+   */
+  static salvarReferenciaOficial(ref: PontoReferenciaOficial): PontoReferenciaOficial[] {
+    const listaAtual = CartografiaService.obterTodasReferenciasOficiais();
+    const index = listaAtual.findIndex((r) => r.id === ref.id);
+    let novaLista: PontoReferenciaOficial[];
+
+    if (index >= 0) {
+      novaLista = listaAtual.map((r, i) => (i === index ? { ...r, ...ref } : r));
+    } else {
+      novaLista = [ref, ...listaAtual];
+    }
+
+    if (typeof window !== 'undefined' && window.localStorage) {
+      window.localStorage.setItem(CartografiaService.STORAGE_KEY_REFERENCIAS, JSON.stringify(novaLista));
+    }
+    return novaLista;
+  }
+
+  /**
+   * Exclui uma referência cartográfica oficial persistindo a alteração
+   */
+  static excluirReferenciaOficial(id: string): PontoReferenciaOficial[] {
+    const listaAtual = CartografiaService.obterTodasReferenciasOficiais();
+    const novaLista = listaAtual.filter((r) => r.id !== id);
+
+    if (typeof window !== 'undefined' && window.localStorage) {
+      window.localStorage.setItem(CartografiaService.STORAGE_KEY_REFERENCIAS, JSON.stringify(novaLista));
+    }
+    return novaLista;
+  }
+
+  /**
+   * Restaura a lista de referências original de fábrica
+   */
+  static restaurarReferenciasPadrao(): PontoReferenciaOficial[] {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      window.localStorage.removeItem(CartografiaService.STORAGE_KEY_REFERENCIAS);
+    }
+    return (cartografiaDataRaw.referencias || []) as PontoReferenciaOficial[];
+  }
+
+  /**
+   * Retorna os pontos de referência oficiais cadastrados na planilha/base cartográfica filtrados por setor
    */
   static obterReferenciasOficiais(setorKey?: string): PontoReferenciaOficial[] {
-    const rawList = (cartografiaDataRaw.referencias || []) as PontoReferenciaOficial[];
+    const rawList = CartografiaService.obterTodasReferenciasOficiais();
     if (!setorKey || setorKey === 'TODOS') {
       return rawList.filter((r) => r.ativo !== false && r.x > 0 && r.y > 0);
     }
@@ -476,15 +547,21 @@ export class CartografiaService {
       setorRotulo = 'Setor Verde • Piso 1';
     } else if (sUpper.includes('AMARELO')) {
       idMapaSetor = 'MAP-CFF-N2-AMARELO';
-      setorRotulo = 'Setor Amarelo • Piso 1';
+      setorRotulo = 'Setor Amarelo • Piso 2';
     } else if (sUpper.includes('ROXO')) {
       idMapaSetor = 'MAP-CFF-N3-ROXO';
-      setorRotulo = 'Setor Roxo • Piso 1';
+      setorRotulo = 'Setor Roxo • Piso 3';
     } else if (sUpper.includes('BRANCO')) {
       idMapaSetor = 'MAP-CFF-N2-BRANCO';
-      setorRotulo = 'Setor Branco • Piso 1';
-    } else if (sUpper.includes('NIVEL_1') || sUpper.includes('VISAO GERAL')) {
-      setorRotulo = 'Nível 1 • Geral';
+      setorRotulo = 'Setor Branco • Piso 2';
+    } else if (sUpper.includes('NIVEL_1')) {
+      setorRotulo = 'Nível 1 — Azul + Verde';
+    } else if (sUpper.includes('NIVEL_2')) {
+      setorRotulo = 'Nível 2 — Amarelo + Branco';
+    } else if (sUpper.includes('NIVEL_3')) {
+      setorRotulo = 'Nível 3 — Roxo + Vermelho / Estacionamento';
+    } else if (sUpper.includes('NIVEL_0')) {
+      setorRotulo = 'Nível 0 — Subsolo';
     }
 
     const corredores = corredoresGeometriaRaw as CorredorGeometriaItem[];
