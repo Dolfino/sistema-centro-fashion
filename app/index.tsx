@@ -1,6 +1,5 @@
-import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, useWindowDimensions, Platform, TextInput, ScrollView } from 'react-native';
-import NetInfo from '@react-native-community/netinfo';
 import { InteractiveMallMap, SignagePin } from '../src/components/InteractiveMallMap';
 import { AppMenuModal } from '../src/components/AppMenuModal';
 import { CamadasModal } from '../src/components/CamadasModal';
@@ -92,63 +91,76 @@ const initialOutboxItems: OutboxItem[] = [
 ];
 
 import { OfflineStorageService } from '../src/services/OfflineStorageService';
-import { OutboxSyncEngine, OutboxMutation } from '../src/sync/outboxEngine';
-import { StorageFactory } from '../src/storage/StorageFactory';
-import { getDeviceId } from '../src/services/deviceId';
-import { API_BASE_URL } from '../src/services/apiClient';
+import { useStorageData, useNetworkStatus, useSyncFlow, useModalFlags } from '../src/hooks';
 
 export default function LegacyMainShellScreen() {
   const [selectedMapKey, setSelectedMapKey] = useState<string>('SETOR_AZUL');
 
-  // Inicialização com Storage Real (SQLite no nativo / localStorage na web)
-  const [pinsList, setPinsList] = useState<SignagePin[]>([]);
-  const [outboxItems, setOutboxItems] = useState<OutboxItem[]>([]);
+  // Storage offline (hidratação + persistência) — src/hooks/useStorageData
+  const { pinsList, setPinsList, outboxItems, setOutboxItems, selectedPin, setSelectedPin } = useStorageData();
 
-  // Pin Selecionado no Mapa
-  const [selectedPin, setSelectedPin] = useState<SignagePin | null>(null);
+  // Detector de rede (UI-4) — src/hooks/useNetworkStatus
+  const { networkState, setNetworkState } = useNetworkStatus();
 
-  // Hidratação assíncrona do storage (SQLite/localStorage via StorageFactory)
-  useEffect(() => {
-    let cancelled = false;
-    const hydrate = async () => {
-      try {
-        const [pins, outbox] = await Promise.all([
-          OfflineStorageService.loadPins(),
-          OfflineStorageService.loadOutbox(),
-        ]);
-        if (cancelled) return;
-        setPinsList(pins);
-        setOutboxItems(outbox);
-        setSelectedPin((current) => current ?? pins[0] ?? null);
-      } catch (e) {
-        console.error('[STORAGE] Falha na hidratação inicial:', e);
-      }
-    };
-    hydrate();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  // Camada de sync real (Fase 2) — src/hooks/useSyncFlow
+  const {
+    isSyncing,
+    enginePendingCount,
+    generateClientEventId,
+    handleSyncOutbox,
+    handleRetryItem,
+    enqueueOutboxEvent,
+  } = useSyncFlow({ networkState, setNetworkState, pinsList, setPinsList, setOutboxItems });
 
-  // Outbox Sync Engine (fila de mutações persistida + sincronização real com a API)
-  const syncEngineRef = useRef<OutboxSyncEngine | null>(null);
-  if (!syncEngineRef.current) {
-    syncEngineRef.current = new OutboxSyncEngine(`${API_BASE_URL}/sync`, StorageFactory.getAdapter());
-  }
-  useEffect(() => {
-    void syncEngineRef.current?.init().then(() => {
-      setEnginePendingCount(syncEngineRef.current?.getPendingQueue().length ?? 0);
-    });
-  }, []);
-
-  // Modais e Painéis da UI-2
-  const [menuOpen, setMenuOpen] = useState<boolean>(false);
-  const [camadasOpen, setCamadasOpen] = useState<boolean>(false);
-  const [showCentralCamadas, setShowCentralCamadas] = useState<boolean>(false);
-  const [showSinalizacoes, setShowSinalizacoes] = useState<boolean>(true);
-  const [showReferencias, setShowReferencias] = useState<boolean>(true);
-  const [showCruzamentos, setShowCruzamentos] = useState<boolean>(true);
-  const [showLojas, setShowLojas] = useState<boolean>(false);
+  // Flags de modais/painéis — src/hooks/useModalFlags
+  const {
+    menuOpen, setMenuOpen,
+    camadasOpen, setCamadasOpen,
+    showCentralCamadas, setShowCentralCamadas,
+    showSinalizacoes, setShowSinalizacoes,
+    showReferencias, setShowReferencias,
+    showCruzamentos, setShowCruzamentos,
+    showLojas, setShowLojas,
+    gerenciadorRefOpen, setGerenciadorRefOpen,
+    positioningMode, setPositioningMode,
+    localCardVisible, setLocalCardVisible,
+    formPanelVisible, setFormPanelVisible,
+    offlineCacheOpen, setOfflineCacheOpen,
+    filaOutboxOpen, setFilaOutboxOpen,
+    fotoModalOpen, setFotoModalOpen,
+    inspecaoModalOpen, setInspecaoModalOpen,
+    historicoModalOpen, setHistoricoModalOpen,
+    pendenciasModalOpen, setPendenciasModalOpen,
+    cicloVidaModalOpen, setCicloVidaModalOpen,
+    antesDepoisOpen, setAntesDepoisOpen,
+    dashboardOpen, setDashboardOpen,
+    centralGestaoOpen, setCentralGestaoOpen,
+    rondaExecucaoOpen, setRondaExecucaoOpen,
+    alertasOpen, setAlertasOpen,
+    agendaOpen, setAgendaOpen,
+    relatoriosOpen, setRelatoriosOpen,
+    loja360Open, setLoja360Open,
+    centralGestaoLojistasOpen, setCentralGestaoLojistasOpen,
+    financeiroModalOpen, setFinanceiroModalOpen,
+    centralFinanceiraOpen, setCentralFinanceiraOpen,
+    contratoEditorOpen, setContratoEditorOpen,
+    lancamentoEditorOpen, setLancamentoEditorOpen,
+    pagamentoModalOpen, setPagamentoModalOpen,
+    acordoEditorOpen, setAcordoEditorOpen,
+    auditoriaCentralOpen, setAuditoriaCentralOpen,
+    auditoriaEditorOpen, setAuditoriaEditorOpen,
+    centralAnaliticaOpen, setCentralAnaliticaOpen,
+    adminModalOpen, setAdminModalOpen,
+    centralCartograficaOpen, setCentralCartograficaOpen,
+    calibracaoModalOpen, setCalibracaoModalOpen,
+    areasNivel0ModalOpen, setAreasNivel0ModalOpen,
+    configuracoesCadastroOpen, setConfiguracoesCadastroOpen,
+    centralReferenciasOpen, setCentralReferenciasOpen,
+    ativoMallOpen, setAtivoMallOpen,
+    campanhasCentralOpen, setCampanhasCentralOpen,
+    levantamentoModalOpen, setLevantamentoModalOpen,
+    levantamentoRegistroOpen, setLevantamentoRegistroOpen,
+  } = useModalFlags();
   const [camadasFilters, setCamadasFilters] = useState<{
     query?: string;
     tipo?: string;
@@ -241,7 +253,6 @@ export default function LegacyMainShellScreen() {
   const [referenciasList, setReferenciasList] = useState<PontoReferenciaOficial[]>(() => {
     return CartografiaService.obterTodasReferenciasOficiais();
   });
-  const [gerenciadorRefOpen, setGerenciadorRefOpen] = useState<boolean>(false);
   const [selectedReferencia, setSelectedReferencia] = useState<PontoReferenciaOficial | null>(null);
   const [editingReferencia, setEditingReferencia] = useState<PontoReferenciaOficial | null>(null);
 
@@ -291,103 +302,52 @@ export default function LegacyMainShellScreen() {
   }, []);
 
   // Estados do Fluxo de Posicionamento e Cadastro (UI-3)
-  const [positioningMode, setPositioningMode] = useState<boolean>(false);
   const [draftPin, setDraftPin] = useState<{ normalizedX: number; normalizedY: number } | null>(null);
-  const [localCardVisible, setLocalCardVisible] = useState<boolean>(false);
-  const [formPanelVisible, setFormPanelVisible] = useState<boolean>(false);
   const [formMode, setFormMode] = useState<'NOVO' | 'EDITAR'>('NOVO');
   const [editingPin, setEditingPin] = useState<SignagePin | null>(null);
   const [identifiedLocationText, setIdentifiedLocationText] = useState<string>('');
 
-  // Estados de Rede e Offline/Outbox (UI-4)
-  const [networkState, setNetworkState] = useState<'ONLINE' | 'DEGRADADO' | 'OFFLINE' | 'RECUPERANDO'>('ONLINE');
-  const [offlineCacheOpen, setOfflineCacheOpen] = useState<boolean>(false);
-  const [filaOutboxOpen, setFilaOutboxOpen] = useState<boolean>(false);
-  const [isSyncing, setIsSyncing] = useState<boolean>(false);
-  const [enginePendingCount, setEnginePendingCount] = useState<number>(0);
-
   // Modal de Fotos da Galeria S22.5 (Superfície #9 - UI-5)
-  const [fotoModalOpen, setFotoModalOpen] = useState<boolean>(false);
   const [fotoPin, setFotoPin] = useState<SignagePin | null>(null);
 
   // Usabilidade, Busca Rápida e Filtros de Ronda (UI-6)
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [filterConservation, setFilterConservation] = useState<string>('TODOS');
-  const [inspecaoModalOpen, setInspecaoModalOpen] = useState<boolean>(false);
   const [inspecaoPin, setInspecaoPin] = useState<SignagePin | null>(null);
 
   // Ações do Card de Sinalização (UI-7)
-  const [historicoModalOpen, setHistoricoModalOpen] = useState<boolean>(false);
   const [historicoPin, setHistoricoPin] = useState<SignagePin | null>(null);
 
-  const [pendenciasModalOpen, setPendenciasModalOpen] = useState<boolean>(false);
   const [pendenciasPin, setPendenciasPin] = useState<SignagePin | null>(null);
 
-  const [cicloVidaModalOpen, setCicloVidaModalOpen] = useState<boolean>(false);
   const [cicloVidaPin, setCicloVidaPin] = useState<SignagePin | null>(null);
 
   // Comparador Antes e Depois & Dashboard Gerencial (Etapa 1)
-  const [antesDepoisOpen, setAntesDepoisOpen] = useState<boolean>(false);
   const [antesDepoisPin, setAntesDepoisPin] = useState<SignagePin | null>(null);
-  const [dashboardOpen, setDashboardOpen] = useState<boolean>(false);
-
-  // Operação em Campo & Central de Gestão (Etapa 2)
-  const [centralGestaoOpen, setCentralGestaoOpen] = useState<boolean>(false);
-  const [rondaExecucaoOpen, setRondaExecucaoOpen] = useState<boolean>(false);
-  const [alertasOpen, setAlertasOpen] = useState<boolean>(false);
-  const [agendaOpen, setAgendaOpen] = useState<boolean>(false);
-
-  // Relatórios Executivos & Apresentações em Slides (Etapa 3)
-  const [relatoriosOpen, setRelatoriosOpen] = useState<boolean>(false);
 
   // Loja 360 & Gestão de Boxes (Paridade Google Apps Script)
-  const [loja360Open, setLoja360Open] = useState<boolean>(false);
   const [lojaSelecionada360, setLojaSelecionada360] = useState<FichaLoja360 | null>(null);
-  const [centralGestaoLojistasOpen, setCentralGestaoLojistasOpen] = useState<boolean>(false);
 
   // Contratos & Financeiro Restrito (Fase L3.4, L3.5, L3.6 e L3.7)
-  const [financeiroModalOpen, setFinanceiroModalOpen] = useState<boolean>(false);
   const [financeiroPermissionarioId, setFinanceiroPermissionarioId] = useState<string | null>(null);
-  const [centralFinanceiraOpen, setCentralFinanceiraOpen] = useState<boolean>(false);
-  const [contratoEditorOpen, setContratoEditorOpen] = useState<boolean>(false);
   const [contratoEditorPermissionarioId, setContratoEditorPermissionarioId] = useState<string | null>(null);
   const [contratoParaEditar, setContratoParaEditar] = useState<ContratoLocacao | null>(null);
-  const [lancamentoEditorOpen, setLancamentoEditorOpen] = useState<boolean>(false);
   const [lancamentoParaAjustar, setLancamentoParaAjustar] = useState<LancamentoFinanceiro | null>(null);
-  const [pagamentoModalOpen, setPagamentoModalOpen] = useState<boolean>(false);
   const [lancamentoParaPagamento, setLancamentoParaPagamento] = useState<LancamentoFinanceiro | null>(null);
-  const [acordoEditorOpen, setAcordoEditorOpen] = useState<boolean>(false);
   const [acordoParaEditar, setAcordoParaEditar] = useState<AcordoFinanceiro | null>(null);
   const [financeiroUpdateKey, setFinanceiroUpdateKey] = useState<number>(0);
 
   // Auditoria de Vendas & Faturamento (Fase L3.8)
-  const [auditoriaCentralOpen, setAuditoriaCentralOpen] = useState<boolean>(false);
-  const [auditoriaEditorOpen, setAuditoriaEditorOpen] = useState<boolean>(false);
   const [auditoriaParaEditar, setAuditoriaParaEditar] = useState<RegistroAuditoriaVenda | null>(null);
   const [auditoriaUpdateKey, setAuditoriaUpdateKey] = useState<number>(0);
 
-  // Central Analítica Comercial (Fase L3.9)
-  const [centralAnaliticaOpen, setCentralAnaliticaOpen] = useState<boolean>(false);
-
   // Central de Administração Global & Governança Cartográfica (Fase L5.0)
-  const [adminModalOpen, setAdminModalOpen] = useState<boolean>(false);
-  const [centralCartograficaOpen, setCentralCartograficaOpen] = useState<boolean>(false);
-  const [calibracaoModalOpen, setCalibracaoModalOpen] = useState<boolean>(false);
-  const [areasNivel0ModalOpen, setAreasNivel0ModalOpen] = useState<boolean>(false);
-  const [configuracoesCadastroOpen, setConfiguracoesCadastroOpen] = useState<boolean>(false);
-  const [centralReferenciasOpen, setCentralReferenciasOpen] = useState<boolean>(false);
   const [abaCartograficaInicial, setAbaCartograficaInicial] = useState<TabCartografia>('CARTOGRAFIA');
-
-  // Ativos do Mall & Fiscalização de Mídia Física (Paridade Google Apps Script)
-  const [ativoMallOpen, setAtivoMallOpen] = useState<boolean>(false);
 
   // Camadas Temáticas de Campanhas no Mapa (L2.3, L2.4, L2.5)
   const [campanhaAtivaId, setCampanhaAtivaId] = useState<string | null>(null);
-  const [campanhasCentralOpen, setCampanhasCentralOpen] = useState<boolean>(false);
 
   // Modo Levantamento de Campo & Salvar e Próximo (Fase L2.6)
-  const [levantamentoModalOpen, setLevantamentoModalOpen] = useState<boolean>(false);
-  const [levantamentoRegistroOpen, setLevantamentoRegistroOpen] = useState<boolean>(false);
   const [pontoLevantamentoSelecionado, setPontoLevantamentoSelecionado] = useState<PontoLevantamento | null>(null);
   const [mapResetTrigger, setMapResetTrigger] = useState<number>(0);
 
@@ -398,34 +358,8 @@ export default function LegacyMainShellScreen() {
   const { width: windowWidth } = useWindowDimensions();
   const isMobile = windowWidth < 700;
 
-  // URL triggers e Listener automático para detector de rede (UI-4)
+  // URL triggers (web) para estados de rede e fluxos — o detector de rede vive em useNetworkStatus
   useEffect(() => {
-    const updateNetworkStatus = () => {
-      if (typeof navigator !== 'undefined' && navigator.onLine === false) {
-        setNetworkState('OFFLINE');
-      } else {
-        setNetworkState('ONLINE');
-      }
-    };
-
-    updateNetworkStatus();
-
-    // NetInfo funciona em web e nativo; mantém fallback window para segurança
-    let unsubscribeNetInfo: (() => void) | null = null;
-    if (typeof NetInfo !== 'undefined' && typeof NetInfo.addEventListener === 'function') {
-      unsubscribeNetInfo = NetInfo.addEventListener((state) => {
-        if (state.isConnected === false || state.isInternetReachable === false) {
-          setNetworkState('OFFLINE');
-        } else {
-          setNetworkState('ONLINE');
-        }
-      });
-    } else if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
-      window.addEventListener('online', () => setNetworkState('ONLINE'));
-      window.addEventListener('offline', () => setNetworkState('OFFLINE'));
-    }
-    const interval = setInterval(updateNetworkStatus, 1500);
-
     if (Platform.OS === 'web' && typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
       const view = params.get('view');
@@ -490,11 +424,6 @@ export default function LegacyMainShellScreen() {
         setFormPanelVisible(false);
       }
     }
-
-    return () => {
-      clearInterval(interval);
-      if (unsubscribeNetInfo) unsubscribeNetInfo();
-    };
   }, []);
 
   const mapGroups = [
@@ -907,199 +836,6 @@ export default function LegacyMainShellScreen() {
     setFormPanelVisible(false);
     setPositioningMode(false);
     setDraftPin(null);
-  };
-
-  /**
-   * Sincronização real: envia mutações pendentes/falhas para a API e puxa o delta.
-   * Atualiza o estado da fila visível conforme o resultado do push.
-   */
-  const handleSyncOutbox = async () => {
-    const engine = syncEngineRef.current;
-    if (!engine || isSyncing) return;
-    setIsSyncing(true);
-    try {
-      const deviceId = await getDeviceId();
-      const res = await engine.syncWithServer(deviceId);
-
-      setOutboxItems((prev) => {
-        const nextOutbox = prev.map((i) =>
-          res.success
-            ? { ...i, status: 'CONCLUIDO' as const, errorMessage: null }
-            : { ...i, status: 'ERRO' as const, errorMessage: 'Falha ao sincronizar com o servidor' }
-        );
-        void OfflineStorageService.saveOutbox(nextOutbox);
-        return nextOutbox;
-      });
-
-      if (res.success) {
-        setNetworkState('ONLINE');
-        // Puxa delta do servidor e atualiza o cache local
-        await pullAndMergeRemoteChanges();
-      }
-    } catch (e: any) {
-      console.error('[SYNC] Falha na sincronização:', e?.message || e);
-    } finally {
-      refreshEnginePending();
-      setIsSyncing(false);
-    }
-  };
-
-  const handleRetryItem = async (clientEventId: string) => {
-    setOutboxItems((prev) => {
-      const nextOutbox = prev.map((i) =>
-        i.clientEventId === clientEventId
-          ? { ...i, status: 'PROCESSANDO' as const, errorMessage: null, retryCount: i.retryCount + 1 }
-          : i
-      );
-      void OfflineStorageService.saveOutbox(nextOutbox);
-      return nextOutbox;
-    });
-    // O engine reenvia PENDING + FAILED; o retry de um item sincroniza todos os pendentes.
-    const engine = syncEngineRef.current;
-    if (!engine) return;
-    try {
-      const deviceId = await getDeviceId();
-      const res = await engine.syncWithServer(deviceId);
-      setOutboxItems((prev) => {
-        const nextOutbox = prev.map((i) =>
-          res.success
-            ? { ...i, status: 'CONCLUIDO' as const, errorMessage: null }
-            : i.clientEventId === clientEventId
-            ? { ...i, status: 'ERRO' as const, errorMessage: 'Servidor indisponível' }
-            : i
-        );
-        void OfflineStorageService.saveOutbox(nextOutbox);
-        return nextOutbox;
-      });
-    } catch (e: any) {
-      console.error('[SYNC] Falha no retry:', e?.message || e);
-    }
-    refreshEnginePending();
-  };
-
-  /**
-   * Puxa alterações delta do servidor e funde no cache local de pins.
-   */
-  const pullAndMergeRemoteChanges = async () => {
-    const engine = syncEngineRef.current;
-    if (!engine) return;
-    try {
-      const meta = await OfflineStorageService.getCacheMetadata();
-      const pull = await engine.pullFromServer(meta?.lastPulledAt ?? null);
-
-      const remoteRows = [
-        ...(pull.changes?.signage?.created || []),
-        ...(pull.changes?.signage?.updated || []),
-      ].filter((row: any) => !row.deleted_at);
-
-      if (remoteRows.length === 0) {
-        await OfflineStorageService.updateCacheMetadata(
-          pinsList.length,
-          0,
-          pull.timestamp
-        );
-        return;
-      }
-
-      const remotePins: SignagePin[] = remoteRows.map((row: any) => ({
-        id: `remote_${row.asset_code}`,
-        assetCode: row.asset_code,
-        category: row.category || 'Placa informativa',
-        sector: 'SETOR_AZUL',
-        status: row.lifecycle_status === 'INACTIVE' ? 'INATIVA' : 'ATIVA',
-        conservationState: row.conservation_status || 'Boa',
-        normalizedX: Number(row.normalized_x) || 0.5,
-        normalizedY: Number(row.normalized_y) || 0.5,
-        notes: row.notes || undefined,
-        humanLocation: row.human_location_text || undefined,
-      }));
-
-      setPinsList((prev) => {
-        const byCode = new Map(prev.map((p) => [p.assetCode, p]));
-        remotePins.forEach((rp) => {
-          const existing = byCode.get(rp.assetCode);
-          if (existing) {
-            byCode.set(rp.assetCode, { ...existing, ...rp, id: existing.id });
-          } else {
-            byCode.set(rp.assetCode, rp);
-          }
-        });
-        const merged = Array.from(byCode.values());
-        void OfflineStorageService.savePins(merged);
-        void OfflineStorageService.updateCacheMetadata(merged.length, 0, pull.timestamp);
-        return merged;
-      });
-    } catch (e: any) {
-      console.warn('[SYNC] Falha ao puxar delta do servidor:', e?.message || e);
-    }
-  };
-
-  /**
-   * Atualiza o contador de mutações pendentes do engine (habilita "Sincronizar" na Fila).
-   */
-  const refreshEnginePending = useCallback(() => {
-    setEnginePendingCount(syncEngineRef.current?.getPendingQueue().length ?? 0);
-  }, []);
-
-  /**
-   * Gera id de evento compatível com o protocolo de sync (UUID v4 exigido pelo backend).
-   */
-  const generateClientEventId = (): string => {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-      const r = (Math.random() * 16) | 0;
-      const v = c === 'x' ? r : (r & 0x3) | 0x8;
-      return v.toString(16);
-    });
-  };
-
-  /**
-   * Registra evento na fila Outbox visível + mutação no engine de sync (mesmo id).
-   * Quando ONLINE, dispara a sincronização imediata e reflete o resultado no item.
-   */
-  const enqueueOutboxEvent = async (
-    event: OutboxItem,
-    mutation?: { entityType: OutboxMutation['entityType']; actionType: OutboxMutation['actionType']; payload: Record<string, any> }
-  ) => {
-    setOutboxItems((prev) => {
-      const nextOutbox = [event, ...prev];
-      void OfflineStorageService.saveOutbox(nextOutbox);
-      return nextOutbox;
-    });
-
-    const engine = syncEngineRef.current;
-    if (!engine) return;
-
-    if (mutation) {
-      try {
-        await engine.addMutation(mutation.entityType, mutation.actionType, mutation.payload, event.clientEventId);
-        refreshEnginePending();
-      } catch (e: any) {
-        console.error('[SYNC] Falha ao registrar mutação local:', e?.message || e);
-      }
-    }
-
-    if (networkState === 'ONLINE') {
-      try {
-        const deviceId = await getDeviceId();
-        const res = await engine.syncWithServer(deviceId);
-        setOutboxItems((prev) => {
-          const nextOutbox = prev.map((i) =>
-            i.clientEventId === event.clientEventId
-              ? {
-                  ...i,
-                  status: res.success ? ('CONCLUIDO' as const) : ('ERRO' as const),
-                  errorMessage: res.success ? null : 'Falha ao sincronizar com o servidor',
-                }
-              : i
-          );
-          void OfflineStorageService.saveOutbox(nextOutbox);
-          return nextOutbox;
-        });
-      } catch (e: any) {
-        console.error('[SYNC] Falha na sincronização imediata:', e?.message || e);
-      }
-      refreshEnginePending();
-    }
   };
 
   const handleActionClick = (actionId: string, pin: SignagePin) => {
