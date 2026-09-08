@@ -5,7 +5,7 @@
 ## Visão geral
 
 Plataforma de sinalização e operação do Mall Centro Fashion, migrada do legado
-(Google Sheets + Apps Script, em `legacy_gas_code/`) para React Native/Expo + Node.js/Fastify + PostgreSQL/PostGIS.
+(Google Sheets + Apps Script, em `legacy_gas_code/`) para React Native/Expo + Node.js/Fastify + PostgreSQL.
 
 ## Frontend (Expo SDK 51 / React Native 0.74)
 
@@ -48,18 +48,19 @@ Plataforma de sinalização e operação do Mall Centro Fashion, migrada do lega
   - `GET /health`
   - `GET/POST /api/v1/sync/pull|push` — delta + outbox idempotente (`outbox_sync_log`),
     push trata CREATE/UPDATE/DELETE (soft delete) de signage e inspeções
-  - `GET /api/v1/signage` e `/signage/nearby` — queries geo defensivas (COALESCE geometry→lat/lng)
+  - `GET /api/v1/signage` e `/signage/nearby` — **sem dependência de PostGIS** (distância haversine sobre lat/lng)
   - `POST /api/v1/media/presigned-upload-url` — MinIO S3
 - **Config**: `DATABASE_URL` obrigatória (sem fallback hardcoded desde o commit de segurança `364f13e`).
   Template em `backend/.env.example`; `.env` é ignorado pelo Git.
-- Migração pendente na VPS: `signage_positions.geometry` (ver `database/001_initial_schema.sql`, bloco DO).
 
-## Banco de dados (PostgreSQL 16 + PostGIS 3.4)
+## Banco de dados (PostgreSQL 16 — pgvector na VPS)
+
+- **Produção (VPS)**: imagem `pgvector/pgvector:0.8.6-pg16-trixie` **sem PostGIS** — as rotas da API não dependem dele.
+- PostGIS é suportado opcionalmente: a coluna `signage_positions.geometry` só é criada se a extensão existir.
 
 - `database/001_initial_schema.sql`: schema + migrações idempotentes (DO blocks).
 - `database/002_seed_data.sql`: dados legados.
-- Tabelas-chave: `signage_assets`, `signage_positions` (geometry Point 4326 + GIST),
-  `inspections`, `media_assets`, `outbox_sync_log` (idempotência do push).
+- Tabelas-chave: `signage_assets`, `signage_positions` (geometry opcional se PostGIS), `inspections`, `media_assets`, `outbox_sync_log` (idempotência do push).
 
 ## Infraestrutura e CI/CD
 
@@ -91,4 +92,3 @@ Plataforma de sinalização e operação do Mall Centro Fashion, migrada do lega
 - Rotação da credencial do banco na VPS (senha antiga exposta no histórico do GitHub — ver commit `364f13e`).
 - `npm audit`: 44 vulnerabilidades reportadas nas dependências (triagem pendente; não aplicar `--force` sem análise).
 - ~37 warnings de lint (unused vars de scaffolds de features e exhaustive-deps).
-- Migração `signage_positions.geometry` no banco da VPS ao subir o backend novo.

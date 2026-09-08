@@ -24,8 +24,7 @@ export async function syncRoutes(fastify: FastifyInstance) {
     const client = await pool.connect();
     try {
       const signageRes = await client.query(
-        `SELECT sa.*, sp.normalized_x, sp.normalized_y,
-                COALESCE(sp.geometry, ST_SetSRID(ST_MakePoint(sp.lng, sp.lat), 4326)) as geometry
+        `SELECT sa.*, sp.normalized_x, sp.normalized_y, sp.human_location_text
          FROM signage_assets sa
          LEFT JOIN signage_positions sp ON sa.id = sp.signage_id
          WHERE sa.updated_at > $1`,
