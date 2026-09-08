@@ -7,6 +7,7 @@
  */
 
 import type { OfflineStorageAdapter } from '../storage/OfflineStorageAdapter';
+import { apiFetch } from '../services/apiClient';
 
 export interface OutboxMutation {
   clientMutationId: string; // UUID v4 gerado no cliente
@@ -16,6 +17,29 @@ export interface OutboxMutation {
   createdAt: string;
   status: 'PENDING' | 'SYNCED' | 'FAILED';
   retryCount: number;
+}
+
+export interface SyncPushResponse {
+  success: boolean;
+  results?: Array<{ clientMutationId: string; status: string }>;
+  syncedAt?: string;
+  error?: string;
+}
+
+export interface SyncPullResponse {
+  timestamp: string;
+  changes: {
+    signage: {
+      created: Array<Record<string, any>>;
+      updated: Array<Record<string, any>>;
+      deleted: Array<Record<string, any>>;
+    };
+    inspections: {
+      created: Array<Record<string, any>>;
+      updated: Array<Record<string, any>>;
+      deleted: Array<Record<string, any>>;
+    };
+  };
 }
 
 export class OutboxSyncEngine {
@@ -64,14 +88,16 @@ export class OutboxSyncEngine {
 
   /**
    * Grava a mutação localmente (Garantia Offline) e persiste imediatamente.
+   * clientMutationId opcional: permite correlacionar com o evento visível na fila Outbox da UI.
    */
   public async addMutation(
     entityType: 'signage' | 'inspection' | 'media',
     actionType: 'CREATE' | 'UPDATE' | 'DELETE',
-    payload: Record<string, any>
+    payload: Record<string, any>,
+    clientMutationId?: string
   ): Promise<OutboxMutation> {
     const mutation: OutboxMutation = {
-      clientMutationId: this.generateUUID(),
+      clientMutationId: clientMutationId || this.generateUUID(),
       entityType,
       actionType,
       payload,
@@ -87,7 +113,8 @@ export class OutboxSyncEngine {
   }
 
   /**
-   * Executa a sincronização delta com a VPS
+   * Executa a sincronização delta com a VPS.
+   * Envia mutações PENDING e FAILED (retry automático com backoff do apiClient).
    */
   public async syncWithServer(deviceId: string): Promise<{ success: boolean; syncedCount: number }> {
     if (this.isSyncing) {
@@ -95,7 +122,7 @@ export class OutboxSyncEngine {
       return { success: false, syncedCount: 0 };
     }
 
-    const pending = this.queue.filter((m) => m.status === 'PENDING');
+    const pending = this.queue.filter((m) => m.status === 'PENDING' || m.status === 'FAILED');
     if (pending.length === 0) {
       return { success: true, syncedCount: 0 };
     }
@@ -104,22 +131,20 @@ export class OutboxSyncEngine {
     console.log(`[OutboxEngine] Enviando ${pending.length} mutações para ${this.apiBaseUrl}/push...`);
 
     try {
-      const response = await fetch(`${this.apiBaseUrl}/push`, {
+      const data = await apiFetch<SyncPushResponse>(`${this.apiBaseUrl}/push`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+        body: {
           deviceId,
-          mutations: pending,
-        }),
+          mutations: pending.map((m) => ({
+            clientMutationId: m.clientMutationId,
+            entityType: m.entityType,
+            actionType: m.actionType,
+            payload: m.payload,
+            createdAt: m.createdAt,
+          })),
+        },
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP Error ${response.status}: ${response.statusText}`);
-      }
-
-      const data = await response.json();
       let syncedCount = 0;
 
       if (data.results && Array.isArray(data.results)) {
@@ -146,6 +171,15 @@ export class OutboxSyncEngine {
       this.isSyncing = false;
       return { success: false, syncedCount: 0 };
     }
+  }
+
+  /**
+   * Puxa alterações delta do servidor desde lastPulledAt (cursor opcional).
+   */
+  public async pullFromServer(lastPulledAt?: string | null): Promise<SyncPullResponse> {
+    const query = lastPulledAt ? `?lastPulledAt=${encodeURIComponent(lastPulledAt)}` : '';
+    console.log(`[OutboxEngine] Puxando delta de ${this.apiBaseUrl}/pull${query}...`);
+    return apiFetch<SyncPullResponse>(`${this.apiBaseUrl}/pull${query}`, { method: 'GET' });
   }
 
   public getPendingQueue(): OutboxMutation[] {

@@ -3,6 +3,8 @@
  * Plataforma Mall (Centro Fashion)
  */
 
+import { API_BASE_URL } from './apiClient';
+
 export interface CapturedPhoto {
   id: string; // Client Media UUID
   fileName: string;
@@ -17,7 +19,7 @@ export interface CapturedPhoto {
 export class MediaService {
   private apiBaseUrl: string;
 
-  constructor(apiBaseUrl: string = 'https://api-mall.ideiasmkt.com.br/api/v1/media') {
+  constructor(apiBaseUrl: string = `${API_BASE_URL}/media`) {
     this.apiBaseUrl = apiBaseUrl;
   }
 

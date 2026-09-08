@@ -18,6 +18,8 @@ interface FilaOutboxModalProps {
   onSyncNow: () => void;
   onRetryItem: (clientEventId: string) => void;
   isSyncing?: boolean;
+  /** Mutações pendentes no Outbox Sync Engine (mesmo sem itens visíveis na fila). */
+  hasEnginePending?: boolean;
 }
 
 export const FilaOutboxModal: React.FC<FilaOutboxModalProps> = ({
@@ -27,6 +29,7 @@ export const FilaOutboxModal: React.FC<FilaOutboxModalProps> = ({
   onSyncNow,
   onRetryItem,
   isSyncing = false,
+  hasEnginePending = false,
 }) => {
   const { width: windowWidth } = useWindowDimensions();
   const isMobile = windowWidth < 700;
@@ -145,9 +148,9 @@ export const FilaOutboxModal: React.FC<FilaOutboxModalProps> = ({
 
           <TouchableOpacity
             id="sincronizarFila"
-            style={[styles.btnSync, pendingCount === 0 && styles.btnSyncDisabled]}
+            style={[styles.btnSync, pendingCount === 0 && !hasEnginePending && styles.btnSyncDisabled]}
             onPress={onSyncNow}
-            disabled={isSyncing || pendingCount === 0}
+            disabled={isSyncing || (pendingCount === 0 && !hasEnginePending)}
           >
             <Text style={styles.btnSyncText}>
               {isSyncing ? 'Sincronizando…' : 'Sincronizar agora'}

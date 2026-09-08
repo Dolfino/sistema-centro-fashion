@@ -10,6 +10,8 @@ export interface CacheMetadata {
   pendingMediaCount: number;
   storageEngine: string;
   storageKey: string;
+  /** Cursor do último pull de sincronização (ISO timestamp). */
+  lastPulledAt?: string | null;
 }
 
 export interface OfflineStorageAdapter {

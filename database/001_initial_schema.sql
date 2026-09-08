@@ -117,12 +117,25 @@ CREATE TABLE IF NOT EXISTS signage_positions (
     normalized_y NUMERIC(10, 6) NOT NULL DEFAULT 0.5,
     lat NUMERIC(10, 8),
     lng NUMERIC(11, 8),
+    geometry geometry(Point, 4326),
     human_location_text TEXT,
     valid_from TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     valid_to TIMESTAMPTZ
 );
 
 CREATE INDEX IF NOT EXISTS idx_signage_positions_signage ON signage_positions(signage_id);
+CREATE INDEX IF NOT EXISTS idx_signage_positions_geom ON signage_positions USING GIST (geometry);
+
+-- Migração para bases criadas antes do suporte geo (coluna ausente → adiciona)
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_name = 'signage_positions' AND column_name = 'geometry'
+    ) THEN
+        ALTER TABLE signage_positions ADD COLUMN geometry geometry(Point, 4326);
+    END IF;
+END $$;
 
 -- 4. FOTOS E ARQUIVOS MÍDIA (MINIO S3)
 CREATE TABLE IF NOT EXISTS media_assets (

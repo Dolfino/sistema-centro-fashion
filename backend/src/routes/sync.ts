@@ -24,7 +24,8 @@ export async function syncRoutes(fastify: FastifyInstance) {
     const client = await pool.connect();
     try {
       const signageRes = await client.query(
-        `SELECT sa.*, sp.normalized_x, sp.normalized_y, ST_AsGeoJSON(sp.geometry) as geometry
+        `SELECT sa.*, sp.normalized_x, sp.normalized_y,
+                COALESCE(sp.geometry, ST_SetSRID(ST_MakePoint(sp.lng, sp.lat), 4326)) as geometry
          FROM signage_assets sa
          LEFT JOIN signage_positions sp ON sa.id = sp.signage_id
          WHERE sa.updated_at > $1`,
@@ -84,18 +85,61 @@ export async function syncRoutes(fastify: FastifyInstance) {
         }
 
         if (mut.entityType === 'signage' || mut.entityType === 'NOVO_REGISTRO') {
-          await client.query(
-            `INSERT INTO signage_assets (
-              asset_code, category, conservation_status, notes
-             ) VALUES ($1, $2, $3, $4)
-             ON CONFLICT (asset_code) DO UPDATE SET notes = EXCLUDED.notes`,
-            [
-              mut.payload.assetCode || `SIG-${Date.now()}`,
-              mut.payload.category || 'Placa informativa',
-              mut.payload.conservationState || 'GOOD',
-              mut.payload.notes || ''
-            ]
-          );
+          const assetCode = mut.payload.assetCode || `SIG-${Date.now()}`;
+
+          if (mut.actionType === 'DELETE') {
+            // Soft delete: mantém o registro para auditoria e delta
+            await client.query(
+              `UPDATE signage_assets
+               SET deleted_at = NOW(), updated_at = NOW()
+               WHERE asset_code = $1 AND deleted_at IS NULL`,
+              [assetCode]
+            );
+          } else if (mut.actionType === 'UPDATE') {
+            const row = await client.query(
+              `UPDATE signage_assets
+               SET category = COALESCE($2, category),
+                   conservation_status = COALESCE($3, conservation_status),
+                   notes = COALESCE($4, notes),
+                   updated_at = NOW()
+               WHERE asset_code = $1 AND deleted_at IS NULL
+               RETURNING id`,
+              [
+                assetCode,
+                mut.payload.category ?? null,
+                mut.payload.conservationState ?? null,
+                mut.payload.notes ?? null,
+              ]
+            );
+            if (row.rowCount === 0) {
+              // Registro ainda não existe no servidor: cria como CREATE
+              await client.query(
+                `INSERT INTO signage_assets (
+                  asset_code, category, conservation_status, notes
+                 ) VALUES ($1, $2, $3, $4)
+                 ON CONFLICT (asset_code) DO UPDATE SET notes = EXCLUDED.notes`,
+                [
+                  assetCode,
+                  mut.payload.category || 'Placa informativa',
+                  mut.payload.conservationState || 'GOOD',
+                  mut.payload.notes || '',
+                ]
+              );
+            }
+          } else {
+            await client.query(
+              `INSERT INTO signage_assets (
+                asset_code, category, conservation_status, notes
+               ) VALUES ($1, $2, $3, $4)
+               ON CONFLICT (asset_code) DO UPDATE SET notes = EXCLUDED.notes`,
+              [
+                assetCode,
+                mut.payload.category || 'Placa informativa',
+                mut.payload.conservationState || 'GOOD',
+                mut.payload.notes || '',
+              ]
+            );
+          }
         } else if (mut.entityType === 'inspection') {
           await client.query(
             `INSERT INTO inspections (

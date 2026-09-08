@@ -7,8 +7,9 @@ export async function signageRoutes(fastify: FastifyInstance) {
     const client = await pool.connect();
     try {
       const result = await client.query(
-        `SELECT sa.*, sp.normalized_x, sp.normalized_y, 
-                ST_X(sp.geometry::geometry) as lng, ST_Y(sp.geometry::geometry) as lat
+        `SELECT sa.*, sp.normalized_x, sp.normalized_y,
+                COALESCE(ST_X(sp.geometry::geometry), sp.lng) as lng,
+                COALESCE(ST_Y(sp.geometry::geometry), sp.lat) as lat
          FROM signage_assets sa
          LEFT JOIN signage_positions sp ON sa.id = sp.signage_id
          WHERE sa.deleted_at IS NULL
@@ -32,10 +33,19 @@ export async function signageRoutes(fastify: FastifyInstance) {
     try {
       const result = await client.query(
         `SELECT sa.*, sp.normalized_x, sp.normalized_y,
-                ST_Distance(sp.geometry, ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography) as distance_meters
+                COALESCE(
+                  ST_Distance(sp.geometry, ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography),
+                  ST_Distance(ST_SetSRID(ST_MakePoint(sp.lng, sp.lat), 4326)::geography, ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography)
+                ) as distance_meters
          FROM signage_assets sa
          JOIN signage_positions sp ON sa.id = sp.signage_id
-         WHERE ST_DWithin(sp.geometry, ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography, $3)
+         WHERE (
+           ST_DWithin(sp.geometry, ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography, $3)
+           OR (
+             sp.geometry IS NULL AND sp.lat IS NOT NULL AND sp.lng IS NOT NULL AND
+             ST_DWithin(ST_SetSRID(ST_MakePoint(sp.lng, sp.lat), 4326)::geography, ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography, $3)
+           )
+         )
          ORDER BY distance_meters ASC`,
         [Number(lng), Number(lat), Number(radiusMeters)]
       );

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, useWindowDimensions, Platform, TextInput, ScrollView } from 'react-native';
 import NetInfo from '@react-native-community/netinfo';
 import { InteractiveMallMap, SignagePin } from '../src/components/InteractiveMallMap';
@@ -92,6 +92,10 @@ const initialOutboxItems: OutboxItem[] = [
 ];
 
 import { OfflineStorageService } from '../src/services/OfflineStorageService';
+import { OutboxSyncEngine, OutboxMutation } from '../src/sync/outboxEngine';
+import { StorageFactory } from '../src/storage/StorageFactory';
+import { getDeviceId } from '../src/services/deviceId';
+import { API_BASE_URL } from '../src/services/apiClient';
 
 export default function LegacyMainShellScreen() {
   const [selectedMapKey, setSelectedMapKey] = useState<string>('SETOR_AZUL');
@@ -124,6 +128,17 @@ export default function LegacyMainShellScreen() {
     return () => {
       cancelled = true;
     };
+  }, []);
+
+  // Outbox Sync Engine (fila de mutações persistida + sincronização real com a API)
+  const syncEngineRef = useRef<OutboxSyncEngine | null>(null);
+  if (!syncEngineRef.current) {
+    syncEngineRef.current = new OutboxSyncEngine(`${API_BASE_URL}/sync`, StorageFactory.getAdapter());
+  }
+  useEffect(() => {
+    void syncEngineRef.current?.init().then(() => {
+      setEnginePendingCount(syncEngineRef.current?.getPendingQueue().length ?? 0);
+    });
   }, []);
 
   // Modais e Painéis da UI-2
@@ -289,6 +304,7 @@ export default function LegacyMainShellScreen() {
   const [offlineCacheOpen, setOfflineCacheOpen] = useState<boolean>(false);
   const [filaOutboxOpen, setFilaOutboxOpen] = useState<boolean>(false);
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
+  const [enginePendingCount, setEnginePendingCount] = useState<number>(0);
 
   // Modal de Fotos da Galeria S22.5 (Superfície #9 - UI-5)
   const [fotoModalOpen, setFotoModalOpen] = useState<boolean>(false);
@@ -702,20 +718,30 @@ export default function LegacyMainShellScreen() {
       return nextPins;
     });
 
-    // Registra na outbox
+    // Registra na outbox + mutação de sync
     const outboxEvent: OutboxItem = {
-      clientEventId: `evt_ronda_ocr_${timestamp}`,
+      clientEventId: generateClientEventId(),
       type: 'NOVO_REGISTRO',
       title: `Ocorrência da Ronda: ${newPin.assetCode} (${newPin.category})`,
-      status: networkState === 'ONLINE' ? 'CONCLUIDO' : 'PENDENTE',
+      status: networkState === 'ONLINE' ? 'PROCESSANDO' : 'PENDENTE',
       retryCount: 0,
       timestamp: 'Agora',
     };
 
-    setOutboxItems((prev) => {
-      const nextOutbox = [outboxEvent, ...prev];
-      void OfflineStorageService.saveOutbox(nextOutbox);
-      return nextOutbox;
+    void enqueueOutboxEvent(outboxEvent, {
+      entityType: 'signage',
+      actionType: 'CREATE',
+      payload: {
+        assetCode: newPin.assetCode,
+        category: newPin.category,
+        conservationState: newPin.conservationState,
+        notes: newPin.notes,
+        sector: newPin.sector,
+        humanLocation: newPin.humanLocation,
+        responsible: newPin.responsible,
+        normalizedX: newPin.normalizedX,
+        normalizedY: newPin.normalizedY,
+      },
     });
   };
 
@@ -758,22 +784,27 @@ export default function LegacyMainShellScreen() {
       });
       setSelectedPin(updatedPin);
 
-      // Adiciona evento na outbox se estiver offline/degradado
-      if (networkState !== 'ONLINE') {
-        const outboxEvent: OutboxItem = {
-          clientEventId: `evt_${Date.now()}`,
-          type: 'EDICAO_REGISTRO',
-          title: updatedPin.notes || 'Edição de Sinalização',
-          status: 'PENDENTE',
-          retryCount: 0,
-          timestamp: 'Agora',
-        };
-        setOutboxItems((prev) => {
-          const nextOutbox = [outboxEvent, ...prev];
-          void OfflineStorageService.saveOutbox(nextOutbox);
-          return nextOutbox;
-        });
-      }
+      // Adiciona evento na outbox + mutação de sync (UPDATE)
+      const editEvent: OutboxItem = {
+        clientEventId: generateClientEventId(),
+        type: 'EDICAO_REGISTRO',
+        title: updatedPin.notes || 'Edição de Sinalização',
+        status: networkState === 'ONLINE' ? 'PROCESSANDO' : 'PENDENTE',
+        retryCount: 0,
+        timestamp: 'Agora',
+      };
+      void enqueueOutboxEvent(editEvent, {
+        entityType: 'signage',
+        actionType: 'UPDATE',
+        payload: {
+          assetCode: updatedPin.assetCode,
+          category: updatedPin.category,
+          conservationState: updatedPin.conservationState,
+          notes: updatedPin.notes,
+          status: updatedPin.status,
+          humanLocation: updatedPin.humanLocation,
+        },
+      });
     } else {
       const newId = `pin_${Date.now()}`;
       const newProtocol = `SIG-20260823-000${pinsList.length + 1}`;
@@ -798,19 +829,29 @@ export default function LegacyMainShellScreen() {
       });
       setSelectedPin(newPin);
 
-      // Adiciona na outbox
+      // Adiciona na outbox + mutação de sync (CREATE)
       const outboxEvent: OutboxItem = {
-        clientEventId: `evt_${Date.now()}`,
+        clientEventId: generateClientEventId(),
         type: 'NOVO_REGISTRO',
         title: newPin.notes || 'Novo Registro de Sinalização',
-        status: networkState === 'ONLINE' ? 'CONCLUIDO' : 'PENDENTE',
+        status: networkState === 'ONLINE' ? 'PROCESSANDO' : 'PENDENTE',
         retryCount: 0,
         timestamp: 'Agora',
       };
-      setOutboxItems((prev) => {
-        const nextOutbox = [outboxEvent, ...prev];
-        void OfflineStorageService.saveOutbox(nextOutbox);
-        return nextOutbox;
+      void enqueueOutboxEvent(outboxEvent, {
+        entityType: 'signage',
+        actionType: 'CREATE',
+        payload: {
+          assetCode: newPin.assetCode,
+          category: newPin.category,
+          conservationState: newPin.conservationState,
+          notes: newPin.notes,
+          sector: newPin.sector,
+          humanLocation: newPin.humanLocation,
+          responsible: newPin.responsible,
+          normalizedX: newPin.normalizedX,
+          normalizedY: newPin.normalizedY,
+        },
       });
     }
 
@@ -841,7 +882,7 @@ export default function LegacyMainShellScreen() {
         });
       } else {
         pendingPhotos.forEach((ph) => {
-          const outboxEvent: OutboxItem = {
+          const mediaEvent: OutboxItem = {
             clientEventId: `evt_media_${ph.id}`,
             type: 'NOVO_REGISTRO',
             title: `Upload de Foto (${ph.fileName})`,
@@ -849,10 +890,15 @@ export default function LegacyMainShellScreen() {
             retryCount: 0,
             timestamp: 'Agora',
           };
-          setOutboxItems((prev) => {
-            const nextOutbox = [outboxEvent, ...prev];
-            void OfflineStorageService.saveOutbox(nextOutbox);
-            return nextOutbox;
+          void enqueueOutboxEvent(mediaEvent, {
+            entityType: 'media',
+            actionType: 'CREATE',
+            payload: {
+              photoId: ph.id,
+              fileName: ph.fileName,
+              mimeType: ph.mimeType,
+              sha256: ph.sha256,
+            },
           });
         });
       }
@@ -863,19 +909,42 @@ export default function LegacyMainShellScreen() {
     setDraftPin(null);
   };
 
-  const handleSyncOutbox = () => {
+  /**
+   * Sincronização real: envia mutações pendentes/falhas para a API e puxa o delta.
+   * Atualiza o estado da fila visível conforme o resultado do push.
+   */
+  const handleSyncOutbox = async () => {
+    const engine = syncEngineRef.current;
+    if (!engine || isSyncing) return;
     setIsSyncing(true);
-    setTimeout(() => {
+    try {
+      const deviceId = await getDeviceId();
+      const res = await engine.syncWithServer(deviceId);
+
       setOutboxItems((prev) => {
-        const nextOutbox = prev.map((i) => ({ ...i, status: 'CONCLUIDO' as const, errorMessage: null }));
+        const nextOutbox = prev.map((i) =>
+          res.success
+            ? { ...i, status: 'CONCLUIDO' as const, errorMessage: null }
+            : { ...i, status: 'ERRO' as const, errorMessage: 'Falha ao sincronizar com o servidor' }
+        );
         void OfflineStorageService.saveOutbox(nextOutbox);
         return nextOutbox;
       });
+
+      if (res.success) {
+        setNetworkState('ONLINE');
+        // Puxa delta do servidor e atualiza o cache local
+        await pullAndMergeRemoteChanges();
+      }
+    } catch (e: any) {
+      console.error('[SYNC] Falha na sincronização:', e?.message || e);
+    } finally {
+      refreshEnginePending();
       setIsSyncing(false);
-    }, 1200);
+    }
   };
 
-  const handleRetryItem = (clientEventId: string) => {
+  const handleRetryItem = async (clientEventId: string) => {
     setOutboxItems((prev) => {
       const nextOutbox = prev.map((i) =>
         i.clientEventId === clientEventId
@@ -885,15 +954,152 @@ export default function LegacyMainShellScreen() {
       void OfflineStorageService.saveOutbox(nextOutbox);
       return nextOutbox;
     });
-    setTimeout(() => {
+    // O engine reenvia PENDING + FAILED; o retry de um item sincroniza todos os pendentes.
+    const engine = syncEngineRef.current;
+    if (!engine) return;
+    try {
+      const deviceId = await getDeviceId();
+      const res = await engine.syncWithServer(deviceId);
       setOutboxItems((prev) => {
         const nextOutbox = prev.map((i) =>
-          i.clientEventId === clientEventId ? { ...i, status: 'CONCLUIDO' as const } : i
+          res.success
+            ? { ...i, status: 'CONCLUIDO' as const, errorMessage: null }
+            : i.clientEventId === clientEventId
+            ? { ...i, status: 'ERRO' as const, errorMessage: 'Servidor indisponível' }
+            : i
         );
         void OfflineStorageService.saveOutbox(nextOutbox);
         return nextOutbox;
       });
-    }, 800);
+    } catch (e: any) {
+      console.error('[SYNC] Falha no retry:', e?.message || e);
+    }
+    refreshEnginePending();
+  };
+
+  /**
+   * Puxa alterações delta do servidor e funde no cache local de pins.
+   */
+  const pullAndMergeRemoteChanges = async () => {
+    const engine = syncEngineRef.current;
+    if (!engine) return;
+    try {
+      const meta = await OfflineStorageService.getCacheMetadata();
+      const pull = await engine.pullFromServer(meta?.lastPulledAt ?? null);
+
+      const remoteRows = [
+        ...(pull.changes?.signage?.created || []),
+        ...(pull.changes?.signage?.updated || []),
+      ].filter((row: any) => !row.deleted_at);
+
+      if (remoteRows.length === 0) {
+        await OfflineStorageService.updateCacheMetadata(
+          pinsList.length,
+          0,
+          pull.timestamp
+        );
+        return;
+      }
+
+      const remotePins: SignagePin[] = remoteRows.map((row: any) => ({
+        id: `remote_${row.asset_code}`,
+        assetCode: row.asset_code,
+        category: row.category || 'Placa informativa',
+        sector: 'SETOR_AZUL',
+        status: row.lifecycle_status === 'INACTIVE' ? 'INATIVA' : 'ATIVA',
+        conservationState: row.conservation_status || 'Boa',
+        normalizedX: Number(row.normalized_x) || 0.5,
+        normalizedY: Number(row.normalized_y) || 0.5,
+        notes: row.notes || undefined,
+        humanLocation: row.human_location_text || undefined,
+      }));
+
+      setPinsList((prev) => {
+        const byCode = new Map(prev.map((p) => [p.assetCode, p]));
+        remotePins.forEach((rp) => {
+          const existing = byCode.get(rp.assetCode);
+          if (existing) {
+            byCode.set(rp.assetCode, { ...existing, ...rp, id: existing.id });
+          } else {
+            byCode.set(rp.assetCode, rp);
+          }
+        });
+        const merged = Array.from(byCode.values());
+        void OfflineStorageService.savePins(merged);
+        void OfflineStorageService.updateCacheMetadata(merged.length, 0, pull.timestamp);
+        return merged;
+      });
+    } catch (e: any) {
+      console.warn('[SYNC] Falha ao puxar delta do servidor:', e?.message || e);
+    }
+  };
+
+  /**
+   * Atualiza o contador de mutações pendentes do engine (habilita "Sincronizar" na Fila).
+   */
+  const refreshEnginePending = useCallback(() => {
+    setEnginePendingCount(syncEngineRef.current?.getPendingQueue().length ?? 0);
+  }, []);
+
+  /**
+   * Gera id de evento compatível com o protocolo de sync (UUID v4 exigido pelo backend).
+   */
+  const generateClientEventId = (): string => {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+      const r = (Math.random() * 16) | 0;
+      const v = c === 'x' ? r : (r & 0x3) | 0x8;
+      return v.toString(16);
+    });
+  };
+
+  /**
+   * Registra evento na fila Outbox visível + mutação no engine de sync (mesmo id).
+   * Quando ONLINE, dispara a sincronização imediata e reflete o resultado no item.
+   */
+  const enqueueOutboxEvent = async (
+    event: OutboxItem,
+    mutation?: { entityType: OutboxMutation['entityType']; actionType: OutboxMutation['actionType']; payload: Record<string, any> }
+  ) => {
+    setOutboxItems((prev) => {
+      const nextOutbox = [event, ...prev];
+      void OfflineStorageService.saveOutbox(nextOutbox);
+      return nextOutbox;
+    });
+
+    const engine = syncEngineRef.current;
+    if (!engine) return;
+
+    if (mutation) {
+      try {
+        await engine.addMutation(mutation.entityType, mutation.actionType, mutation.payload, event.clientEventId);
+        refreshEnginePending();
+      } catch (e: any) {
+        console.error('[SYNC] Falha ao registrar mutação local:', e?.message || e);
+      }
+    }
+
+    if (networkState === 'ONLINE') {
+      try {
+        const deviceId = await getDeviceId();
+        const res = await engine.syncWithServer(deviceId);
+        setOutboxItems((prev) => {
+          const nextOutbox = prev.map((i) =>
+            i.clientEventId === event.clientEventId
+              ? {
+                  ...i,
+                  status: res.success ? ('CONCLUIDO' as const) : ('ERRO' as const),
+                  errorMessage: res.success ? null : 'Falha ao sincronizar com o servidor',
+                }
+              : i
+          );
+          void OfflineStorageService.saveOutbox(nextOutbox);
+          return nextOutbox;
+        });
+      } catch (e: any) {
+        console.error('[SYNC] Falha na sincronização imediata:', e?.message || e);
+      }
+      refreshEnginePending();
+    }
   };
 
   const handleActionClick = (actionId: string, pin: SignagePin) => {
@@ -966,18 +1172,23 @@ export default function LegacyMainShellScreen() {
     }
 
     const outboxEvent: OutboxItem = {
-      clientEventId: `evt_ciclo_${Date.now()}`,
+      clientEventId: generateClientEventId(),
       type: 'EDICAO_REGISTRO',
       title: `Ciclo de Vida: ${updatedPin.assetCode} -> ${newStatus}`,
-      status: networkState === 'ONLINE' ? 'CONCLUIDO' : 'PENDENTE',
+      status: networkState === 'ONLINE' ? 'PROCESSANDO' : 'PENDENTE',
       retryCount: 0,
       timestamp: 'Agora',
     };
 
-    setOutboxItems((prev) => {
-      const nextOutbox = [outboxEvent, ...prev];
-      void OfflineStorageService.saveOutbox(nextOutbox);
-      return nextOutbox;
+    void enqueueOutboxEvent(outboxEvent, {
+      entityType: 'signage',
+      actionType: 'UPDATE',
+      payload: {
+        assetCode: updatedPin.assetCode,
+        status: newStatus,
+        notes: updatedPin.notes,
+        conservationState: updatedPin.conservationState,
+      },
     });
   };
 
@@ -997,18 +1208,18 @@ export default function LegacyMainShellScreen() {
     setEditingPin(null);
 
     const outboxEvent: OutboxItem = {
-      clientEventId: `evt_del_${Date.now()}`,
+      clientEventId: generateClientEventId(),
       type: 'EDICAO_REGISTRO',
       title: `Desativação de Registro: ${pinId}`,
-      status: networkState === 'ONLINE' ? 'CONCLUIDO' : 'PENDENTE',
+      status: networkState === 'ONLINE' ? 'PROCESSANDO' : 'PENDENTE',
       retryCount: 0,
       timestamp: 'Agora',
     };
 
-    setOutboxItems((prev) => {
-      const nextOutbox = [outboxEvent, ...prev];
-      void OfflineStorageService.saveOutbox(nextOutbox);
-      return nextOutbox;
+    void enqueueOutboxEvent(outboxEvent, {
+      entityType: 'signage',
+      actionType: 'DELETE',
+      payload: { assetCode: pinId },
     });
   };
 
@@ -1039,20 +1250,27 @@ export default function LegacyMainShellScreen() {
       setSelectedPin(updatedPin);
     }
 
-    // Registra inspeção na Outbox
+    // Registra inspeção na Outbox + mutação de sync (inspection)
     const outboxEvent: OutboxItem = {
-      clientEventId: `evt_insp_${Date.now()}`,
+      clientEventId: generateClientEventId(),
       type: 'EDICAO_REGISTRO',
       title: `Inspeção: ${updatedPin.assetCode} (${data.conservationState})`,
-      status: networkState === 'ONLINE' ? 'CONCLUIDO' : 'PENDENTE',
+      status: networkState === 'ONLINE' ? 'PROCESSANDO' : 'PENDENTE',
       retryCount: 0,
       timestamp: 'Agora',
     };
 
-    setOutboxItems((prev) => {
-      const nextOutbox = [outboxEvent, ...prev];
-      void OfflineStorageService.saveOutbox(nextOutbox);
-      return nextOutbox;
+    void enqueueOutboxEvent(outboxEvent, {
+      entityType: 'inspection',
+      actionType: 'CREATE',
+      payload: {
+        clientInspectionId: outboxEvent.clientEventId,
+        signageId: updatedPin.assetCode,
+        inspectorId: updatedPin.responsible || 'system',
+        conservationState: data.conservationState,
+        conditionNotes: data.notes || '',
+        recommendedAction: data.status === 'ATIVA' ? 'NONE' : 'REVIEW',
+      },
     });
 
     // Upload da foto de evidência
@@ -1746,6 +1964,7 @@ export default function LegacyMainShellScreen() {
         onSyncNow={handleSyncOutbox}
         onRetryItem={handleRetryItem}
         isSyncing={isSyncing}
+        hasEnginePending={enginePendingCount > 0}
       />
 
       {/* 9. Modal de Galeria Fotográfica (Superfície #9 - S22.5) */}

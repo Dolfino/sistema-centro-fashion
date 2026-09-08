@@ -63,7 +63,8 @@ CREATE TABLE IF NOT EXISTS cache_metadata (
   records_count INTEGER,
   pending_media_count INTEGER,
   storage_engine TEXT,
-  storage_key TEXT
+  storage_key TEXT,
+  last_pulled_at TEXT
 );
 CREATE TABLE IF NOT EXISTS processed_events (
   client_event_id TEXT PRIMARY KEY,
@@ -124,6 +125,7 @@ interface CacheMetadataRow {
   pending_media_count: number;
   storage_engine: string;
   storage_key: string;
+  last_pulled_at: string | null;
 }
 
 interface ProcessedEventRow {
@@ -175,6 +177,12 @@ export class SQLiteStorageAdapter implements OfflineStorageAdapter {
       this.dbPromise = (async () => {
         const db = await SQLite.openDatabaseAsync(DB_NAME);
         await db.execAsync(DDL);
+        // Migração: bancos criados antes da Fase 2 não possuem last_pulled_at
+        const columns = await db.getAllAsync<{ name: string }>('PRAGMA table_info(cache_metadata)');
+        if (!columns.some((c) => c.name === 'last_pulled_at')) {
+          await db.execAsync('ALTER TABLE cache_metadata ADD COLUMN last_pulled_at TEXT');
+          console.log('[SQLITE-STORAGE-ADAPTER] Migração aplicada: coluna last_pulled_at adicionada.');
+        }
         console.log(`[SQLITE-STORAGE-ADAPTER] Banco '${DB_NAME}' pronto com schema completo.`);
         return db;
       })();
@@ -328,6 +336,7 @@ export class SQLiteStorageAdapter implements OfflineStorageAdapter {
       pendingMediaCount: row.pending_media_count,
       storageEngine: row.storage_engine,
       storageKey: row.storage_key,
+      lastPulledAt: row.last_pulled_at,
     };
   }
 
@@ -336,8 +345,8 @@ export class SQLiteStorageAdapter implements OfflineStorageAdapter {
     await db.runAsync(
       `INSERT OR REPLACE INTO cache_metadata (
         id, version, last_audit_timestamp, available_maps_count,
-        records_count, pending_media_count, storage_engine, storage_key
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        records_count, pending_media_count, storage_engine, storage_key, last_pulled_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       CACHE_META_ROW_ID,
       meta.version,
       meta.lastAuditTimestamp,
@@ -345,7 +354,8 @@ export class SQLiteStorageAdapter implements OfflineStorageAdapter {
       meta.recordsCount,
       meta.pendingMediaCount,
       meta.storageEngine,
-      meta.storageKey
+      meta.storageKey,
+      meta.lastPulledAt ?? null
     );
   }
 

@@ -106,7 +106,11 @@ export class OfflineStorageService {
   /**
    * Metadata do Cache Offline
    */
-  public static async updateCacheMetadata(recordsCount: number, pendingMediaCount: number = 0): Promise<CacheMetadata> {
+  public static async updateCacheMetadata(
+    recordsCount: number,
+    pendingMediaCount: number = 0,
+    lastPulledAt?: string | null
+  ): Promise<CacheMetadata> {
     const meta: CacheMetadata = {
       version: 'v3.28.1-S26.6.1',
       lastAuditTimestamp: new Date().toISOString(),
@@ -115,6 +119,7 @@ export class OfflineStorageService {
       pendingMediaCount,
       storageEngine: 'OfflineStorageService',
       storageKey: STORAGE_KEYS.PINS,
+      lastPulledAt: lastPulledAt ?? null,
     };
     try {
       await this.getAdapter().saveCacheMetadata(meta);
