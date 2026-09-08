@@ -42,7 +42,7 @@ jobs:
         run: npm ci
 
       - name: Lint (errors bloqueiam, warnings tolerados)
-        run: npx expo lint
+        run: npm run lint
 
       - name: Typecheck frontend
         run: npx tsc --noEmit
