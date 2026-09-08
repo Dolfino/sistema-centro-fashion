@@ -3,8 +3,12 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
+if (!process.env.DATABASE_URL) {
+  throw new Error('DATABASE_URL não configurada. Defina a variável de ambiente antes de iniciar o backend.');
+}
+
 export const pool = new Pool({
-  connectionString: process.env.DATABASE_URL || 'postgresql://platform_admin:ce6ea32e6bd65ca030085a9008932141@localhost:5432/platform',
+  connectionString: process.env.DATABASE_URL,
   max: 20,
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 5000,
