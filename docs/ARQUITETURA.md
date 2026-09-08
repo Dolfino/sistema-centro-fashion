@@ -89,6 +89,14 @@ Plataforma de sinalização e operação do Mall Centro Fashion, migrada do lega
 
 ## Pendências conhecidas
 
-- Rotação da credencial do banco na VPS (senha antiga exposta no histórico do GitHub — ver commit `364f13e`).
 - `npm audit`: 44 vulnerabilidades reportadas nas dependências (triagem pendente; não aplicar `--force` sem análise).
 - ~37 warnings de lint (unused vars de scaffolds de features e exhaustive-deps).
+
+## Notas de produção (2026-09-08)
+
+- Senha do `platform_admin` **rotacionada** na VPS; manifesto atualizado no repo `Dolfino/vps-k8s-infra`
+  (deployment da API aponta a nova credencial). A senha antiga, exposta no histórico do app, está inerte.
+- Backend em produção roda sem PostGIS (base é imagem pgvector) — rotas usam haversine sobre lat/lng.
+- Deploy é GitOps (Argo CD, `selfHeal: true`); mudanças diretas via kubectl são revertidas até o
+  repo `vps-k8s-infra` ser atualizado. Imagens novas (`:latest`) só entram com rollout restart
+  ou mudança de manifesto.
