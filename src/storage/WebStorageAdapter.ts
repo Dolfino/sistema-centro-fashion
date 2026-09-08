@@ -1,21 +1,9 @@
 import { OfflineStorageAdapter, CacheMetadata } from './OfflineStorageAdapter';
 import { SignagePin } from '../components/InteractiveMallMap';
 import { OutboxItem } from '../components/FilaOutboxModal';
-
-const STORAGE_KEYS = {
-  PINS: 'sinalizacao_mall_pins',
-  OUTBOX: 'sinalizacao_mall_outbox',
-  CACHE_META: 'sinalizacao_mall_cache_metadata',
-  PROCESSED_EVENTS: 'sinalizacao_mall_processed_events',
-};
-
-const initialDefaultPins: SignagePin[] = [
-  { id: '1', assetCode: 'SIG-20260814-0001', category: 'Placa informativa', sector: 'SETOR_AZUL', status: 'ATIVA', conservationState: 'Boa', normalizedX: 0.28, normalizedY: 0.28, notes: 'Placa informativa', humanLocation: 'Rua General Bezerril', responsible: 'Davidsilva • Operações' },
-  { id: '2', assetCode: 'SIG-20260814-0002', category: 'Placa informativa', sector: 'SETOR_AZUL', status: 'ATIVA', conservationState: 'Ótima', normalizedX: 0.52, normalizedY: 0.35, notes: 'Placa informativa', humanLocation: 'Rua São José', responsible: 'Davidsilva • Operações' },
-  { id: '3', assetCode: 'SIG-20260814-0003', category: 'Adesivo de piso', sector: 'SETOR_AZUL', status: 'INATIVA', conservationState: 'Regular', normalizedX: 0.25, normalizedY: 0.55, notes: 'Adesivo de uma amarelinha', humanLocation: 'Adesivo de uma amarelinha', responsible: 'Davidsilva • Operações' },
-  { id: '4', assetCode: 'SIG-20260814-0004', category: 'Placa de emergência', sector: 'SETOR_AZUL', status: 'SUBSTITUIR', conservationState: 'Danificada', normalizedX: 0.65, normalizedY: 0.65, notes: 'Ambulatório ->', humanLocation: 'Ambulatório ->', responsible: 'Davidsilva • Operações' },
-  { id: '5', assetCode: 'SIG-20260814-0005', category: 'Totem', sector: 'SETOR_AZUL', status: 'ATIVA', conservationState: 'Boa', normalizedX: 0.22, normalizedY: 0.80, notes: 'Promoção mês dos Pais', humanLocation: 'Promoção mês dos Pais', responsible: 'Davidsilva • Operações' },
-];
+import type { OutboxMutation } from '../sync/outboxEngine';
+import { STORAGE_KEYS } from './storageKeys';
+import { seedPins } from '../data/seedPins';
 
 export class WebStorageAdapter implements OfflineStorageAdapter {
   private getItem(key: string): string | null {
@@ -43,8 +31,8 @@ export class WebStorageAdapter implements OfflineStorageAdapter {
     } catch (e) {
       console.warn('[WEB-STORAGE-ADAPTER] Erro ao ler pins:', e);
     }
-    await this.savePins(initialDefaultPins);
-    return initialDefaultPins;
+    await this.savePins(seedPins);
+    return seedPins;
   }
 
   public async savePins(items: SignagePin[]): Promise<void> {
@@ -85,6 +73,27 @@ export class WebStorageAdapter implements OfflineStorageAdapter {
     }
   }
 
+  public async getMutations(): Promise<OutboxMutation[]> {
+    try {
+      const data = this.getItem(STORAGE_KEYS.MUTATIONS);
+      if (data) {
+        const parsed = JSON.parse(data);
+        if (Array.isArray(parsed)) return parsed;
+      }
+    } catch (e) {
+      console.warn('[WEB-STORAGE-ADAPTER] Erro ao ler mutations:', e);
+    }
+    return [];
+  }
+
+  public async saveMutations(items: OutboxMutation[]): Promise<void> {
+    try {
+      this.setItem(STORAGE_KEYS.MUTATIONS, JSON.stringify(items));
+    } catch (e) {
+      console.error('[WEB-STORAGE-ADAPTER] Erro ao gravar mutations:', e);
+    }
+  }
+
   public async getCacheMetadata(): Promise<CacheMetadata | null> {
     try {
       const data = this.getItem(STORAGE_KEYS.CACHE_META);
@@ -100,24 +109,28 @@ export class WebStorageAdapter implements OfflineStorageAdapter {
   }
 
   public async hasProcessedEvent(clientEventId: string): Promise<boolean> {
-    try {
-      const data = this.getItem(STORAGE_KEYS.PROCESSED_EVENTS);
-      if (data) {
-        const list: string[] = JSON.parse(data);
-        return list.includes(clientEventId);
-      }
-    } catch (e) {}
-    return false;
+    const list = await this.getProcessedEvents();
+    return list.includes(clientEventId);
   }
 
   public async markProcessedEvent(clientEventId: string): Promise<void> {
+    const list = await this.getProcessedEvents();
+    if (!list.includes(clientEventId)) {
+      list.push(clientEventId);
+      this.setItem(STORAGE_KEYS.PROCESSED_EVENTS, JSON.stringify(list));
+    }
+  }
+
+  public async getProcessedEvents(): Promise<string[]> {
     try {
       const data = this.getItem(STORAGE_KEYS.PROCESSED_EVENTS);
-      const list: string[] = data ? JSON.parse(data) : [];
-      if (!list.includes(clientEventId)) {
-        list.push(clientEventId);
-        this.setItem(STORAGE_KEYS.PROCESSED_EVENTS, JSON.stringify(list));
+      if (data) {
+        const parsed = JSON.parse(data);
+        if (Array.isArray(parsed)) return parsed;
       }
-    } catch (e) {}
+    } catch (e) {
+      console.warn('[WEB-STORAGE-ADAPTER] Erro ao ler processed_events:', e);
+    }
+    return [];
   }
 }

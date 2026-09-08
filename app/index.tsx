@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, useWindowDimensions, Platform, TextInput, ScrollView } from 'react-native';
+import NetInfo from '@react-native-community/netinfo';
 import { InteractiveMallMap, SignagePin } from '../src/components/InteractiveMallMap';
 import { AppMenuModal } from '../src/components/AppMenuModal';
 import { CamadasModal } from '../src/components/CamadasModal';
@@ -66,71 +67,9 @@ import {
 } from '../src/services/levantamentoCampoService';
 import { CapturedPhoto, mediaService } from '../src/services/mediaService';
 import { LegacyTheme } from '../src/theme/legacy-theme';
+import { seedPins } from '../src/data/seedPins';
 
-const initialPins: SignagePin[] = [
-  { id: '1', assetCode: 'SIG-20260814-0001', category: 'Placa informativa', sector: 'SETOR_AZUL', status: 'ATIVA', conservationState: 'Boa', normalizedX: 0.28, normalizedY: 0.28, notes: 'Placa informativa', humanLocation: 'Rua General Bezerril', responsible: 'Davidsilva • Operações' },
-  { id: '2', assetCode: 'SIG-20260814-0002', category: 'Placa informativa', sector: 'SETOR_AZUL', status: 'ATIVA', conservationState: 'Ótima', normalizedX: 0.52, normalizedY: 0.35, notes: 'Placa informativa', humanLocation: 'Rua São José', responsible: 'Davidsilva • Operações' },
-  { id: '3', assetCode: 'SIG-20260814-0003', category: 'Adesivo de piso', sector: 'SETOR_AZUL', status: 'INATIVA', conservationState: 'Regular', normalizedX: 0.25, normalizedY: 0.55, notes: 'Adesivo de uma amarelinha', humanLocation: 'Adesivo de uma amarelinha', responsible: 'Davidsilva • Operações' },
-  { id: '4', assetCode: 'SIG-20260814-0004', category: 'Placa de emergência', sector: 'SETOR_AZUL', status: 'SUBSTITUIR', conservationState: 'Danificada', normalizedX: 0.65, normalizedY: 0.65, notes: 'Ambulatório ->', humanLocation: 'Ambulatório ->', responsible: 'Davidsilva • Operações' },
-  { id: '5', assetCode: 'SIG-20260814-0005', category: 'Totem', sector: 'SETOR_AZUL', status: 'ATIVA', conservationState: 'Boa', normalizedX: 0.22, normalizedY: 0.80, notes: 'Promoção mês dos Pais', humanLocation: 'Promoção mês dos Pais', responsible: 'Davidsilva • Operações' },
-  {
-    id: '6',
-    assetCode: 'OCR-20260824-0001',
-    entityType: 'OCORRENCIA',
-    category: 'Manutenção',
-    categoryColor: '#F59E0B',
-    priority: 'ALTA',
-    prazoHoras: 72,
-    sector: 'SETOR_AZUL',
-    status: 'CONCLUIDA',
-    conservationState: 'Ótima',
-    normalizedX: 0.45,
-    normalizedY: 0.42,
-    notes: 'Luminária pendente solta no corredor B',
-    humanLocation: 'Corredor B — Entre lojas 1020 e 1022',
-    responsible: 'CEOP • Manutenção',
-    concludedAt: '04/09/2026 16:30',
-    concludedBy: 'Carlos Souza • CEOP',
-    resolutionNotes: 'Fixação da carcaça e substituição do reator elétrico.',
-    photos: [
-      {
-        id: 'foto_ant_1',
-        fileName: 'OCR_ANTES.jpg',
-        mimeType: 'image/jpeg',
-        sizeBytes: 154000,
-        sha256: 'a1b2c3d4e5f6',
-        localUri: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=800&auto=format&fit=crop&q=80',
-        uploadedToS3: true,
-      },
-      {
-        id: 'foto_dep_1',
-        fileName: 'OCR_DEPOIS.jpg',
-        mimeType: 'image/jpeg',
-        sizeBytes: 168000,
-        sha256: 'f6e5d4c3b2a1',
-        localUri: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=800&auto=format&fit=crop&q=80',
-        uploadedToS3: true,
-      },
-    ],
-  },
-  {
-    id: '7',
-    assetCode: 'OCR-20260825-0002',
-    entityType: 'OCORRENCIA',
-    category: 'Limpeza',
-    categoryColor: '#10B981',
-    priority: 'CRITICA',
-    prazoHoras: 24,
-    sector: 'SETOR_AZUL',
-    status: 'EM_ANDAMENTO',
-    conservationState: 'Regular',
-    normalizedX: 0.38,
-    normalizedY: 0.68,
-    notes: 'Vazamento de água próximo aos sanitários',
-    humanLocation: 'Sanitários Piso 1 — Bloco Central',
-    responsible: 'Limpeza • Equipe Operacional',
-  },
-];
+const initialPins: SignagePin[] = seedPins;
 
 const initialOutboxItems: OutboxItem[] = [
   {
@@ -157,15 +96,35 @@ import { OfflineStorageService } from '../src/services/OfflineStorageService';
 export default function LegacyMainShellScreen() {
   const [selectedMapKey, setSelectedMapKey] = useState<string>('SETOR_AZUL');
 
-  // Inicialização com Storage Real (window.localStorage)
-  const [pinsList, setPinsList] = useState<SignagePin[]>(() => OfflineStorageService.loadPins());
-  const [outboxItems, setOutboxItems] = useState<OutboxItem[]>(() => OfflineStorageService.loadOutbox());
+  // Inicialização com Storage Real (SQLite no nativo / localStorage na web)
+  const [pinsList, setPinsList] = useState<SignagePin[]>([]);
+  const [outboxItems, setOutboxItems] = useState<OutboxItem[]>([]);
 
   // Pin Selecionado no Mapa
-  const [selectedPin, setSelectedPin] = useState<SignagePin | null>(() => {
-    const loaded = OfflineStorageService.loadPins();
-    return loaded[0] || null;
-  });
+  const [selectedPin, setSelectedPin] = useState<SignagePin | null>(null);
+
+  // Hidratação assíncrona do storage (SQLite/localStorage via StorageFactory)
+  useEffect(() => {
+    let cancelled = false;
+    const hydrate = async () => {
+      try {
+        const [pins, outbox] = await Promise.all([
+          OfflineStorageService.loadPins(),
+          OfflineStorageService.loadOutbox(),
+        ]);
+        if (cancelled) return;
+        setPinsList(pins);
+        setOutboxItems(outbox);
+        setSelectedPin((current) => current ?? pins[0] ?? null);
+      } catch (e) {
+        console.error('[STORAGE] Falha na hidratação inicial:', e);
+      }
+    };
+    hydrate();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // Modais e Painéis da UI-2
   const [menuOpen, setMenuOpen] = useState<boolean>(false);
@@ -434,7 +393,18 @@ export default function LegacyMainShellScreen() {
     };
 
     updateNetworkStatus();
-    if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
+
+    // NetInfo funciona em web e nativo; mantém fallback window para segurança
+    let unsubscribeNetInfo: (() => void) | null = null;
+    if (typeof NetInfo !== 'undefined' && typeof NetInfo.addEventListener === 'function') {
+      unsubscribeNetInfo = NetInfo.addEventListener((state) => {
+        if (state.isConnected === false || state.isInternetReachable === false) {
+          setNetworkState('OFFLINE');
+        } else {
+          setNetworkState('ONLINE');
+        }
+      });
+    } else if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
       window.addEventListener('online', () => setNetworkState('ONLINE'));
       window.addEventListener('offline', () => setNetworkState('OFFLINE'));
     }
@@ -504,6 +474,11 @@ export default function LegacyMainShellScreen() {
         setFormPanelVisible(false);
       }
     }
+
+    return () => {
+      clearInterval(interval);
+      if (unsubscribeNetInfo) unsubscribeNetInfo();
+    };
   }, []);
 
   const mapGroups = [
@@ -723,7 +698,7 @@ export default function LegacyMainShellScreen() {
 
     setPinsList((prev) => {
       const nextPins = [newPin, ...prev];
-      OfflineStorageService.savePins(nextPins);
+      void OfflineStorageService.savePins(nextPins);
       return nextPins;
     });
 
@@ -739,7 +714,7 @@ export default function LegacyMainShellScreen() {
 
     setOutboxItems((prev) => {
       const nextOutbox = [outboxEvent, ...prev];
-      OfflineStorageService.saveOutbox(nextOutbox);
+      void OfflineStorageService.saveOutbox(nextOutbox);
       return nextOutbox;
     });
   };
@@ -778,7 +753,7 @@ export default function LegacyMainShellScreen() {
       };
       setPinsList((prev) => {
         const nextPins = prev.map((p) => (p.id === editingPin.id ? updatedPin : p));
-        OfflineStorageService.savePins(nextPins);
+        void OfflineStorageService.savePins(nextPins);
         return nextPins;
       });
       setSelectedPin(updatedPin);
@@ -795,7 +770,7 @@ export default function LegacyMainShellScreen() {
         };
         setOutboxItems((prev) => {
           const nextOutbox = [outboxEvent, ...prev];
-          OfflineStorageService.saveOutbox(nextOutbox);
+          void OfflineStorageService.saveOutbox(nextOutbox);
           return nextOutbox;
         });
       }
@@ -818,7 +793,7 @@ export default function LegacyMainShellScreen() {
       };
       setPinsList((prev) => {
         const nextPins = [...prev, newPin];
-        OfflineStorageService.savePins(nextPins);
+        void OfflineStorageService.savePins(nextPins);
         return nextPins;
       });
       setSelectedPin(newPin);
@@ -834,7 +809,7 @@ export default function LegacyMainShellScreen() {
       };
       setOutboxItems((prev) => {
         const nextOutbox = [outboxEvent, ...prev];
-        OfflineStorageService.saveOutbox(nextOutbox);
+        void OfflineStorageService.saveOutbox(nextOutbox);
         return nextOutbox;
       });
     }
@@ -858,7 +833,7 @@ export default function LegacyMainShellScreen() {
                   }
                   return p;
                 });
-                OfflineStorageService.savePins(updated);
+                void OfflineStorageService.savePins(updated);
                 return updated;
               });
             }
@@ -876,7 +851,7 @@ export default function LegacyMainShellScreen() {
           };
           setOutboxItems((prev) => {
             const nextOutbox = [outboxEvent, ...prev];
-            OfflineStorageService.saveOutbox(nextOutbox);
+            void OfflineStorageService.saveOutbox(nextOutbox);
             return nextOutbox;
           });
         });
@@ -893,7 +868,7 @@ export default function LegacyMainShellScreen() {
     setTimeout(() => {
       setOutboxItems((prev) => {
         const nextOutbox = prev.map((i) => ({ ...i, status: 'CONCLUIDO' as const, errorMessage: null }));
-        OfflineStorageService.saveOutbox(nextOutbox);
+        void OfflineStorageService.saveOutbox(nextOutbox);
         return nextOutbox;
       });
       setIsSyncing(false);
@@ -907,7 +882,7 @@ export default function LegacyMainShellScreen() {
           ? { ...i, status: 'PROCESSANDO' as const, errorMessage: null, retryCount: i.retryCount + 1 }
           : i
       );
-      OfflineStorageService.saveOutbox(nextOutbox);
+      void OfflineStorageService.saveOutbox(nextOutbox);
       return nextOutbox;
     });
     setTimeout(() => {
@@ -915,7 +890,7 @@ export default function LegacyMainShellScreen() {
         const nextOutbox = prev.map((i) =>
           i.clientEventId === clientEventId ? { ...i, status: 'CONCLUIDO' as const } : i
         );
-        OfflineStorageService.saveOutbox(nextOutbox);
+        void OfflineStorageService.saveOutbox(nextOutbox);
         return nextOutbox;
       });
     }, 800);
@@ -982,7 +957,7 @@ export default function LegacyMainShellScreen() {
 
     setPinsList((prev) => {
       const nextPins = prev.map((p) => (p.id === updatedPin.id ? updatedPin : p));
-      OfflineStorageService.savePins(nextPins);
+      void OfflineStorageService.savePins(nextPins);
       return nextPins;
     });
 
@@ -1001,7 +976,7 @@ export default function LegacyMainShellScreen() {
 
     setOutboxItems((prev) => {
       const nextOutbox = [outboxEvent, ...prev];
-      OfflineStorageService.saveOutbox(nextOutbox);
+      void OfflineStorageService.saveOutbox(nextOutbox);
       return nextOutbox;
     });
   };
@@ -1009,7 +984,7 @@ export default function LegacyMainShellScreen() {
   const handleDeletePin = (pinId: string) => {
     setPinsList((prev) => {
       const nextPins = prev.filter((p) => p.id !== pinId && p.assetCode !== pinId);
-      OfflineStorageService.savePins(nextPins);
+      void OfflineStorageService.savePins(nextPins);
       return nextPins;
     });
 
@@ -1032,7 +1007,7 @@ export default function LegacyMainShellScreen() {
 
     setOutboxItems((prev) => {
       const nextOutbox = [outboxEvent, ...prev];
-      OfflineStorageService.saveOutbox(nextOutbox);
+      void OfflineStorageService.saveOutbox(nextOutbox);
       return nextOutbox;
     });
   };
@@ -1056,7 +1031,7 @@ export default function LegacyMainShellScreen() {
 
     setPinsList((prev) => {
       const nextPins = prev.map((p) => (p.id === updatedPin.id ? updatedPin : p));
-      OfflineStorageService.savePins(nextPins);
+      void OfflineStorageService.savePins(nextPins);
       return nextPins;
     });
 
@@ -1076,7 +1051,7 @@ export default function LegacyMainShellScreen() {
 
     setOutboxItems((prev) => {
       const nextOutbox = [outboxEvent, ...prev];
-      OfflineStorageService.saveOutbox(nextOutbox);
+      void OfflineStorageService.saveOutbox(nextOutbox);
       return nextOutbox;
     });
 
@@ -1098,7 +1073,7 @@ export default function LegacyMainShellScreen() {
               }
               return p;
             });
-            OfflineStorageService.savePins(updated);
+            void OfflineStorageService.savePins(updated);
             return updated;
           });
         }
@@ -1149,7 +1124,7 @@ export default function LegacyMainShellScreen() {
         setFotoPin(updatedPin);
         setPinsList((prev) => {
           const nextPins = prev.map((p) => (p.id === updatedPin.id ? updatedPin : p));
-          OfflineStorageService.savePins(nextPins);
+          void OfflineStorageService.savePins(nextPins);
           return nextPins;
         });
         if (selectedPin?.id === updatedPin.id) {
