@@ -185,6 +185,7 @@ export class SQLiteStorageAdapter implements OfflineStorageAdapter {
   public async getPins(): Promise<SignagePin[]> {
     const db = await this.getDb();
     const rows = await db.getAllAsync<PinRow>('SELECT * FROM pins ORDER BY id');
+    console.log(`[SQLITE-STORAGE-ADAPTER] getPins: ${rows.length} registro(s) lido(s) de ${DB_NAME}`);
     if (rows.length > 0) {
       return rows.map(rowToPin);
     }
